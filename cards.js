@@ -12,6 +12,14 @@
 //
 //  About 95% of drawers / cabinets / chests / coffins get a card each round,
 //  picked at random from this list (cards repeat). Target is 31.
+//
+//  THE GOLDEN CARD (GOLD_CARD, at the bottom): exactly one per round, in a
+//  random drawer. No topic is shown. If the team plays it they cannot skip:
+//  they type the answer. Right = +GOLD, wrong = -GOLD (half of 31).
+//  The result stays between 0 and 31: no over-31 penalty, never below 0.
+//    gold : true
+//    ans  : the correct answer (a whole number the code prints)
+//    f    : not used for the golden card
 // ============================================================
 const NODE = "struct Node { int v; Node* next; };";
 
@@ -123,3 +131,16 @@ void dfs(int u) {
 dfs(1);
 x = x + ans;` },
 ];
+
+export const GOLD = 31 / 2;
+
+export const GOLD_CARD = { gold: true, cat: "★ GOLDEN", t: "The Golden Card", ans: 10, code:
+`int a[] = {3, 8, 2, 7, 5};
+int c = 0;
+for (int i = 0; i < 5; i++)
+  for (int j = 0; j < 4 - i; j++)
+    if (a[j] > a[j + 1]) {
+      swap(a[j], a[j + 1]);
+      c++;
+    }
+cout << c + a[2];` };
