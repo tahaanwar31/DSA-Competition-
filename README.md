@@ -123,6 +123,13 @@ About 95% of drawers, cupboards, chests and coffins get a random card from this 
 
 ---
 
+## 🤝 Contributing
+
+Co-heads: **don't push to `main`.** Make a branch, push it, and open a Pull Request. It gets merged after review.
+The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+
+---
+
 ## 🗂️ Project structure
 
 ```
