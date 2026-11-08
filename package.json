@@ -1,0 +1,9 @@
+{
+  "name": "code21-the-mansion",
+  "version": "1.0.0",
+  "description": "Code 21: The Mansion - a haunted first-person DSA card game for the PROCOM DSA competition",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  }
+}
