@@ -15,7 +15,7 @@
 //
 //  THE GOLDEN CARD (GOLD_CARD, at the bottom): exactly one per round, in a
 //  random drawer. No topic is shown. If the team plays it they cannot skip:
-//  they type the answer. Right = +GOLD, wrong = -GOLD (half of 31).
+//  they type the answer. Right = +GOLD, wrong = -GOLD (15).
 //  The result stays between 0 and 31: no over-31 penalty, never below 0.
 //    gold : true
 //    ans  : the correct answer (a whole number the code prints)
@@ -132,7 +132,7 @@ dfs(1);
 x = x + ans;` },
 ];
 
-export const GOLD = 31 / 2;
+export const GOLD = 15;   // whole number, so scores never have .5
 
 export const GOLD_CARD = { gold: true, cat: "★ GOLDEN", t: "The Golden Card", ans: 10, code:
 `int a[] = {3, 8, 2, 7, 5};

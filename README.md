@@ -86,6 +86,12 @@ Then open **http://localhost:8780** in **Google Chrome** and click to enter.
 
 If a team goes **over 31**, its score is balanced back to **31** and then **5 is taken off**, so the score becomes **26**.
 
+### ⭐ The golden card
+
+- Every round, **one golden card** is hidden in a random drawer, cupboard, chest or coffin. It glows gold.
+- **Q** skips it. **E** plays it, and after that you can't skip: type the answer with the number keys and press **Enter**.
+- **Right answer: +15. Wrong answer: −15.** It never takes `x` above 31 or below 0.
+
 ### 👁️ The ghost
 
 - She appears suddenly: right in front of you, far away down a corridor, or upside down on the ceiling.
