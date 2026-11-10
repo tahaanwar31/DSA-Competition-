@@ -1,11 +1,24 @@
 // Loads db/cards-data.js into Supabase.
-//   node scripts/seed-cards.js          adds the cards only if the cards table is empty
-//   node scripts/seed-cards.js --add    adds them again even if there are cards already
+//   node scripts/seed-cards.js            adds the cards only if the cards table is empty
+//   node scripts/seed-cards.js --update   rewrites the existing cards in place (same ids, so
+//                                         nothing that points at them breaks). Refuses if any
+//                                         team has already opened a card, unless --force.
+//   node scripts/seed-cards.js --add      adds them again even if there are cards already
+// The "code" column holds the three versions as one JSON text: {"cpp": "...", "java": "...", "py": "..."}
 const { sb } = require("../server.js");
 const cards = require("../db/cards-data.js");
+const row = c => ({ level: c.level, topic: c.topic, title: c.title, effect: c.effect, code: JSON.stringify({ cpp: c.cpp, java: c.java, py: c.py }) });
+const has = f => process.argv.includes(f);
 (async () => {
-  const have = await sb("cards?select=id");
-  if (have.length && !process.argv.includes("--add")) { console.log(`There are already ${have.length} cards. Nothing added (use --add to add anyway).`); return; }
-  await sb("cards", { method: "POST", body: cards.map(c => ({ level: c.level, topic: c.topic, title: c.title, code: c.code, effect: c.effect })) });
+  const have = await sb("cards?select=id&order=id");
+  if (has("--update")) {
+    if (have.length !== cards.length) throw new Error(`the database has ${have.length} cards and the file has ${cards.length}; they must match for --update`);
+    const plays = await sb("plays?select=id&limit=1");
+    if (plays.length && !has("--force")) throw new Error("teams have already opened cards. Use --force only if you really mean to change cards during the event.");
+    for (let i = 0; i < cards.length; i++) await sb(`cards?id=eq.${have[i].id}`, { method: "PATCH", body: { ...row(cards[i]), active: true } });
+    console.log(`Updated ${cards.length} cards in place.`); return;
+  }
+  if (have.length && !has("--add")) { console.log(`There are already ${have.length} cards. Nothing added (use --update to rewrite them, --add to add anyway).`); return; }
+  await sb("cards", { method: "POST", body: cards.map(row) });
   console.log(`Added ${cards.length} cards.`);
 })().catch(e => { console.error("Failed:", e.message); process.exit(1); });

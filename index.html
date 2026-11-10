@@ -61,11 +61,13 @@
   }
   /* the card */
   #inspect { position: fixed; inset: 0; display: none; place-items: center; background: rgba(0,0,0,.55); }
-  #inspect.on { display: grid; }
-  .timer { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); width: 96px; height: 96px; }
+  #inspect.on { display: flex; align-items: center; justify-content: center; gap: 22px; padding: 16px; box-sizing: border-box; }
+  #inspect .side { display: flex; flex-direction: column; align-items: center; gap: 18px; flex: none; }
+  .timer { position: relative; width: 96px; height: 96px; }
   .timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
   .timer span { position: absolute; inset: 0; display: grid; place-items: center; font: 800 44px "JetBrains Mono", monospace; color: #fff; text-shadow: 0 0 16px var(--red); }
-  .pcard { width: min(560px, 90vw); max-height: 72vh; background: var(--card); color: var(--ink); border-radius: 18px; border: 8px solid var(--suit, #b3262d); padding: 20px 24px; box-shadow: 0 30px 80px rgba(0,0,0,.8), 0 0 60px rgba(243,212,138,.25); display: grid; gap: 10px; overflow: hidden; animation: pop .35s ease-out; }
+  .pcard { box-sizing: border-box; min-width: min(560px, calc(100vw - 200px)); max-width: calc(100vw - 190px); max-height: calc(100vh - 32px); background: var(--card); color: var(--ink); border-radius: 18px; border: 8px solid var(--suit, #b3262d); padding: 20px 24px; box-shadow: 0 30px 80px rgba(0,0,0,.8), 0 0 60px rgba(243,212,138,.25); display: flex; flex-direction: column; gap: 10px; overflow: hidden; animation: pop .35s ease-out; }
+  .pcard > * { flex-shrink: 0; }
   .tr #clock { display: block; font: 800 30px "JetBrains Mono", monospace; letter-spacing: 2px; color: var(--gold); margin-bottom: 10px; }
   .tr #clock.low { color: var(--red); animation: blink 1s steps(2) infinite; }
   @keyframes blink { 50% { opacity: .35; } }
@@ -79,13 +81,23 @@
   @keyframes pop { from { transform: scale(.2) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
   .pcard .head { display: flex; justify-content: space-between; font: 800 18px Cinzel, serif; letter-spacing: 2px; color: var(--suit, #b3262d); }
   .pcard h2 { margin: 0; font: 800 30px Cinzel, serif; }
-  .pcard pre { margin: 0; font: 500 15px/1.5 "JetBrains Mono", monospace; font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; background: var(--code-bg); border-radius: 10px; padding: 12px 14px; overflow: auto; }
+  .pcard .code { flex: 0 1 auto !important; display: flex; gap: 12px; min-height: 0; overflow: hidden; font-size: 15px; position: relative; }
+  .pcard .code.scroll { overflow-y: auto; scrollbar-width: thin; }
+  .pcard pre { margin: 0; font: 500 1em/1.45 "JetBrains Mono", monospace; font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; background: var(--code-bg); border-radius: 10px; padding: .8em 1em; flex: none; align-self: flex-start; }
+  .pcard .trow { display: flex; align-items: center; justify-content: space-between; gap: 8px 18px; flex-wrap: wrap; }
+  .pcard .langs { display: flex; gap: 6px; }
+  .pcard .langs b { font: 700 13px "JetBrains Mono", monospace; letter-spacing: 1px; padding: 5px 12px; border-radius: 6px; border: 1.5px solid #cfc6b4; color: #6d665a; }
+  .pcard .langs b i { font-style: normal; display: inline-block; min-width: 18px; margin-right: 6px; padding: 0 4px; border-radius: 3px; background: #e6dfd0; color: #3a352d; text-align: center; }
+  .pcard .langs b.on { background: var(--suit, #b3262d); border-color: var(--suit, #b3262d); color: #fff; }
+  .pcard .langs b.on i { background: rgba(255,255,255,.25); color: #fff; }
+  .pcard .more { position: sticky; bottom: 0; align-self: flex-end; margin-left: auto; font: 700 12px "JetBrains Mono", monospace; background: var(--suit, #b3262d); color: #fff; padding: 4px 10px; border-radius: 6px; }
   .kw { color: #8a2a7a; font-weight: 600; } .ty { color: #1f5f8b; } .nu { color: #b3501b; } .st { color: #2f7a36; } .co { color: #858c87; font-style: italic; }
   .pcard .note { font-size: 13px; color: #5b645e; text-align: center; }
+  @media (max-width: 900px) { #inspect.on { flex-direction: column-reverse; gap: 10px; } #inspect .side { flex-direction: row; } .keys { flex-direction: row; } .pcard { max-width: calc(100vw - 24px); min-width: 0; max-height: calc(100vh - 140px); } .timer { width: 72px; height: 72px; } }
   .gans { font: 800 24px "JetBrains Mono", monospace; text-align: center; color: #8a6d0b; }
   .gans b { display: inline-block; min-width: 90px; border-bottom: 3px solid currentColor; padding: 0 14px; }
-  .keys { position: absolute; left: 50%; bottom: 5%; transform: translateX(-50%); display: flex; gap: 18px; font: 800 18px "JetBrains Mono", monospace; letter-spacing: 2px; }
-  .keys span { padding: 12px 24px; border: 1px solid rgba(255,255,255,.35); border-radius: 8px; background: rgba(0,0,0,.6); }
+  .keys { display: flex; flex-direction: column; gap: 12px; font: 800 18px "JetBrains Mono", monospace; letter-spacing: 2px; }
+  .keys span { text-align: center; white-space: nowrap; padding: 12px 18px; border: 1px solid rgba(255,255,255,.35); border-radius: 8px; background: rgba(0,0,0,.6); }
   .keys span:first-child { border-color: var(--gold); color: var(--gold); }
   /* screens */
   .screen { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at center, rgba(20,14,10,.75), rgba(0,0,0,.96)); text-align: center; pointer-events: auto; cursor: pointer; }
@@ -179,7 +191,7 @@
     <div class="panel"><h3>THE RULES</h3><ol>
       <li><b>x</b> is your team's score. Everyone starts at <b>x = 0</b>.</li>
       <li>Code cards are hidden in <b>drawers, cupboards, chests and coffins</b>. Look at one, press <kbd>E</kbd> to open it, then <kbd>C</kbd> to pick up the card.</li>
-      <li>Read the code on the card. Work out what it will do to <b>x</b>.</li>
+      <li>Read the code on the card in <b>C++</b>, <b>Java</b> or <b>Python</b> (press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>). Same logic in all three. Work out what it will do to <b>x</b>.</li>
       <li>Press <kbd>E</kbd> to <b>accept</b>: the code runs on <b>x</b> and <b>x</b> is updated. Press <kbd>Q</kbd> to <b>reject</b>: <b>x</b> stays the same. Either way the card burns and is gone.</li>
       <li>Time to decide: <span class="g">easy 1 min</span>, <span class="y">medium 2 min</span>, <span class="r">hard 4 min</span>. If time runs out, the card is rejected.</li>
       <li>Hard cards hide <b>upstairs and outside</b>.</li>
@@ -194,6 +206,8 @@
       <div class="keyrow"><span><kbd>E</kbd></span><span>Open / close · accept a card</span></div>
       <div class="keyrow"><span><kbd>C</kbd></span><span>Pick up the card inside</span></div>
       <div class="keyrow"><span><kbd>Q</kbd></span><span>Reject a card</span></div>
+      <div class="keyrow"><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span><span>Card in C++ / Java / Python</span></div>
+      <div class="keyrow"><span><kbd>↑</kbd><kbd>↓</kbd></span><span>Scroll a long card</span></div>
       <div class="keyrow"><span><kbd>F</kbd></span><span>Flashlight on / off</span></div>
       <div class="keyrow"><span><kbd>H</kbd></span><span>These rules</span></div>
       <div class="keyrow"><span><kbd>ESC</kbd></span><span>Pause</span></div>
@@ -202,9 +216,9 @@
   <button class="back" id="helpBack">BACK TO THE MANSION</button>
 </div></div>
 <div id="inspect">
-  <div class="timer" id="timer"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="rgba(0,0,0,.5)" stroke="rgba(255,255,255,.15)" stroke-width="8"/><circle id="ring" cx="50" cy="50" r="44" fill="none" stroke="#d8443a" stroke-width="8" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><span id="secs">10</span></div>
   <div class="pcard" id="pcard"></div>
-  <div class="keys" id="keys"><span>E · TAKE</span><span>Q · DROP</span></div>
+  <div class="side"><div class="timer" id="timer"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="rgba(0,0,0,.5)" stroke="rgba(255,255,255,.15)" stroke-width="8"/><circle id="ring" cx="50" cy="50" r="44" fill="none" stroke="#d8443a" stroke-width="8" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><span id="secs">10</span></div>
+  <div class="keys" id="keys"><span>E · TAKE</span><span>Q · DROP</span></div></div>
 </div>
 <div class="screen" id="start">
   <div class="bg"><img class="b0" src="assets/ui/intro-dark.jpg" alt=""><img class="b1" src="assets/ui/intro-flash.jpg" alt=""></div>
@@ -232,6 +246,7 @@
       <div class="kr"><span><kbd>E</kbd></span>Open / close</div>
       <div class="kr"><span><kbd>C</kbd></span>Grab card</div>
       <div class="kr"><span><kbd>E</kbd><i>/</i><kbd>Q</kbd></span>Take / drop</div>
+      <div class="kr"><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span>C++ / Java / Python</div>
       <div class="kr"><span><kbd>F</kbd></span>Flashlight</div>
       <div class="kr"><span><kbd>ESC</kbd></span>Pause</div>
     </div>
@@ -968,7 +983,9 @@ function fillBooks(b, alongZ) { const W = alongZ ? b.max.z - b.min.z : b.max.x -
 // the rubber duck in the pool: it floats and slowly turns to watch you
 let duck = null; loadModel("rubber_duck_toy").then(src => { duck = src.clone(true); duck.scale.setScalar(.75); duck.position.set(17.2, WL, 2.5); scene.add(duck); });
 
-/* ================= the cards: hidden in random drawers ================= */
+/* ================= the cards: hidden in random drawers =================
+   Every load deals the deck again at random: hard cards go upstairs or outside,
+   easy and medium cards go downstairs inside. Each team gets its own layout. */
 const cardBack = canvasTex(256, 360, g => {
   g.fillStyle = "#fbf8f1"; g.beginPath(); g.roundRect(0, 0, 256, 360, 22); g.fill(); g.fillStyle = "#8f1a20"; g.beginPath(); g.roundRect(14, 14, 228, 332, 14); g.fill();
   g.strokeStyle = "rgba(243,212,138,.6)"; g.lineWidth = 2; for (let i = -360; i < 360; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 360, 360); g.stroke(); }
@@ -986,7 +1003,7 @@ function dealCards() {
   const put = (o, card, mat) => { if (!o) return 0; const mesh = new THREE.Mesh(CARD_GEO, mat); mesh.rotation.set(-PI / 2, 0, (Math.random() - .5) * 1.2); mesh.position.copy(o.slot[1]); o.slot[0].add(mesh); o.card = { card, mesh }; return 1; };
   let n = GOLDEN ? put(take(() => true), GOLD_CARD, GOLD_MAT) : 0;
   for (const c of deck.filter(c => c.lvl === "hard")) n += put(take(scaryPlace) || take(() => true), c, CARD_MAT);
-  for (const c of deck.filter(c => c.lvl !== "hard")) n += put(take(() => true), c, CARD_MAT);
+  for (const c of deck.filter(c => c.lvl !== "hard")) n += put(take(o => !scaryPlace(o)) || take(() => true), c, CARD_MAT);   // easy + medium stay downstairs, inside
   S.left = n;
 }
 function animateOpen(o) {
@@ -1208,8 +1225,17 @@ function end(cleared) { S.mode = "over"; controls.unlock(); $("inspect").classLi
 
 /* the card close-up */
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const KW = new Set("class public return if else for while void new struct int char bool auto nullptr true false const string".split(" ")), TY = new Set("stack queue vector Node N max".split(" "));
-function hl(code) { const re = /(\/\/[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(\d+)\b|\b([A-Za-z_]\w*)\b/g; let o = "", l = 0, m;
+const LANGS = [["cpp", "C++"], ["java", "JAVA"], ["py", "PYTHON"]];
+const HL = {
+  cpp: { kw: "struct class return if else for while do void new int char bool nullptr true false const continue break", ty: "string stack queue deque Node Tree", co: "//" },
+  java: { kw: "class return if else for while do void new int char boolean null true false continue break", ty: "String Stack Queue LinkedList Deque ArrayDeque Integer Character Node Tree", co: "//" },
+  py: { kw: "def class return if elif else for while in not and or is None True False continue break global pass", ty: "range len deque ord int Node Tree", co: "#" } };
+for (const k in HL) { HL[k].kw = new Set(HL[k].kw.split(" ")); HL[k].ty = new Set(HL[k].ty.split(" ")); }
+let LANG = "cpp"; try { const v = localStorage.getItem("dff_lang"); if (HL[v]) LANG = v; } catch (e) {}
+// the server sends the three versions as one JSON text; an old plain card is C++ only
+function langsOf(code) { try { const o = JSON.parse(code); if (o && typeof o.cpp === "string") return o; } catch (e) {} return { cpp: String(code || "") }; }
+function hl(code, lang = "cpp") { const L = HL[lang] || HL.cpp, KW = L.kw, TY = L.ty;
+  const re = lang === "py" ? /(#[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(\d+)\b|\b([A-Za-z_]\w*)\b/g : /(\/\/[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(\d+)\b|\b([A-Za-z_]\w*)\b/g; let o = "", l = 0, m;
   while ((m = re.exec(code))) { o += esc(code.slice(l, m.index)); o += m[1] ? `<span class="co">${esc(m[1])}</span>` : m[2] ? `<span class="st">${esc(m[2])}</span>` : m[3] ? `<span class="nu">${m[3]}</span>` : KW.has(m[4]) ? `<span class="kw">${m[4]}</span>` : TY.has(m[4]) ? `<span class="ty">${m[4]}</span>` : m[4]; l = re.lastIndex; }
   return o + esc(code.slice(l)); }
 function openCard(o) { const c = { id: o.card.card.id, lvl: o.card.card.lvl, cat: "", t: "Opening…", code: "", loading: true };
@@ -1220,8 +1246,32 @@ function openCard(o) { const c = { id: o.card.card.id, lvl: o.card.card.lvl, cat
 function showCard(c) { const red = /♥|♦/.test(c.cat);
   $("pcard").style.setProperty("--suit", c.gold ? "#b8860b" : red ? "#b3262d" : "#1d2320");
   $("timer").style.visibility = "visible"; $("keys").innerHTML = `<span>E · ${c.gold ? "PLAY" : "TAKE"}</span><span>Q · DROP</span>`;
-  $("pcard").innerHTML = `<div class="head"><span>${esc(c.cat)}${c.lvl ? `<i class="lv lv-${c.lvl}">${c.lvl.toUpperCase()}</i>` : ""}</span><span>x = ${S.x}</span></div><h2>${esc(c.t)}</h2><pre>${hl(c.code)}</pre><div class="note" id="note">${c.gold ? `Play it and you cannot skip. Right answer +${GOLD}, wrong answer −${GOLD}.` : "int x is your team's value. Take it or drop it."}</div>`;
-  if (!$("inspect").classList.contains("on")) { $("inspect").classList.add("on"); audio.flip(); } }
+  const L = langsOf(c.code), have = LANGS.filter(([k]) => L[k]), lang = L[LANG] ? LANG : "cpp";
+  $("pcard").innerHTML = `<div class="head"><span>${esc(c.cat)}${c.lvl ? `<i class="lv lv-${c.lvl}">${c.lvl.toUpperCase()}</i>` : ""}</span><span>x = ${S.x}</span></div><div class="trow"><h2>${esc(c.t)}</h2>`
+    + `<div class="langs">${c.loading ? "" : have.map(([k, n], i) => `<b class="${k === lang ? "on" : ""}"><i>${LANGS.findIndex(l => l[0] === k) + 1}</i>${n}</b>`).join("")}</div></div>`
+    + `<div class="code" id="code"></div><div class="note" id="note">${c.gold ? `Play it and you cannot skip. Right answer +${GOLD}, wrong answer −${GOLD}.` : "x is your team's value. Same logic in every language."}</div>`;
+  if (!$("inspect").classList.contains("on")) { $("inspect").classList.add("on"); audio.flip(); }
+  layoutCode(L[lang] || "", lang); }
+// put the code on the card as big as it fits: one column, or helpers | main in two columns
+function splitCols(code) { const ls = code.split("\n"), cuts = []; ls.forEach((l, i) => { if (l === "" && i > 0) cuts.push(i); });
+  let best = null; for (const i of cuts) { const h = Math.max(i, ls.length - i - 1); if (!best || h < best.h) best = { h, a: ls.slice(0, i).join("\n"), b: ls.slice(i + 1).join("\n") }; }
+  return best; }
+function layoutCode(code, lang) { const box = $("code"); if (!box) return;
+  const one = [code], two = code.split("\n").length > 18 ? splitCols(code) : null;
+  const put = cols => { box.innerHTML = cols.map(t => `<pre>${hl(t, lang)}</pre>`).join(""); };
+  const fits = () => box.scrollHeight <= box.clientHeight + 1 && box.scrollWidth <= box.clientWidth + 1;
+  const biggest = cols => { put(cols); box.classList.remove("scroll"); let lo = 10, hi = 20;
+    box.style.fontSize = hi + "px"; if (fits()) return hi;
+    while (hi - lo > .25) { const mid = (lo + hi) / 2; box.style.fontSize = mid + "px"; if (fits()) lo = mid; else hi = mid; }
+    box.style.fontSize = lo + "px"; return fits() ? lo : 0; };
+  const f1 = biggest(one), f2 = two ? biggest([two.a, two.b]) : 0;
+  const cols = two && f2 > f1 + 1 ? [two.a, two.b] : one;   // two columns only when the text gets clearly bigger
+  if (biggest(cols) < 11) { put(cols); box.style.fontSize = "11px"; box.classList.add("scroll"); box.insertAdjacentHTML("beforeend", '<span class="more">↑ ↓ SCROLL</span>'); }
+  box.scrollTop = 0; }
+function setLang(k) { if (!S.card || S.card.loading) return; const L = langsOf(S.card.code); if (!L[k] || k === LANG) return;
+  LANG = k; try { localStorage.setItem("dff_lang", k); } catch (e) {} audio.click(); showCard(S.card); }
+addEventListener("resize", () => { if (S.mode === "inspect" && S.card && !S.card.loading) showCard(S.card); });
+addEventListener("wheel", e => { if (S.mode === "inspect" && $("code")) $("code").scrollTop += e.deltaY; }, { passive: true });
 function closeCard() { if (S.card) { S.left--; burnCard(); } S.card = null; S.ans = false; $("inspect").classList.remove("on"); if (S.mode === "inspect") S.mode = "play"; }
 let aim = null, grab = null;   // grab = an open drawer/door/lid with a card that you are looking towards
 const CP = new THREE.Vector3(), CD = new THREE.Vector3();
@@ -1280,6 +1330,8 @@ function onKey(code) {
   else if (S.mode === "play" && (code === "KeyC" || code === "KeyG") && grab) { const o = grab; grab = null; openCard(o); }
   else if (S.mode === "inspect" && S.ans) goldKey(code);
   else if (S.mode === "inspect" && S.card.gold && code === "KeyE") goldStart();
+  else if (S.mode === "inspect" && /^(Digit|Numpad)[123]$/.test(code)) setLang(LANGS[+code.slice(-1) - 1][0]);
+  else if (S.mode === "inspect" && (code === "ArrowDown" || code === "ArrowUp") && $("code")) $("code").scrollTop += code === "ArrowDown" ? 60 : -60;
   else if (S.mode === "inspect" && code === "KeyE") decide("take");
   else if (S.mode === "inspect" && code === "KeyQ") decide("drop");
 }
@@ -1490,7 +1542,7 @@ function frame(now) { requestAnimationFrame(frame);
       if (want !== PR) { PR = want; renderer.setPixelRatio(PR); composer.setPixelRatio(PR); composer.setSize(innerWidth, innerHeight); } } } }
 function matte() { scene.traverse(o => { if (!o.material || o === ghost) return; for (const m of [].concat(o.material)) { if (!m.isMeshStandardMaterial || m.userData.matte) continue; m.userData.matte = 1;
       const metal = m.metalness > .5; if (m.roughnessMap && !metal) m.roughnessMap = null; m.roughness = Math.max(m.roughness, metal ? .55 : .85); m.envMapIntensity = .4; m.needsUpdate = true; } }); }
-Promise.all([...placed, runReady]).then(() => { matte(); setTimeout(matte, 1500); dealCards(); computeZones(); window.__game = { audio, computeZones, applyZones, S, P, GH, NET, openCard, onKey, camera, ghost, OPEN, controls, torch, composer, renderer, update, hud, reset, aimAt: () => aim, COLL, roomAt, ROOMS, movePlayer, spawnGhost, hideGhost, inWorld }; });
+Promise.all([...placed, runReady]).then(() => { matte(); setTimeout(matte, 1500); dealCards(); computeZones(); window.__game = { audio, computeZones, applyZones, S, P, GH, NET, openCard, showCard, onKey, camera, ghost, OPEN, controls, torch, composer, renderer, update, hud, reset, aimAt: () => aim, COLL, roomAt, ROOMS, movePlayer, spawnGhost, hideGhost, inWorld }; });
 requestAnimationFrame(frame);
 </script>
 </body></html>

@@ -37,6 +37,10 @@
   .big { font: 700 28px "JetBrains Mono", monospace; color: #fff; }
   .stats { display: flex; gap: 26px; flex-wrap: wrap; margin: 6px 0 2px; }
   .stats div span { display: block; font: 600 11px "JetBrains Mono", monospace; letter-spacing: .2em; color: var(--muted); }
+  #cardDlg { width: min(1180px, 96vw); }
+  .langs3 textarea { font: 500 12px/1.45 "JetBrains Mono", monospace; white-space: pre; min-width: 0; }
+  .langs3 .field { flex: 1 1 300px; min-width: 0; }
+  .lp { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 4px; font: 700 10px "JetBrains Mono", monospace; background: rgba(255,255,255,.08); color: #b9b0a0; }
   pre.code { margin: 6px 0 0; max-height: 160px; overflow: auto; background: rgba(0,0,0,.45); padding: 8px 10px; font: 500 12px/1.45 "JetBrains Mono", monospace; white-space: pre; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #555; margin-right: 6px; } .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
   dialog { background: #0e0a0b; color: var(--text); border: 1px solid rgba(255,255,255,.15); border-left: 3px solid var(--neon); padding: 22px 24px; width: min(760px, 94vw); }
@@ -125,7 +129,12 @@
     <label class="field"><span>Topic</span><input name="topic" required placeholder="♠ STACK"></label>
     <label class="field" style="flex-basis:260px"><span>Title</span><input name="title" required></label>
   </div>
-  <label class="field"><span>Code shown on the card</span><textarea name="code" rows="11" required spellcheck="false"></textarea></label>
+  <div class="row langs3">
+    <label class="field"><span>C++ (needed)</span><textarea name="cpp" rows="14" required spellcheck="false"></textarea></label>
+    <label class="field"><span>Java</span><textarea name="java" rows="14" spellcheck="false"></textarea></label>
+    <label class="field"><span>Python</span><textarea name="py" rows="14" spellcheck="false"></textarea></label>
+  </div>
+  <p class="muted" style="margin:0">Same logic in all three. Teams switch with keys 1 · 2 · 3. Check new cards with <code>node scripts/check-cards.js</code>.</p>
   <div class="row">
     <label class="field"><span>Effect of taking it (x, numbers, + - * / % ( ) only)</span><input name="effect" required placeholder="x + 7" class="mono"></label>
     <label class="field" style="flex:0 1 120px"><span>Test with x =</span><input id="tx" type="number" value="10"></label>
@@ -257,27 +266,29 @@ $("bulk").onsubmit = async e => { e.preventDefault(); const lines = e.target.lin
   toast(`${ok} added` + (bad.length ? ` · ${bad.length} failed` : "")); if (bad.length) alert("Not added:\n" + bad.join("\n")); else e.target.reset(); load(); };
 
 // ---------- cards ----------
+function langsOf(code) { try { const o = JSON.parse(code); if (o && typeof o.cpp === "string") return o; } catch (e) {} return { cpp: String(code || "") }; }
 function drawCards() {
   const n = l => D.cards.filter(c => c.level === l && c.active).length, f = $("cardFilter").value;
   $("cardStats").innerHTML = `<div><span>EASY</span><b class="big lv-easy">${n("easy")}</b></div><div><span>MEDIUM</span><b class="big lv-medium">${n("medium")}</b></div><div><span>HARD</span><b class="big lv-hard">${n("hard")}</b></div><div><span>IN PLAY</span><b class="big">${D.cards.filter(c => c.active).length}</b></div>`;
   const list = D.cards.filter(c => !f || c.level === f);
   $("cards").innerHTML = `<tr><th>#</th><th>LEVEL</th><th>TOPIC</th><th>TITLE / CODE</th><th>EFFECT</th><th></th></tr>` + (list.length ? list.map(c => `
     <tr class="${c.active ? "" : "off"}" data-id="${c.id}"><td class="muted">${c.id}</td><td><span class="lv lv-${c.level}">${c.level.toUpperCase()}</span></td><td>${esc(c.topic)}</td>
-    <td style="min-width:300px"><b>${esc(c.title)}</b>${c.active ? "" : ' <span class="pill p-locked">OFF</span>'}<pre class="code">${esc(c.code)}</pre></td><td class="mono" style="white-space:nowrap">${esc(c.effect)}</td>
+    <td style="min-width:300px"><b>${esc(c.title)}</b>${c.active ? "" : ' <span class="pill p-locked">OFF</span>'}${(L => ["cpp", "java", "py"].filter(k => L[k]).map(k => `<span class="lp">${{ cpp: "C++", java: "JAVA", py: "PY" }[k]}</span>`).join(""))(langsOf(c.code))}<pre class="code">${esc(langsOf(c.code).cpp)}</pre></td><td class="mono" style="white-space:nowrap">${esc(c.effect)}</td>
     <td><div class="acts"><button class="btn ghost small" data-a="edit">Edit</button><button class="btn ghost small" data-a="del">Remove</button></div></td></tr>`).join("") : `<tr><td colspan="6" class="muted">No cards.</td></tr>`);
 }
 $("cardFilter").onchange = drawCards;
 let editing = null;
 function openCardDlg(c) { editing = c ? c.id : null; const f = $("cardForm"); f.reset(); $("cardErr").textContent = ""; $("fxOut").textContent = "Integer maths like C++: 7 / 2 = 3.";
   $("cardDlgT").textContent = c ? `Edit card #${c.id}` : "New card";
-  if (c) { for (const k of ["level", "topic", "title", "code", "effect"]) f[k].value = c[k]; f.active.checked = c.active; } $("cardDlg").showModal(); }
+  if (c) { for (const k of ["level", "topic", "title", "effect"]) f[k].value = c[k]; const L = langsOf(c.code); for (const k of ["cpp", "java", "py"]) f[k].value = L[k] || ""; f.active.checked = c.active; } $("cardDlg").showModal(); }
 $("newCard").onclick = () => openCardDlg(null);
 $("cardCancel").onclick = () => $("cardDlg").close();
 $("cards").onclick = e => { const b = e.target.closest("button"); if (!b) return; const id = +b.closest("tr").dataset.id, c = D.cards.find(c => c.id === id);
   if (b.dataset.a === "edit") openCardDlg(c);
   if (b.dataset.a === "del" && confirm(`Remove "${c.title}"? If a team already saw it, it is only switched off so their scores stay right.`)) act(() => api(`/api/admin/cards/${id}`, undefined, "DELETE"), "Removed"); };
 $("testFx").onclick = async () => { try { const r = await api("/api/admin/cards/test", { effect: $("cardForm").effect.value, x: +$("tx").value }); $("fxOut").textContent = `x = ${$("tx").value}  →  ${r.x}`; } catch (e) { $("fxOut").textContent = "⚠ " + e.message; } };
-$("cardForm").onsubmit = async e => { e.preventDefault(); const f = e.target, body = { level: f.level.value, topic: f.topic.value, title: f.title.value, code: f.code.value, effect: f.effect.value, active: f.active.checked };
+$("cardForm").onsubmit = async e => { e.preventDefault(); const f = e.target, code = {}; for (const k of ["cpp", "java", "py"]) if (f[k].value.trim()) code[k] = f[k].value.replace(/\r\n/g, "\n").replace(/\s+$/, "");
+  const body = { level: f.level.value, topic: f.topic.value, title: f.title.value, code: JSON.stringify(code), effect: f.effect.value, active: f.active.checked };
   try { await api(editing ? `/api/admin/cards/${editing}` : "/api/admin/cards", body, editing ? "PATCH" : "POST"); $("cardDlg").close(); toast("Card saved"); load(); } catch (x) { $("cardErr").textContent = x.message; } };
 
 // ---------- leaderboards ----------
