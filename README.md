@@ -16,9 +16,9 @@
 
 **Depth First Fear** turns a Data Structures quiz into a horror game set in a haunted mansion.
 
-Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Drawers, cupboards, chests and coffins hide cards with a short piece of code on them. Read the code, work out what it does to your team's value `x`, and decide in **10 seconds**: take it or drop it. Some cards raise `x`, some lower it.
+Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Drawers, cupboards, chests and coffins hide cards with a short piece of code on them. Read the code, work out what it does to your team's value `x`, and decide in time (1, 2 or 4 minutes, depending on the card): take it or drop it. Some cards raise `x`, some lower it.
 
-The goal: have the **highest `x`** when the **10-minute** timer runs out.
+The goal: have the **highest `x`** when the **60-minute** timer runs out.
 
 But you are not alone in the house. She appears without warning. **Don't look into her eyes.**
 
@@ -69,7 +69,7 @@ Then open **http://localhost:8780** in **Google Chrome** and click to enter.
 | <kbd>Space</kbd> | Jump (over fences, graves and low furniture) |
 | <kbd>E</kbd> | Open / close a drawer, cupboard, chest or coffin |
 | <kbd>C</kbd> | Grab the card inside |
-| <kbd>E</kbd> / <kbd>Q</kbd> | **Take** / **drop** the card (you have 10 seconds) |
+| <kbd>E</kbd> / <kbd>Q</kbd> | **Take** / **drop** the card (1 / 2 / 4 minutes) |
 | <kbd>F</kbd> | Flashlight on / off |
 | <kbd>Esc</kbd> | Pause |
 
@@ -77,20 +77,20 @@ Then open **http://localhost:8780** in **Google Chrome** and click to enter.
 
 ## 📜 Rules
 
-1. Every team starts at **`x = 0`** and has **10 minutes**.
+1. Every team starts at **`x = 0`** and has **60 minutes**.
 2. Open drawers, cupboards, chests and coffins to find cards. Each card shows code that changes `x`.
-3. **Take** the card and `x` changes by its code. **Drop** it and `x` stays the same. You have **10 seconds** to decide.
+3. **Take** the card and `x` changes by its code. **Drop** it and `x` stays the same. Time to decide: **1 min** (easy), **2 min** (medium), **4 min** (hard).
 4. Either way, the card **burns** and is gone. **Each card is in the mansion only once.**
 5. Cards can **raise or lower** `x` (+, −, ×2, ×0 …), so read the code before you take it.
 6. **Highest `x` when time runs out wins.** There is no upper limit.
 
 ### 🟢🟡🔴 Card levels
 
-| Level | What it does to `x` | Where it hides |
-| --- | --- | --- |
-| 🟢 **Easy** | small, about ±1 to ±5 | anywhere |
-| 🟡 **Medium** | about ±5 to ±15 | anywhere |
-| 🔴 **Hard** | big or tricky: ×2, ×0, −20 … | the scariest places (upstairs and outside) |
+| Level | What it does to `x` | Time to decide | Where it hides |
+| --- | --- | :---: | --- |
+| 🟢 **Easy** | small, about ±1 to ±5 | **1 min** | anywhere |
+| 🟡 **Medium** | about ±5 to ±15 | **2 min** | anywhere |
+| 🔴 **Hard** | big or tricky: ×2, ×0, −20 … | **4 min** | the scariest places (upstairs and outside) |
 
 #### Topics at each level
 
@@ -110,17 +110,11 @@ Every topic appears at **every** level, getting harder:
 
 Every team gets **the same cards**. Only the hiding places change from laptop to laptop, so no team gets an easier deck and teams can't tell each other where a card is.
 
-### ⭐ The golden card
-
-- Every round, **one golden card** is hidden in a random place. It glows gold.
-- **Q** skips it. **E** plays it, and after that you can't skip: type the answer with the number keys and press **Enter**.
-- **Right answer: +15. Wrong answer: −15.**
-
 ### 👁️ The ghost
 
 - She appears suddenly: right in front of you, far away down a corridor, or upside down on the ceiling.
 - **Look into her eyes for a full second** and you are **busted: `x − 3`**.
-- Letting a card's 10 seconds run out is also **−3**, and the card burns.
+- Letting a card's time run out is also **−3**, and the card burns.
 
 ### 🏆 Ties
 
@@ -178,7 +172,7 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 - 🏚️ A full two-floor mansion: grand hall, library, study, kitchen, dining room, nursery, master bedroom, gallery and an abandoned indoor pool
 - 🌲 Haunted grounds: courtyard, dead forest, cemetery and crypt, with rain, fog and lightning
-- ⏱️ 10-minute rounds, with easy / medium / hard cards that each appear once
+- ⏱️ 60-minute rounds, with easy / medium / hard cards that each appear once
 - 🔥 Cards burn away after you take or drop them
 - 🗄️ Working drawers, cupboards, chests, coffins, doors and gates
 - 👻 A ghost with an eye-contact mechanic and jumpscares
