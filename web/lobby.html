@@ -3,85 +3,189 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Depth First Fear · Lobby</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=JetBrains+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
-<link rel="stylesheet" href="/web/ui.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="/web/fear.css">
 <style>
-  header { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px max(4vw, 16px); }
-  .brand { font: 700 13px "JetBrains Mono", monospace; letter-spacing: .45em; color: #cbbfae; }
-  .who { display: flex; align-items: center; gap: 14px; font: 600 14px "JetBrains Mono", monospace; letter-spacing: .1em; }
-  .who b { color: #fff; }
-  main { position: relative; z-index: 1; min-height: calc(100vh - 80px); display: grid; align-content: center; justify-items: center; gap: 4vh; padding: 0 16px 40px; }
-  .clock { font: 700 12px "JetBrains Mono", monospace; letter-spacing: .4em; color: var(--muted); }
-  .rounds { display: grid; grid-template-columns: repeat(2, minmax(0, 380px)); gap: 28px; width: min(820px, 100%); }
-  .round { position: relative; display: grid; gap: 18px; justify-items: start; padding: 26px 28px 24px; min-height: 330px; }
-  .round .neon .w1 { font-size: clamp(16px, 2vw, 24px); margin-top: 10px; }
-  .round .neon .w2 { font-size: clamp(56px, 7vw, 96px); }
-  .round.dim .neon { filter: grayscale(1) brightness(.55); }
-  .round.dim .neon .w2 { animation: none; }
-  .round .sub { font: 700 12px "JetBrains Mono", monospace; letter-spacing: .4em; color: #cbbfae; margin-top: -8px; }
-  .state { display: grid; gap: 6px; align-self: end; width: 100%; }
-  .state .big { font: 700 15px "JetBrains Mono", monospace; letter-spacing: .2em; }
-  .state .count { font: 700 34px "JetBrains Mono", monospace; letter-spacing: .06em; color: #fff; text-shadow: 0 0 14px rgba(255,30,40,.5); }
-  .state .btn { width: 100%; padding: 14px; font-size: 15px; }
-  .tape { position: absolute; left: -10px; right: -10px; top: 46%; transform: rotate(-6deg); padding: 9px 0; text-align: center; background: repeating-linear-gradient(-45deg, #e8b84a 0 22px, #141008 22px 44px); box-shadow: 0 6px 20px rgba(0,0,0,.7); }
-  .tape span { display: inline-block; background: #141008; color: #e8b84a; padding: 4px 14px; font: 700 15px "JetBrains Mono", monospace; letter-spacing: .3em; }
-  .note { max-width: 640px; text-align: center; font-size: 14px; }
-  @media (max-width: 760px) { .rounds { grid-template-columns: 1fr; } }
+  html, body { overflow: hidden auto; }
+  .page { height: auto; min-height: 100%; }
+  .osd { position: sticky; top: 0; }
+  .stage { justify-content: flex-start; padding: 2.4vh 16px 3vh; }
+  .wrap { width: min(1180px, 100%); }
+  header.top { display: flex; flex-direction: column; align-items: center; }
+  [data-emblem] { --es: 78px; }
+  .title { margin-top: .6vh; } .title .t1 { font-size: clamp(14px, 1.8vw, 22px); } .title .t2 { font-size: clamp(50px, 6.4vw, 92px); }
+  .tagline { margin-bottom: 1.4vh; }
+  .double { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,42,53,.7), transparent); }
+  .double + .double { margin: 2px 0 3vh; opacity: .3; }
+
+  .rounds { display: grid; grid-template-columns: 1fr 1fr; }
+  .mission { position: relative; display: flex; flex-direction: column; padding: 26px 30px 26px; min-height: 470px; opacity: 0; animation: fadeUp .6s forwards; }
+  .mission + .mission { border-left: 0; animation-delay: .15s; }
+  .mission .num { position: absolute; top: -10px; right: 18px; font: 800 150px/1 "JetBrains Mono", monospace; letter-spacing: -.06em; color: rgba(255,42,53,.05); pointer-events: none; }
+  .mission.dim .num { color: rgba(255,255,255,.025); }
+  .mission .mh { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .mission .who { display: flex; gap: 14px; align-items: center; }
+  .mission .ic { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(255,42,53,.45); background: rgba(255,42,53,.08); color: var(--blood); }
+  .mission.dim .ic { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.03); color: rgba(255,255,255,.25); }
+  .mission .k { font: 700 10px "JetBrains Mono", monospace; letter-spacing: .42em; color: rgba(255,42,53,.6); }
+  .mission h2 { margin: 2px 0 0; font: 700 clamp(20px, 2vw, 26px) "Libre Baskerville", serif; letter-spacing: .12em; color: #fff; }
+  .mission.dim h2 { color: rgba(255,255,255,.35); } .mission.dim .k { color: rgba(255,255,255,.25); }
+  .badge { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; font: 800 10px "JetBrains Mono", monospace; letter-spacing: .22em; border: 1px solid; white-space: nowrap; }
+  .badge i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+  .b-open { color: var(--toxic); border-color: rgba(125,255,154,.6); background: rgba(125,255,154,.08); animation: pulse 1.6s infinite; }
+  .b-wait { color: var(--amber); border-color: rgba(232,184,74,.5); background: rgba(232,184,74,.07); }
+  .b-lock, .b-end { color: rgba(255,255,255,.4); border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.03); }
+  .b-con { color: var(--amber); border-color: rgba(232,184,74,.6); background: rgba(232,184,74,.08); }
+  .b-done { color: var(--ice); border-color: rgba(159,214,255,.5); background: rgba(159,214,255,.07); }
+  @keyframes pulse { 50% { box-shadow: 0 0 22px rgba(125,255,154,.35); } }
+  .line { height: 1px; margin: 18px 0; background: rgba(255,42,53,.2); } .mission.dim .line { background: rgba(255,255,255,.06); }
+  .count { position: relative; z-index: 1; padding: 14px 16px; border: 1px solid; margin-bottom: 18px; }
+  .count .lbl { display: flex; align-items: center; gap: 8px; font: 800 10px "JetBrains Mono", monospace; letter-spacing: .3em; }
+  .count .big { font: 800 clamp(30px, 3vw, 40px) "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: .06em; margin: 4px 0 2px; }
+  .count .sub { font: 600 10px "JetBrains Mono", monospace; letter-spacing: .2em; opacity: .55; }
+  .c-wait { border-color: rgba(232,184,74,.3); background: rgba(232,184,74,.05); color: var(--amber); } .c-wait .big { text-shadow: 0 0 22px rgba(232,184,74,.35); }
+  .c-open { border-color: rgba(125,255,154,.3); background: rgba(125,255,154,.05); color: var(--toxic); } .c-open .big { text-shadow: 0 0 22px rgba(125,255,154,.35); }
+  .c-lock { border-color: rgba(255,42,53,.3); background: rgba(255,42,53,.06); color: #ff8a90; }
+  .c-end { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.03); color: rgba(233,223,207,.7); }
+  .c-done { border-color: rgba(159,214,255,.3); background: rgba(159,214,255,.05); color: var(--ice); }
+  .rules { position: relative; z-index: 1; flex: 1; margin-bottom: 22px; }
+  .rules .h { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font: 800 9.5px "JetBrains Mono", monospace; letter-spacing: .45em; color: rgba(255,42,53,.55); }
+  .rules .h::after { content: ""; flex: 1; height: 1px; background: rgba(255,42,53,.12); }
+  .rules ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+  .rules li { display: flex; gap: 12px; font-size: 13.5px; line-height: 1.5; color: rgba(233,223,207,.8); }
+  .rules li b.n { flex: none; font: 800 11px/1.9 "JetBrains Mono", monospace; color: rgba(255,42,53,.75); }
+  .rules em { font-style: normal; font-weight: 600; color: #fff; } .rules .g { color: var(--toxic); } .rules .y { color: var(--amber); } .rules .r { color: #ff5a62; }
+  .rules kbd { font: 700 11px "JetBrains Mono", monospace; padding: 1px 6px; border: 1px solid rgba(255,255,255,.3); border-bottom-width: 2px; color: #fff; }
+  .mission.dim .rules li { color: rgba(233,223,207,.3); } .mission.dim .rules li b.n { color: rgba(255,255,255,.2); } .mission.dim .rules .h { color: rgba(255,255,255,.2); }
+  .tape { position: absolute; z-index: 3; left: -20px; right: -20px; top: 44%; transform: rotate(-5deg); padding: 10px 0; text-align: center; background: repeating-linear-gradient(-45deg, #e8b84a 0 24px, #120e06 24px 48px); box-shadow: 0 10px 30px rgba(0,0,0,.8); }
+  .tape span { display: inline-block; padding: 6px 18px; background: #120e06; color: var(--amber); font: 800 16px "JetBrains Mono", monospace; letter-spacing: .32em; }
+  .tape + .tape { top: 56%; transform: rotate(4deg); opacity: .85; } .tape + .tape span { font-size: 12px; }
+
+  .house { margin-top: 26px; padding: 22px 28px; opacity: 0; animation: fadeUp .6s .35s forwards; }
+  .house .h { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; font: 800 12px "JetBrains Mono", monospace; letter-spacing: .38em; color: rgba(233,223,207,.75); }
+  .house .h span { color: rgba(255,42,53,.6); } .house .h::after { content: ""; flex: 1; height: 1px; background: rgba(255,42,53,.12); }
+  .house ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 9px 36px; }
+  .house li { display: flex; gap: 12px; font-size: 13px; color: rgba(233,223,207,.62); line-height: 1.55; }
+  .house li b { flex: none; font: 800 11px/1.9 "JetBrains Mono", monospace; color: rgba(255,42,53,.5); }
+  .foot { display: flex; flex-direction: column; align-items: center; gap: 2vh; margin-top: 26px; }
+  .out { display: inline-flex; align-items: center; gap: 10px; padding: 9px 22px; border: 1px solid rgba(255,42,53,.4); background: none; color: rgba(255,42,53,.7); cursor: pointer; font: 800 10.5px "JetBrains Mono", monospace; letter-spacing: .3em; transition: all .15s; }
+  .out:hover { border-color: var(--blood); color: #ff6a70; background: rgba(255,42,53,.08); }
+  .credits { margin-top: 0; }
+  @media (max-width: 860px) { .rounds { grid-template-columns: 1fr; } .mission + .mission { border-left: 1px solid rgba(255,42,53,.22); border-top: 0; } .house ol { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-<div class="storm"><img class="b0" src="/assets/ui/intro-dark.jpg" alt=""><img class="b1" src="/assets/ui/intro-flash.jpg" alt=""><canvas></canvas><div class="vig"></div></div>
-<header>
-  <div class="brand">DEPTH FIRST FEAR</div>
-  <div class="who">TEAM <b id="team">…</b><button class="btn ghost small" id="out">Log out</button></div>
-</header>
-<main>
-  <div class="clock">LOBBY · <span id="now">--:--:--</span></div>
-  <div class="rounds">
-    <section class="round panel" id="r1">
-      <div class="neon"><i class="bar"></i><span class="w1">ROUND</span><span class="w2">01</span><i class="bar"></i></div>
-      <div class="sub">THE MANSION</div>
-      <div class="state" id="s1"><span class="big muted">LOADING…</span></div>
-    </section>
-    <section class="round panel dim" id="r2">
-      <div class="neon"><i class="bar"></i><span class="w1">ROUND</span><span class="w2">02</span><i class="bar"></i></div>
-      <div class="sub">THE FOREST</div>
-      <div class="state" id="s2"></div>
-    </section>
+<div class="page">
+  <div class="osd">
+    <span class="rec"><i></i>REC</span><span class="sep"></span><span class="hide-s">CAM 01 · GRAND HALL</span><span class="sep hide-s"></span>
+    <span class="boot" id="boot">› connecting…</span><span class="grow"></span>
+    <span class="who hide-s">TEAM <b id="team">…</b></span><span class="sep hide-s"></span><span class="time" data-time></span>
   </div>
-  <p class="note muted">Rounds open by themselves at the start time set by the organisers. Stay on this page. If the organisers pause a round, everyone comes back here.</p>
-</main>
-<script src="/web/storm.js"></script>
+
+  <div class="stage"><div class="wrap">
+    <header class="top">
+      <div data-emblem></div>
+      <h1 class="title" aria-label="Depth First Fear"><span class="t1">DEPTH FIRST</span><span class="t2" data-t="FEAR">FEAR</span></h1>
+      <div class="tagline"><i></i><span>// CHOOSE YOUR NIGHTMARE //</span><i></i></div>
+    </header>
+    <div class="double"></div><div class="double"></div>
+
+    <div class="rounds">
+      <section class="mission box" id="m1">
+        <i class="hud a"></i><i class="hud b"></i><i class="hud c"></i><i class="hud d"></i><div class="num">01</div>
+        <div class="mh"><div class="who"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M10 21v-6h4v6M9 11h.01M15 11h.01"/></svg></div>
+          <div><div class="k">// NIGHTMARE 01</div><h2>THE MANSION</h2></div></div><span id="b1" class="badge b-lock">…</span></div>
+        <div class="line"></div>
+        <div id="c1"></div>
+        <div class="rules"><div class="h">RULES OF THE HOUSE</div><ol>
+          <li><b class="n">01.</b><span>Search <em>drawers, cupboards, chests and coffins</em> for code cards.</span></li>
+          <li><b class="n">02.</b><span><kbd>E</kbd> takes a card and <em>x</em> changes by its code. <kbd>Q</kbd> drops it. Either way, it <em>burns</em>.</span></li>
+          <li><b class="n">03.</b><span><span class="g">Easy 1 min</span> · <span class="y">Medium 2 min</span> · <span class="r">Hard 4 min</span> to decide. Time out = dropped.</span></li>
+          <li><b class="n">04.</b><span>Hard cards hide <em>upstairs and outside</em>.</span></li>
+          <li><b class="n">05.</b><span>Never look into <span class="r">her eyes</span>: busted <span class="r">−3</span>. Highest <em>x</em> after <em>60 minutes</em> wins.</span></li>
+        </ol></div>
+        <div id="a1"></div>
+      </section>
+
+      <section class="mission box dim" id="m2">
+        <i class="hud a"></i><i class="hud b"></i><i class="hud c"></i><i class="hud d"></i><div class="num">02</div>
+        <div class="mh"><div class="who"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 6 11h3l-4 6h5v5h4v-5h5l-4-6h3z"/></svg></div>
+          <div><div class="k">// NIGHTMARE 02</div><h2>THE FOREST</h2></div></div><span class="badge b-con">⚠ CONSTRUCTION</span></div>
+        <div class="line"></div>
+        <div class="rules"><div class="h">WHAT WE KNOW</div><ol>
+          <li><b class="n">01.</b><span>The teams that survive the mansion walk into the forest.</span></li>
+          <li><b class="n">02.</b><span>Something is waiting between the trees.</span></li>
+          <li><b class="n">03.</b><span>Round 2 points are added to your Round 1 x for the final ranking.</span></li>
+          <li><b class="n">04.</b><span>More will be revealed after Round 1.</span></li>
+        </ol></div>
+        <button class="btn ghost" disabled><span>🔒 COMING SOON</span></button>
+        <div class="tape"><span>UNDER CONSTRUCTION</span></div><div class="tape"><span>THE FOREST IS STILL GROWING</span></div>
+      </section>
+    </div>
+
+    <div class="house box"><i class="hud a"></i><i class="hud b"></i><i class="hud c"></i><i class="hud d"></i>
+      <div class="h"><span>//</span>BEFORE YOU ENTER</div>
+      <ol>
+        <li><b>01.</b><span>One team, one PC. If your team logs in somewhere else, this PC is logged out.</span></li>
+        <li><b>02.</b><span>Rounds open by themselves at the start time, for every team at the same moment. Stay on this page.</span></li>
+        <li><b>03.</b><span>If the organisers pause a round, everyone comes back here. Your progress is saved.</span></li>
+        <li><b>04.</b><span>A card's timer keeps running even if you close it. Decide before it burns.</span></li>
+        <li><b>05.</b><span>Final ranking = Round 1 x + Round 2 points.</span></li>
+        <li><b>06.</b><span>Wear headphones. She is very quiet.</span></li>
+      </ol>
+    </div>
+
+    <div class="foot">
+      <button class="out" id="out"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>ABANDON SESSION</button>
+      <div class="credits box">
+        <div class="top"></div>
+        <div class="bar"><span class="dots"><i></i><i></i><i></i></span>credits@the-mansion:~/organisers</div>
+        <div class="body">
+          <div><div class="role h">━━ HEAD ━━</div><div class="head-name">ALI ASGHAR</div></div>
+          <div class="rule"></div>
+          <div class="row"><div><span class="role">▸ CO-HEAD</span><b>MUHAMMAD ABBAS</b></div><div><span class="role">▸ CO-HEAD</span><b>MUHAMMAD UMAR</b></div></div>
+          <div class="row dep"><div><span class="role">▸ DEPUTY</span><b>AYESHA NEHAL</b></div><div><span class="role">▸ DEPUTY</span><b>HAMZA ZAIDI</b></div></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="strip"><span>CAM 01</span><span>│</span><span>LOBBY</span><span>│</span><span id="sx">ROUND 01 · —</span><span>│</span><span><i class="dot"></i>SIGNAL</span><span class="cur">█</span></div>
+</div>
+
+<script src="/web/fear.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-let st = null, skew = 0;   // skew = server clock - this PC's clock
+let st = null; window.clockSkew = 0;
 const pad = n => String(n).padStart(2, "0");
 const span = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${pad(s / 3600 | 0)}:${pad((s % 3600) / 60 | 0)}:${pad(s % 60)}`; };
-const at = iso => new Date(iso).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" });
+const at = iso => new Date(iso).toLocaleString([], { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).toUpperCase();
+const set = (el, html) => { if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; } };
+const timer = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>';
+
 function draw() {
-  if (!st) return; const now = Date.now() + skew; $("now").textContent = new Date(now).toLocaleTimeString();
-  for (const r of st.rounds) {
-    const el = $("s" + r.id), box = $("r" + r.id); let html;
-    if (r.status === "construction") { box.classList.add("dim"); el.innerHTML = ""; if (!box.querySelector(".tape")) box.insertAdjacentHTML("beforeend", '<div class="tape"><span>UNDER CONSTRUCTION</span></div>'); continue; }
-    const s = Date.parse(r.starts_at), e = Date.parse(r.ends_at);
-    const live = r.status !== "locked" && r.starts_at && r.ends_at && now >= s && now < e;
-    const done = r.id === 1 && st.r1 && st.r1.finished;
-    box.classList.toggle("dim", !live);
-    if (r.status === "locked") html = `<span class="big" style="color:var(--gold)">LOCKED</span><span class="muted">Wait here. The organisers will open it.</span>`;
-    else if (!r.starts_at || !r.ends_at) html = `<span class="big muted">NOT SCHEDULED YET</span>`;
-    else if (now < s) html = `<span class="big muted">OPENS IN</span><span class="count">${span(s - now)}</span><span class="muted">${at(r.starts_at)}</span>`;
-    else if (now >= e) html = `<span class="big muted">ENDED</span>${r.id === 1 && st.r1 ? `<span class="muted">Your x = <b style="color:#fff">${st.r1.x}</b></span>` : ""}`;
-    else if (done) html = `<span class="big" style="color:var(--green)">COMPLETED</span><span class="muted">Every card is gone. Your x = <b style="color:#fff">${st.r1.x}</b></span>`;
-    else html = `<span class="big" style="color:var(--green)">OPEN · CLOSES IN ${span(e - now)}</span><a class="btn" href="/round${r.id}">${r.id === 1 && st.r1 ? "Continue" : "Enter"}</a>`;
-    if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
-  }
+  if (!st) return; const now = Date.now() + clockSkew, r = st.rounds[0], s = Date.parse(r.starts_at), e = Date.parse(r.ends_at);
+  const done = st.r1 && st.r1.finished, live = !r.locked && r.starts_at && r.ends_at && now >= s && now < e;
+  let badge, count, act;
+  if (r.locked) { badge = ["b-lock", "🔒 LOCKED"]; count = `<div class="count c-lock"><div class="lbl">${timer}THE DOORS ARE LOCKED</div><div class="big">— — : — —</div><div class="sub">WAIT HERE · THE ORGANISERS WILL OPEN THEM</div></div>`; }
+  else if (!r.starts_at || !r.ends_at) { badge = ["b-lock", "NOT SCHEDULED"]; count = `<div class="count c-end"><div class="lbl">${timer}NO TIME SET YET</div><div class="big">--:--:--</div><div class="sub">WAIT FOR THE ORGANISERS</div></div>`; }
+  else if (now < s) { badge = ["b-wait", "⏳ OPENS SOON"]; count = `<div class="count c-wait"><div class="lbl">${timer}THE DOORS OPEN IN</div><div class="big">${span(s - now)}</div><div class="sub">OPENS ${at(r.starts_at)}</div></div>`; }
+  else if (now >= e) { badge = ["b-end", "ENDED"]; count = `<div class="count c-end"><div class="lbl">${timer}THE NIGHT IS OVER</div><div class="big">${st.r1 ? "x = " + st.r1.x : "—"}</div><div class="sub">ROUND 01 HAS ENDED</div></div>`; }
+  else if (done) { badge = ["b-done", "✓ COMPLETED"]; count = `<div class="count c-done"><div class="lbl">${timer}EVERY CARD HAS BURNED</div><div class="big">x = ${st.r1.x}</div><div class="sub">YOU SURVIVED THE MANSION</div></div>`; }
+  else { badge = ["b-open", "<i></i>DOORS OPEN"]; count = `<div class="count c-open"><div class="lbl">${timer}TIME REMAINING</div><div class="big">${span(e - now)}</div><div class="sub">CLOSES ${at(r.ends_at)}${st.r1 ? " · YOUR x = " + st.r1.x : ""}</div></div>`; }
+  act = live && !done ? `<a class="btn" href="/round1"><span class="mono">&gt;</span><span>${st.r1 ? "Back into the mansion" : "Enter the mansion"}</span><span class="arrow">→</span></a>`
+                      : `<button class="btn ghost" disabled><span>${done ? "✓ YOU MADE IT OUT" : "🔒 " + (now >= e && r.starts_at ? "THE DOORS ARE CLOSED" : "NOT YET")}</span></button>`;
+  $("m1").classList.toggle("dim", !live || done);
+  set($("b1"), badge[1]); $("b1").className = "badge " + badge[0]; set($("c1"), count); set($("a1"), act);
+  $("sx").textContent = "ROUND 01 · " + (live && !done ? "OPEN" : badge[1].replace(/<[^>]+>/g, "").replace(/[^A-Z ]/g, "").trim());
 }
 async function poll() {
-  try { const t0 = Date.now(); st = await api("/api/state"); skew = Date.parse(st.now) - (t0 + Date.now()) / 2; $("team").textContent = st.team; draw(); }
-  catch (e) { if (e.status === 401) location.href = "/?why=other"; }
+  try { const t0 = Date.now(); st = await api("/api/state"); clockSkew = Date.parse(st.now) - (t0 + Date.now()) / 2;
+    $("team").textContent = st.team.toUpperCase(); const b = $("boot"); b.textContent = `[✓] TEAM ${st.team.toUpperCase()} · CONNECTED`; b.classList.add("ok"); draw(); }
+  catch (e) { if (e.status === 401) location.href = "/?why=other"; else { $("boot").textContent = "[!] SIGNAL LOST · RETRYING…"; $("boot").classList.remove("ok"); } }
 }
 poll(); setInterval(poll, 2500); setInterval(draw, 250);
-$("out").onclick = async () => { await api("/api/logout", {}).catch(() => {}); location.href = "/"; };
+$("out").onclick = async () => { if (!confirm("Log out of this PC?")) return; await api("/api/logout", {}).catch(() => {}); location.href = "/"; };
 </script>
 </body>
 </html>
