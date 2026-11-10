@@ -29,10 +29,20 @@
   .timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
   .timer span { position: absolute; inset: 0; display: grid; place-items: center; font: 800 44px "JetBrains Mono", monospace; color: #fff; text-shadow: 0 0 16px var(--red); }
   .pcard { width: min(560px, 90vw); max-height: 72vh; background: var(--card); color: var(--ink); border-radius: 18px; border: 8px solid var(--suit, #b3262d); padding: 20px 24px; box-shadow: 0 30px 80px rgba(0,0,0,.8), 0 0 60px rgba(243,212,138,.25); display: grid; gap: 10px; overflow: hidden; animation: pop .35s ease-out; }
+  .tr #clock { display: block; font: 800 30px "JetBrains Mono", monospace; letter-spacing: 2px; color: var(--gold); margin-bottom: 10px; }
+  .tr #clock.low { color: var(--red); animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .35; } }
+  .lv { font: 800 12px "JetBrains Mono", monospace; letter-spacing: 2px; padding: 3px 9px; border-radius: 6px; color: #fff; margin-left: 10px; vertical-align: middle; }
+  .lv-easy { background: #2e8b3a; } .lv-medium { background: #c08a00; } .lv-hard { background: #b3262d; }
+  .burn { position: fixed; z-index: 50; pointer-events: none; will-change: transform, opacity; }
+  .burn > .pcard { position: absolute; inset: 0; margin: 0; width: 100%; height: 100%; max-height: none; box-sizing: border-box; animation: none; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+  .burn canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .burn canvas.glow { filter: blur(3px) brightness(1.5); mix-blend-mode: screen; }
+  .burn canvas.char { filter: blur(2px); }
   @keyframes pop { from { transform: scale(.2) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
   .pcard .head { display: flex; justify-content: space-between; font: 800 18px Cinzel, serif; letter-spacing: 2px; color: var(--suit, #b3262d); }
   .pcard h2 { margin: 0; font: 800 30px Cinzel, serif; }
-  .pcard pre { margin: 0; font: 500 15px/1.5 "JetBrains Mono", monospace; background: var(--code-bg); border-radius: 10px; padding: 12px 14px; overflow: auto; }
+  .pcard pre { font-variant-ligatures: none; margin: 0; font: 500 15px/1.5 "JetBrains Mono", monospace; background: var(--code-bg); border-radius: 10px; padding: 12px 14px; overflow: auto; }
   .kw { color: #8a2a7a; font-weight: 600; } .ty { color: #1f5f8b; } .nu { color: #b3501b; } .st { color: #2f7a36; } .co { color: #858c87; font-style: italic; }
   .pcard .note { font-size: 13px; color: #5b645e; text-align: center; }
   .gans { font: 800 24px "JetBrains Mono", monospace; text-align: center; color: #8a6d0b; }
@@ -56,8 +66,8 @@
 <div class="layer vign"></div>
 <div class="layer" id="hit"></div>
 <div class="layer" id="hud">
-  <div class="tl">TEAM<b id="x">x = 0</b><small id="busts">BUSTS: 0</small><small id="score">SCORE: 0</small></div>
-  <div class="tr">EYE CONTACT<div class="meter"><i id="gm"></i></div>CARDS LEFT: <span id="left">10</span></div>
+  <div class="tl">TEAM<b id="x">x = 0</b><small id="busts">BUSTS: 0</small></div>
+  <div class="tr">TIME<span id="clock">10:00</span>EYE CONTACT<div class="meter"><i id="gm"></i></div>CARDS LEFT: <span id="left">10</span></div>
   <div class="cross"></div><div id="prompt"></div><div id="toast"></div><div id="room"></div><div id="paused">CLICK TO RESUME</div>
 </div>
 <div id="inspect">
@@ -67,7 +77,7 @@
 </div>
 <div class="screen" id="start">
   <div><h1>CODE <span>21</span></h1><h1 style="font-size:clamp(26px,3.6vw,46px);margin-top:10px">THE MANSION</h1>
-  <p>Almost every <b>drawer, cabinet, chest and coffin</b> hides a card, in the mansion and on its grounds. Open one and you have <b>10 seconds</b> to read its code: <b>take it</b> or <b>drop it</b>. Get as close to <b>31</b> as you can. Go over 31 and your score drops to <b>31 − 5 = 26</b>.<br>One card is <b>golden</b>: once you play it you cannot skip. Right answer <b>+15</b>, wrong answer <b>−15</b>. It never takes you over 31 or below 0.<br>She appears without warning. <b>Never look into her eyes</b> for a full second. If you do, or time runs out: <b>−3</b>.</p>
+  <p>Drawers, cabinets, chests and coffins hide <b>cards</b>. Each card is in the mansion <b>once</b>. Open one and you have <b>10 seconds</b>: <b>take it</b> and its code changes <b>x</b>, or <b>drop it</b> and x stays. Either way the card <b>burns</b>.<br>Cards can <b>raise or lower</b> x, so read the code. <span style="color:#4fbf5f">Easy</span>, <span style="color:#e0b030">medium</span> and <span style="color:#e0504a">hard</span> cards. The hard ones hide in the scariest places.<br>One card is <b>golden</b>: play it and type the answer. Right <b>+15</b>, wrong <b>−15</b>.<br>You have <b>10 minutes</b>. <b>Highest x wins.</b><br>She appears without warning. <b>Never look into her eyes</b> for a full second. If you do, or a card's time runs out: <b>−3</b>.</p>
   <div class="controls"><span><kbd>W A S D</kbd>move</span><span><kbd>Mouse</kbd>look</span><span><kbd>Shift</kbd>run</span><span><kbd>E</kbd>open / close</span><span><kbd>C</kbd>grab card</span><span><kbd>E</kbd>/<kbd>Q</kbd>take / drop</span><span><kbd>Space</kbd>jump</span><span><kbd>F</kbd>flashlight</span></div>
   <div id="load">LOADING THE MANSION… 0%</div></div>
 </div>
@@ -782,12 +792,17 @@ const cardBack = canvasTex(256, 360, g => {
   g.fillStyle = "#f3d48a"; g.font = "800 64px Georgia"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("21", 128, 184); });
 const CARD_GEO = new THREE.PlaneGeometry(.1, .14), CARD_MAT = new THREE.MeshStandardMaterial({ map: cardBack, emissive: 0xffffff, emissiveMap: cardBack, emissiveIntensity: .35, roughness: .6 });
 const GOLD_MAT = new THREE.MeshStandardMaterial({ map: cardBack, color: 0xffc94d, emissive: 0xffb300, emissiveMap: cardBack, emissiveIntensity: .8, roughness: .4 });
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const WP = new THREE.Vector3();
+const scaryPlace = o => { o.slot[0].updateWorldMatrix(true, false); o.slot[0].getWorldPosition(WP); return WP.y > 3.5 || WP.z > 14.4 || Math.abs(WP.x) > 26.4; };  // upstairs or outside
 function dealCards() {
   for (const o of OPEN) { if (o.card) o.card.mesh.parent.remove(o.card.mesh); o.card = null; o.open = false; }
-  let n = 0;
-  const pool = OPEN.filter(o => !o.noCard), gold = pool[(Math.random() * pool.length) | 0];
-  for (const o of OPEN) { const g = o === gold; if (o.noCard || (!g && Math.random() > .95)) continue; const card = g ? GOLD_CARD : CARDS[(Math.random() * CARDS.length) | 0];
-    const mesh = new THREE.Mesh(CARD_GEO, g ? GOLD_MAT : CARD_MAT); mesh.rotation.set(-PI / 2, 0, (Math.random() - .5) * 1.2); mesh.position.copy(o.slot[1]); o.slot[0].add(mesh); o.card = { card, mesh }; n++; }
+  const free = shuffle(OPEN.filter(o => !o.noCard)), deck = shuffle(CARDS.slice());
+  const take = pred => { const i = free.findIndex(pred); return i < 0 ? null : free.splice(i, 1)[0]; };
+  const put = (o, card, mat) => { if (!o) return 0; const mesh = new THREE.Mesh(CARD_GEO, mat); mesh.rotation.set(-PI / 2, 0, (Math.random() - .5) * 1.2); mesh.position.copy(o.slot[1]); o.slot[0].add(mesh); o.card = { card, mesh }; return 1; };
+  let n = put(take(() => true), GOLD_CARD, GOLD_MAT);
+  for (const c of deck.filter(c => c.lvl === "hard")) n += put(take(scaryPlace) || take(() => true), c, CARD_MAT);
+  for (const c of deck.filter(c => c.lvl !== "hard")) n += put(take(() => true), c, CARD_MAT);
   S.left = n;
 }
 function animateOpen(o) {
@@ -960,19 +975,20 @@ function jumpStep(dt) {   // gravity; if you land on something, you are put back
 function movePlayer(dx, dz) { if (!blockedAt(P.x + dx, P.z, P.L)) P.x += dx; if (!blockedAt(P.x, P.z + dz, P.L)) P.z += dz; P.y = groundY(P.x, P.z, P.L); P.L = P.y > 2.5 ? 1 : 0; }
 
 /* ================= game state ================= */
-const S = { mode: "start", x: 0, busts: 0, left: 10, card: null, ans: false, buf: "", t: 0, room: null, haunt: 12, bolt: 20, flash: 0, outK: 0 };
-const score = x => x > 31 ? 31 - 5 : x;   // over 31: balanced back to 31, then 5 taken off
-function hud() { $("x").textContent = "x = " + S.x; $("x").className = S.x >= 27 ? "hot" : ""; $("score").textContent = "SCORE: " + score(S.x) + (S.x > 31 ? "  (OVER 31 → 31 − 5)" : ""); $("busts").textContent = "BUSTS: " + S.busts; $("left").textContent = S.left; }
+const ROUND = +Q.get("time") || 600;   // seconds per team (10 minutes); ?time=60 for a quick test
+const S = { mode: "start", x: 0, busts: 0, left: 10, clock: ROUND, taken: 0, dropped: 0, card: null, ans: false, buf: "", t: 0, room: null, haunt: 12, bolt: 20, flash: 0, outK: 0 };
+function hud() { $("x").textContent = "x = " + S.x; $("x").className = S.x < 0 ? "hot" : ""; $("busts").textContent = "BUSTS: " + S.busts; $("left").textContent = S.left; }
 let toastT; function toast(msg, col = "#f3d48a") { const t = $("toast"); t.textContent = msg; t.style.color = col; t.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => t.style.opacity = 0, 1800); }
 let roomT; function roomName(n) { const r = $("room"); r.textContent = n; r.style.opacity = 1; clearTimeout(roomT); roomT = setTimeout(() => r.style.opacity = 0, 2200); }
-function reset() { computeZones(); S.x = 0; S.busts = 0; S.left = 0; S.card = null; S.room = null; P.x = 0; P.z = 11.5; P.L = 0; P.y = 0; camera.rotation.set(0, 0, 0);
+function reset() { computeZones(); S.x = 0; S.busts = 0; S.left = 0; S.clock = ROUND; S.taken = 0; S.dropped = 0; clockText(); S.card = null; S.room = null; P.x = 0; P.z = 11.5; P.L = 0; P.y = 0; camera.rotation.set(0, 0, 0);
   for (const o of OPEN) { o.t = 0; animateOpen(o); } dealCards(); hideGhost(false, 14); GH.scare = 0; hud(); }
 function busted(why) { S.busts++; S.x -= 3; audio.sting(); $("hit").style.opacity = 1; setTimeout(() => $("hit").style.opacity = 0, 250);
   toast(why + "  ·  BUSTED −3", "#ff6a5a"); closeCard(); hud(); checkOut(); }
+const clockText = () => { const s = Math.max(0, Math.ceil(S.clock)); $("clock").textContent = String(s / 60 | 0).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); $("clock").className = s <= 60 ? "low" : ""; };
 function checkOut() { if (S.left === 0) end(true); }
 function end(cleared) { S.mode = "over"; controls.unlock(); $("inspect").classList.remove("on");
-  $("endT").innerHTML = cleared ? "MANSION <span style='color:var(--gold)'>CLEARED</span>" : "ROUND <span style='color:var(--red)'>OVER</span>";
-  $("endP").innerHTML = `Final x = <b>${S.x}</b>. Score = <b>${score(S.x)}</b>${S.x > 31 ? " (went over 31: 31 − 5)" : S.x === 31 ? ". A perfect 31." : ` (${31 - S.x} away from 31)`}. Busts: ${S.busts}.`;
+  $("endT").innerHTML = cleared ? "MANSION <span style='color:var(--gold)'>CLEARED</span>" : "TIME'S <span style='color:var(--red)'>UP</span>";
+  $("endP").innerHTML = `Final x = <b>${S.x}</b><br>Cards taken: ${S.taken} · dropped: ${S.dropped} · busts: ${S.busts}`;
   $("end").hidden = false; }
 
 /* the card close-up */
@@ -985,15 +1001,39 @@ function openCard(o) { const c = o.card.card; if (GH.on) hideGhost(false, 6 + Ma
   S.mode = "inspect"; S.card = c; S.t = 10; S.ans = false; S.buf = ""; const red = /♥|♦/.test(c.cat);
   $("pcard").style.setProperty("--suit", c.gold ? "#b8860b" : red ? "#b3262d" : "#1d2320");
   $("timer").style.visibility = "visible"; $("keys").innerHTML = `<span>E · ${c.gold ? "PLAY" : "TAKE"}</span><span>Q · DROP</span>`;
-  $("pcard").innerHTML = `<div class="head"><span>${esc(c.cat)}</span><span>x = ${S.x}</span></div><h2>${esc(c.t)}</h2><pre>${hl(c.code)}</pre><div class="note" id="note">${c.gold ? `Play it and you cannot skip. Right answer +${GOLD}, wrong answer −${GOLD}.` : "int x is your team's value. Take it or drop it."}</div>`;
+  $("pcard").innerHTML = `<div class="head"><span>${esc(c.cat)}${c.lvl ? `<i class="lv lv-${c.lvl}">${c.lvl.toUpperCase()}</i>` : ""}</span><span>x = ${S.x}</span></div><h2>${esc(c.t)}</h2><pre>${hl(c.code)}</pre><div class="note" id="note">${c.gold ? `Play it and you cannot skip. Right answer +${GOLD}, wrong answer −${GOLD}.` : "int x is your team's value. Take it or drop it."}</div>`;
   $("inspect").classList.add("on"); audio.flip(); }
-function closeCard() { if (S.card) S.left--; S.card = null; S.ans = false; $("inspect").classList.remove("on"); if (S.mode === "inspect") S.mode = "play"; }
+function closeCard() { if (S.card) { S.left--; burnCard(); } S.card = null; S.ans = false; $("inspect").classList.remove("on"); if (S.mode === "inspect") S.mode = "play"; }
 let aim = null, grab = null;   // grab = an open drawer/door/lid with a card that you are looking towards
 const CP = new THREE.Vector3(), CD = new THREE.Vector3();
 function findGrab() { if (aim && aim.open && aim.card) return aim; let best = null, bd = 1e9; camera.getWorldDirection(CD);
   for (const o of OPEN) { if (!o.open || !o.card || o.t < .6) continue; o.card.mesh.getWorldPosition(CP); CP.sub(camera.position); const d = CP.length();
     if (d > 2.6) continue; const c = CP.dot(CD) / d; if (c < .88) continue; const sc = d * (2 - c); if (sc < bd) { bd = sc; best = o; } }
   return best; }
+// the card catches fire from one corner, chars, and falls away
+function burnCard() {
+  const src = $("pcard"), r = { left: src.offsetLeft, top: src.offsetTop, width: src.offsetWidth, height: src.offsetHeight }; if (!r.width || !r.height) return; audio.burn();   // layout size, not the half-finished "pop" animation
+  const wrap = document.createElement("div"); wrap.className = "burn"; Object.assign(wrap.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+  const card = src.cloneNode(true); card.removeAttribute("id"); card.querySelectorAll("[id]").forEach(e => e.removeAttribute("id"));
+  const W = 220, H = Math.max(60, Math.round(W * r.height / r.width)), mk = c => { const e = document.createElement("canvas"); e.width = W; e.height = H; if (c) e.className = c; return e; };
+  const mc = mk(), glow = mk("glow"), char = mk("char"), mx = mc.getContext("2d"), gx = glow.getContext("2d"), cx = char.getContext("2d");
+  wrap.append(card, char, glow); document.body.append(wrap);
+  // burn order: distance from a bottom corner + lumpy noise, so the edge is ragged
+  const ox = Math.random() < .5 ? 0 : W, oy = H, G = 7, gr = Array.from({ length: (G + 1) * (G + 1) }, Math.random), N = new Float32Array(W * H), md = Math.hypot(W, H);
+  const vn = (u, v) => { const x = u * G, y = v * G, i = Math.min(G - 1, x | 0), j = Math.min(G - 1, y | 0), fx = x - i, fy = y - j, a = gr[j * (G + 1) + i], b = gr[j * (G + 1) + i + 1], c = gr[(j + 1) * (G + 1) + i], d = gr[(j + 1) * (G + 1) + i + 1];
+    return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy; };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) N[y * W + x] = .72 * Math.hypot(x - ox, y - oy) / md + .3 * vn(x / W, y / H) + .1 * vn(x * 3.7 / W % 1, y * 3.7 / H % 1);
+  const mi = mx.createImageData(W, H), gi = gx.createImageData(W, H), ci = cx.createImageData(W, H), T0 = performance.now(), DUR = 1600;
+  const step = now => { const k = (now - T0) / DUR, t = -.08 + k * 1.35;
+    for (let p = 0, q = 0; p < W * H; p++, q += 4) { const v = N[p] - t;
+      mi.data[q + 3] = v < 0 ? 0 : 255; mi.data[q] = mi.data[q + 1] = mi.data[q + 2] = 255;
+      const e = v >= 0 && v < .05 ? 1 - v / .05 : 0; gi.data[q] = 255; gi.data[q + 1] = 70 + 150 * e * e; gi.data[q + 2] = 20 * e * e; gi.data[q + 3] = e * 255;
+      const ch = v >= 0 && v < .13 ? 1 - v / .13 : 0; ci.data[q] = 22; ci.data[q + 1] = 10; ci.data[q + 2] = 4; ci.data[q + 3] = ch * 235; }
+    mx.putImageData(mi, 0, 0); gx.putImageData(gi, 0, 0); cx.putImageData(ci, 0, 0);
+    const url = `url(${mc.toDataURL()})`; card.style.webkitMaskImage = card.style.maskImage = url; char.style.webkitMaskImage = char.style.maskImage = url; char.style.webkitMaskSize = char.style.maskSize = "100% 100%";
+    const fall = Math.max(0, k - .45); wrap.style.transform = `translateY(${fall * fall * 520}px) rotate(${(ox ? 1 : -1) * fall * 14}deg)`; wrap.style.opacity = String(Math.min(1, (1.05 - k) * 4));
+    if (k < 1) requestAnimationFrame(step); else wrap.remove(); };
+  requestAnimationFrame(step); }
 function goldStart() { S.ans = true; S.buf = ""; audio.take(); $("timer").style.visibility = "hidden";
   $("keys").innerHTML = "<span>0-9 · TYPE</span><span>ENTER · SUBMIT</span>"; $("note").outerHTML = '<div class="gans" id="gans">ANSWER <b id="gbuf">_</b></div>'; }
 function goldKey(code) { const d = code.match(/^(?:Digit|Numpad)(\d)$/);
@@ -1002,7 +1042,7 @@ function goldKey(code) { const d = code.match(/^(?:Digit|Numpad)(\d)$/);
   else if (code === "Backspace") S.buf = S.buf.slice(0, -1);
   else if ((code === "Enter" || code === "NumpadEnter") && /\d/.test(S.buf)) return goldDone();
   $("gbuf").textContent = S.buf || "_"; }
-function goldDone() { const ok = Number(S.buf) === S.card.ans, before = S.x; S.x = Math.min(31, Math.max(0, S.x + (ok ? GOLD : -GOLD)));
+function goldDone() { const ok = Number(S.buf) === S.card.ans, before = S.x; S.x += ok ? GOLD : -GOLD; S.taken++;
   toast(`GOLDEN ${ok ? "+" : "−"}${GOLD}  ·  x: ${before} → ${S.x}`, ok ? "#f3d48a" : "#ff6a5a"); ok ? audio.take() : audio.sting();
   if (!ok) { $("hit").style.opacity = 1; setTimeout(() => $("hit").style.opacity = 0, 250); }
   closeCard(); hud(); checkOut(); }
@@ -1015,8 +1055,8 @@ function onKey(code) {
   else if (S.mode === "play" && (code === "KeyC" || code === "KeyG") && grab) { const o = grab; grab = null; openCard(o); }
   else if (S.mode === "inspect" && S.ans) goldKey(code);
   else if (S.mode === "inspect" && S.card.gold && code === "KeyE") goldStart();
-  else if (S.mode === "inspect" && code === "KeyE") { const before = S.x; S.x = S.card.f(S.x); toast(`x: ${before} → ${S.x}`, S.x > 31 ? "#d8443a" : "#f3d48a"); audio.take(); closeCard(); hud(); checkOut(); }
-  else if (S.mode === "inspect" && code === "KeyQ") { toast("CARD DROPPED", "#c9bfae"); audio.click(); closeCard(); hud(); checkOut(); }
+  else if (S.mode === "inspect" && code === "KeyE") { const before = S.x; S.x = S.card.f(S.x); S.taken++; toast(`x: ${before} → ${S.x}`, S.x < before ? "#ff6a5a" : "#f3d48a"); audio.take(); closeCard(); hud(); checkOut(); }
+  else if (S.mode === "inspect" && code === "KeyQ") { S.dropped++; toast("CARD DROPPED", "#c9bfae"); audio.click(); closeCard(); hud(); checkOut(); }
 }
 
 /* ================= sound (synthesised, no files) ================= */
@@ -1077,6 +1117,7 @@ const audio = (() => { let ac, master, nbuf, beatT = 0, boxT = 0, boxI = 0, rain
     thud() { thump(.6); }, slide() { slide(.35); }, creakShort() { woodCreak("short", .45); },
     creak() { woodCreak("door", .7); if (Math.random() < .25) setTimeout(() => sting2(), 500); },
     lid() { woodCreak("lid", .6); setTimeout(() => thump(.7), 700); },
+    burn() { noise(1.3, .22, "bandpass", 900, 300, .7); noise(.5, .12, "highpass", 2500, 1800, .7); for (let i = 0; i < 14; i++) setTimeout(() => noise(.025 + Math.random() * .03, .18 + Math.random() * .2, "highpass", 2000 + Math.random() * 3000, 1500, 1), Math.random() * 1300); },
     thunder() { noise(3.5, .9, "lowpass", 260, 40, .7); noise(1.2, .45, "lowpass", 900, 100, .5); },
     step() { noise(.09, .1, "lowpass", 500, 150, 1); },
     whisper() { const pan = Math.random() * 2 - 1; for (let i = 0; i < 6; i++) setTimeout(() => noise(.22 + Math.random() * .2, .07, "bandpass", 2300 + Math.random() * 1500, 1700, 4, pan), i * 210); },
@@ -1141,6 +1182,7 @@ function update(dt, t) {
     if (mv.lengthSq()) { mv.normalize().multiplyScalar(sp); movePlayer(mv.x, mv.z); P.bob += dt * (run ? 13 : 10); if (Math.floor(P.bob / PI) !== P.step) { P.step = Math.floor(P.bob / PI); audio.step(); } }
     const rm = roomAt(P.x, P.z, P.L); if (rm && rm[0] !== S.room) { S.room = rm[0]; roomName(rm[0]); }
   }
+  if (S.mode === "play" || S.mode === "inspect") { const before = Math.ceil(S.clock); S.clock -= dt; if (Math.ceil(S.clock) !== before) clockText(); if (S.clock <= 0) { if (S.mode === "inspect") closeCard(); end(false); return; } }
   if (S.mode === "inspect" && !S.ans) { S.t -= dt; const s = Math.max(0, Math.ceil(S.t)); $("secs").textContent = String(s).padStart(2, "0"); $("ring").style.strokeDashoffset = 276.5 * (1 - Math.max(0, S.t) / 10);
     if (s !== lastTick) { lastTick = s; audio.tick(1 - S.t / 10); } if (S.t <= 0) busted("TIME'S UP"); }
   jumpStep(dt); camera.position.set(P.x, P.y + P.jy + 1.65 + Math.sin(P.bob) * .035, P.z);

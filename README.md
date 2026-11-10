@@ -16,9 +16,9 @@
 
 **Code 21: The Mansion** turns a Data Structures & Algorithms quiz into a horror game.
 
-Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Almost every **drawer, cupboard, chest and coffin** hides a card with a short piece of code on it. Read it, work out what it does to your team's value `x`, and decide in **10 seconds**: take it or drop it.
+Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Drawers, cupboards, chests and coffins hide cards with a short piece of code on them. Read the code, work out what it does to your team's value `x`, and decide in **10 seconds**: take it or drop it. Some cards raise `x`, some lower it.
 
-The goal: get `x` as close to **31** as possible.
+The goal: have the **highest `x`** when the **10-minute** timer runs out.
 
 But you are not alone in the house. She appears without warning. **Don't look into her eyes.**
 
@@ -77,34 +77,38 @@ Then open **http://localhost:8780** in **Google Chrome** and click to enter.
 
 ## 📜 Rules
 
-1. Every team starts at **`x = 0`**.
-2. Open things and find cards. Each card shows code that changes `x`.
-3. **Take** the card to apply it, or **drop** it to skip it. You have **10 seconds** to decide.
-4. Get as close to **31** as you can.
+1. Every team starts at **`x = 0`** and has **10 minutes**.
+2. Open drawers, cupboards, chests and coffins to find cards. Each card shows code that changes `x`.
+3. **Take** the card and `x` changes by its code. **Drop** it and `x` stays the same. You have **10 seconds** to decide.
+4. Either way, the card **burns** and is gone. **Each card is in the mansion only once.**
+5. Cards can **raise or lower** `x` (+, −, ×2, ×0 …), so read the code before you take it.
+6. **Highest `x` when time runs out wins.** There is no upper limit.
 
-### ⚖️ Going over 31
+### 🟢🟡🔴 Card levels
 
-If a team goes **over 31**, its score is balanced back to **31** and then **5 is taken off**, so the score becomes **26**.
+| Level | What it does to `x` | Where it hides |
+| --- | --- | --- |
+| 🟢 **Easy** | small, about ±1 to ±5 | anywhere |
+| 🟡 **Medium** | about ±5 to ±15 | anywhere |
+| 🔴 **Hard** | big or tricky: ×2, ×0, −20 … | the scariest places (upstairs and outside) |
+
+Every team gets **the same cards**. Only the hiding places change from laptop to laptop, so no team gets an easier deck and teams can't tell each other where a card is.
 
 ### ⭐ The golden card
 
-- Every round, **one golden card** is hidden in a random drawer, cupboard, chest or coffin. It glows gold.
+- Every round, **one golden card** is hidden in a random place. It glows gold.
 - **Q** skips it. **E** plays it, and after that you can't skip: type the answer with the number keys and press **Enter**.
-- **Right answer: +15. Wrong answer: −15.** It never takes `x` above 31 or below 0.
+- **Right answer: +15. Wrong answer: −15.**
 
 ### 👁️ The ghost
 
 - She appears suddenly: right in front of you, far away down a corridor, or upside down on the ceiling.
 - **Look into her eyes for a full second** and you are **busted: `x − 3`**.
-- Letting a card's timer run out is also **−3**.
+- Letting a card's 10 seconds run out is also **−3**, and the card burns.
 
-### 🏆 Example
+### 🏆 Ties
 
-| Team | Final `x` | Score | Rank |
-| :---: | :---: | :---: | :---: |
-| Team B | 29 | **29** | 🥇 1st |
-| Team C | 28 | **28** | 🥈 2nd |
-| Team A | 50 | 50 → 31 − 5 = **26** | 🥉 3rd |
+If two teams finish with the same `x`, the team with **fewer busts** ranks higher.
 
 ---
 
@@ -113,19 +117,22 @@ If a team goes **over 31**, its score is balanced back to **31** and then **5 is
 All the questions live in **`cards.js`**. Each card looks like this:
 
 ```js
-{ cat: "♠ STACK", t: "Two stacks", f: x => x + 7, code:
+{ lvl: "medium", cat: "♠ STACK", t: "Two stacks", f: x => x + 7, code:
 `stack<int> a, b;
 ...` }
 ```
 
 | Field | Meaning |
 | --- | --- |
+| `lvl` | `"easy"`, `"medium"` or `"hard"` |
 | `cat` | Small label on top of the card (the topic) |
 | `t` | Card title |
 | `code` | The code snippet players read |
 | `f` | What **taking** the card really does to `x`, so it must match the code |
 
-About 95% of drawers, cupboards, chests and coffins get a random card from this list every round.
+Every card in this list is hidden **once** per round, in a random place. Hard cards go to the scariest places.
+
+To test with a short round, open `http://localhost:8780/?time=60` (60 seconds).
 
 ---
 
@@ -155,6 +162,8 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 - 🏚️ A full two-floor mansion: grand hall, library, study, kitchen, dining room, nursery, master bedroom, gallery and an abandoned indoor pool
 - 🌲 Haunted grounds: courtyard, dead forest, cemetery and crypt, with rain, fog and lightning
+- ⏱️ 10-minute rounds, with easy / medium / hard cards that each appear once
+- 🔥 Cards burn away after you take or drop them
 - 🗄️ Working drawers, cupboards, chests, coffins, doors and gates
 - 👻 A ghost with an eye-contact mechanic and jumpscares
 - 🪟 Lit windows where shadows move when you are outside
