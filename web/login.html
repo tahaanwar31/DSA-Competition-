@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Depth First Fear · Login</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=JetBrains+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="/web/ui.css">
+<style>
+  main { position: relative; z-index: 1; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+  .wrap { display: grid; justify-items: center; gap: 4vh; width: min(460px, 100%); }
+  .neon { margin: 0 auto; text-align: center; }
+  .neon .w1 { font-size: clamp(18px, 2.6vw, 34px); }
+  .neon .w2 { font-size: clamp(54px, 8.5vw, 116px); }
+  .tag { margin: -2vh 0 0; font: 700 13px "JetBrains Mono", monospace; letter-spacing: .5em; color: #cbbfae; text-align: center; }
+  form { width: 100%; }
+  .btn { width: 100%; margin-top: 8px; padding: 13px; }
+  .foot { font: 500 11px "JetBrains Mono", monospace; letter-spacing: .3em; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<div class="storm"><img class="b0" src="/assets/ui/intro-dark.jpg" alt=""><img class="b1" src="/assets/ui/intro-flash.jpg" alt=""><canvas></canvas><div class="vig"></div></div>
+<main>
+  <div class="wrap">
+    <h1 class="neon" aria-label="Depth First Fear"><i class="bar"></i><span class="w1">DEPTH FIRST</span><span class="w2">FEAR</span><i class="bar"></i></h1>
+    <p class="tag">PROCOM · DATA STRUCTURES</p>
+    <form class="panel" id="f" autocomplete="off">
+      <div class="label">Team login</div>
+      <label class="field"><span>Team name</span><input id="name" required maxlength="60" autofocus></label>
+      <label class="field"><span>Password</span><input id="pw" type="password" required maxlength="100"></label>
+      <button class="btn" id="go">Enter</button>
+      <p class="err" id="err"></p>
+    </form>
+    <div class="foot">ONE DEVICE PER TEAM</div>
+  </div>
+</main>
+<script src="/web/storm.js"></script>
+<script>
+const f = document.getElementById("f"), err = document.getElementById("err"), go = document.getElementById("go");
+const why = new URLSearchParams(location.search).get("why");
+if (why === "other") err.textContent = "Your team logged in on another device, so this one was logged out.";
+f.addEventListener("submit", async e => { e.preventDefault(); err.textContent = ""; go.disabled = true;
+  try { await api("/api/login", { name: document.getElementById("name").value, password: document.getElementById("pw").value }); location.href = "/lobby"; }
+  catch (x) { err.textContent = x.message; go.disabled = false; } });
+</script>
+</body>
+</html>

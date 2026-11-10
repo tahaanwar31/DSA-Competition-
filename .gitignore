@@ -6,3 +6,8 @@ Thumbs.db
 
 # secrets (Supabase keys) - never commit
 .env
+
+# the real card deck (answers!) - never on the public repo; the cards live in Supabase
+db/cards-data.js
+# internal documents (proposal for the head)
+docs/proposal/

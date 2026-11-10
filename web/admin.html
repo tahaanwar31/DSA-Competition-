@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Depth First Fear · Admin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=JetBrains+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="/web/ui.css">
+<style>
+  body { background: radial-gradient(ellipse at 50% -10%, rgba(80,8,14,.35), transparent 60%), #070506; }
+  #login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+  #login form { width: min(400px, 100%); }
+  #login .btn { width: 100%; margin-top: 6px; }
+  #app { display: none; }
+  header { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 12px max(3vw, 16px); background: rgba(7,5,6,.92); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+  header .brand { font: 700 13px "JetBrains Mono", monospace; letter-spacing: .4em; color: var(--neon); text-shadow: 0 0 10px rgba(255,30,40,.5); }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px; cursor: pointer; font: 700 12px "JetBrains Mono", monospace; letter-spacing: .2em; color: var(--muted); }
+  nav button.on { color: #fff; border-color: var(--neon); }
+  header .me { margin-left: auto; display: flex; gap: 10px; align-items: center; font-size: 13px; }
+  main { padding: 22px max(3vw, 16px) 60px; max-width: 1280px; margin: 0 auto; }
+  section.tab { display: none; } section.tab.on { display: block; }
+  h2 { font: 700 14px "JetBrains Mono", monospace; letter-spacing: .35em; color: #c4232c; margin: 28px 0 12px; }
+  h2:first-child { margin-top: 0; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 18px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+  .row .field { margin: 0; flex: 1 1 180px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font: 700 11px "JetBrains Mono", monospace; letter-spacing: .15em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.15); white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr.off td { opacity: .45; }
+  .tablewrap { overflow-x: auto; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font: 700 11px "JetBrains Mono", monospace; letter-spacing: .1em; }
+  .p-open { background: rgba(111,208,124,.15); color: var(--green); } .p-locked { background: rgba(232,184,74,.15); color: var(--gold); }
+  .p-waiting, .p-unset, .p-ended { background: rgba(255,255,255,.08); color: #cfc6b8; } .p-construction { background: rgba(232,184,74,.1); color: var(--gold); }
+  .lv { font: 700 11px "JetBrains Mono", monospace; letter-spacing: .1em; } .lv-easy { color: var(--green); } .lv-medium { color: var(--gold); } .lv-hard { color: #ff4b52; }
+  .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .big { font: 700 28px "JetBrains Mono", monospace; color: #fff; }
+  .stats { display: flex; gap: 26px; flex-wrap: wrap; margin: 6px 0 2px; }
+  .stats div span { display: block; font: 600 11px "JetBrains Mono", monospace; letter-spacing: .2em; color: var(--muted); }
+  pre.code { margin: 6px 0 0; max-height: 160px; overflow: auto; background: rgba(0,0,0,.45); padding: 8px 10px; font: 500 12px/1.45 "JetBrains Mono", monospace; white-space: pre; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #555; margin-right: 6px; } .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  dialog { background: #0e0a0b; color: var(--text); border: 1px solid rgba(255,255,255,.15); border-left: 3px solid var(--neon); padding: 22px 24px; width: min(760px, 94vw); }
+  dialog::backdrop { background: rgba(0,0,0,.7); }
+  dialog .acts { justify-content: flex-end; margin-top: 16px; }
+  .choice { display: grid; gap: 10px; margin-top: 14px; }
+  .choice .btn { justify-content: flex-start; text-align: left; letter-spacing: .1em; text-transform: none; font-size: 14px; padding: 14px 16px; }
+  /* big screen leaderboard */
+  #screen { position: fixed; inset: 0; z-index: 100; display: none; background: radial-gradient(ellipse at 50% 0%, rgba(90,8,14,.5), #050405 70%); padding: 4vh 6vw; overflow: auto; }
+  #screen.on { display: block; }
+  #screen .neon { margin: 0 auto 3vh; text-align: center; }
+  #screen .neon .w2 { font-size: clamp(40px, 6vw, 90px); }
+  #screen table { font-size: clamp(16px, 1.8vw, 26px); }
+  #screen td, #screen th { padding: 1.1vh 1vw; }
+  #screen th { font-size: clamp(11px, 1vw, 15px); }
+  #screen tr:nth-child(1) td { color: #ffd76a; } #screen tr:nth-child(2) td { color: #e2e2e2; } #screen tr:nth-child(3) td { color: #e0a86f; }
+  #screen .x { position: fixed; top: 16px; right: 16px; }
+</style>
+</head>
+<body>
+<div id="login">
+  <form class="panel" id="lf" autocomplete="off">
+    <div class="label">Admin login</div>
+    <label class="field"><span>Admin name</span><input id="ln" required autofocus></label>
+    <label class="field"><span>Password</span><input id="lp" type="password" required></label>
+    <button class="btn">Log in</button><p class="err" id="lerr"></p>
+  </form>
+</div>
+
+<div id="app">
+  <header>
+    <span class="brand">DFF · ADMIN</span>
+    <nav id="nav"><button data-t="rounds" class="on">ROUNDS</button><button data-t="teams">TEAMS</button><button data-t="cards">CARDS</button><button data-t="boards">LEADERBOARDS</button></nav>
+    <div class="me"><span class="muted mono" id="clock"></span><span>Hi, <b id="who"></b></span><button class="btn ghost small" id="logout">Log out</button></div>
+  </header>
+  <main>
+    <!-- ROUNDS -->
+    <section class="tab on" id="t-rounds">
+      <div class="grid2" id="roundBoxes"></div>
+      <h2>ROUND 1 · LIVE</h2>
+      <div class="panel tablewrap"><table id="live"></table></div>
+    </section>
+
+    <!-- TEAMS -->
+    <section class="tab" id="t-teams">
+      <div class="grid2">
+        <form class="panel" id="addTeam" autocomplete="off">
+          <div class="label">Add a team</div>
+          <label class="field"><span>Team name</span><input name="name" required maxlength="60"></label>
+          <label class="field"><span>Password (4+ characters)</span><input name="password" required minlength="4" maxlength="100"></label>
+          <label class="field"><span>Members (optional)</span><input name="members" maxlength="300" placeholder="Ali, Sara, Hamza"></label>
+          <button class="btn">Add team</button>
+        </form>
+        <form class="panel" id="bulk" autocomplete="off">
+          <div class="label">Add many teams</div>
+          <label class="field"><span>One per line:  team name, password, members</span><textarea name="lines" rows="8" placeholder="Null Pointers, ghost123, Ali, Sara&#10;Stack Overflow, bfs-dfs-9"></textarea></label>
+          <button class="btn">Add all</button>
+        </form>
+      </div>
+      <h2 id="teamsTitle">TEAMS</h2>
+      <div class="panel tablewrap"><table id="teams"></table></div>
+    </section>
+
+    <!-- CARDS -->
+    <section class="tab" id="t-cards">
+      <div class="row" style="justify-content:space-between">
+        <div class="stats" id="cardStats"></div>
+        <div class="acts"><select id="cardFilter" style="width:auto"><option value="">All levels</option><option>easy</option><option>medium</option><option>hard</option></select><button class="btn" id="newCard">+ New card</button></div>
+      </div>
+      <div class="panel tablewrap" style="margin-top:14px"><table id="cards"></table></div>
+    </section>
+
+    <!-- LEADERBOARDS -->
+    <section class="tab" id="t-boards">
+      <div class="grid2" id="boards"></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="cardDlg"><form id="cardForm" method="dialog" autocomplete="off">
+  <div class="label" id="cardDlgT">New card</div>
+  <div class="row" style="margin-top:12px">
+    <label class="field"><span>Level</span><select name="level"><option>easy</option><option>medium</option><option>hard</option></select></label>
+    <label class="field"><span>Topic</span><input name="topic" required placeholder="♠ STACK"></label>
+    <label class="field" style="flex-basis:260px"><span>Title</span><input name="title" required></label>
+  </div>
+  <label class="field"><span>Code shown on the card</span><textarea name="code" rows="11" required spellcheck="false"></textarea></label>
+  <div class="row">
+    <label class="field"><span>Effect of taking it (x, numbers, + - * / % ( ) only)</span><input name="effect" required placeholder="x + 7" class="mono"></label>
+    <label class="field" style="flex:0 1 120px"><span>Test with x =</span><input id="tx" type="number" value="10"></label>
+    <button type="button" class="btn ghost" id="testFx">Test</button>
+  </div>
+  <p class="muted" id="fxOut" style="margin:8px 0 0">Integer maths like C++: 7 / 2 = 3.</p>
+  <label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" name="active" style="width:auto" checked> In play (untick to hide it from the next runs)</label>
+  <p class="err" id="cardErr"></p>
+  <div class="acts"><button type="button" class="btn ghost" id="cardCancel">Cancel</button><button class="btn" id="cardSave">Save card</button></div>
+</form></dialog>
+
+<dialog id="unlockDlg">
+  <div class="label">Unlock round <span id="uR"></span></div>
+  <p>How should teams come back in?</p>
+  <div class="choice">
+    <button class="btn green" id="uCont"><b>Continue</b> &nbsp;·&nbsp; same x, same used cards. Teams pick up where they stopped.</button>
+    <button class="btn" id="uFresh"><b>Start fresh</b> &nbsp;·&nbsp; everyone starts again at x = 0 with every card back.</button>
+  </div>
+  <div class="acts"><button class="btn ghost" id="uCancel">Cancel</button></div>
+</dialog>
+
+<div id="screen"><button class="btn ghost small x" id="screenX">Close</button><div id="screenIn"></div></div>
+
+<script src="/web/storm.js"></script>
+<script>
+const $ = id => document.getElementById(id), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let D = null, skew = 0, screenBoard = null;
+const fmt = iso => iso ? new Date(iso).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—";
+const local = iso => { if (!iso) return ""; const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+const span = ms => { const s = Math.max(0, Math.ceil(ms / 1000)), p = n => String(n).padStart(2, "0"); return `${p(s / 3600 | 0)}:${p((s % 3600) / 60 | 0)}:${p(s % 60)}`; };
+async function act(fn, ok) { try { const r = await fn(); if (ok) toast(ok); await load(); return r; } catch (e) { if (e.status === 401) return showLogin(); toast("⚠ " + e.message); throw e; } }
+
+// ---------- login ----------
+function showLogin() { $("app").style.display = "none"; $("login").style.display = "grid"; }
+$("lf").onsubmit = async e => { e.preventDefault(); $("lerr").textContent = "";
+  try { await api("/api/admin/login", { name: $("ln").value, password: $("lp").value }); $("lp").value = ""; await load(); } catch (x) { $("lerr").textContent = x.message; } };
+$("logout").onclick = async () => { await api("/api/admin/logout", {}).catch(() => {}); showLogin(); };
+
+// ---------- tabs ----------
+$("nav").onclick = e => { const b = e.target.closest("button"); if (!b) return;
+  for (const x of $("nav").children) x.classList.toggle("on", x === b);
+  for (const s of document.querySelectorAll("section.tab")) s.classList.toggle("on", s.id === "t-" + b.dataset.t);
+  try { localStorage.setItem("dffTab", b.dataset.t); } catch (e) {} };
+try { const t = localStorage.getItem("dffTab"); if (t) document.querySelector(`#nav [data-t="${t}"]`)?.click(); } catch (e) {}
+
+// ---------- data ----------
+async function load() {
+  try { const t0 = Date.now(); D = await api("/api/admin/overview"); skew = Date.parse(D.now) - (t0 + Date.now()) / 2; }
+  catch (e) { if (e.status === 401) return showLogin(); toast("⚠ " + e.message); return; }
+  $("login").style.display = "none"; $("app").style.display = "block"; $("who").textContent = D.admin;
+  drawRounds(); drawLive(); drawTeams(); drawCards(); drawBoards();
+}
+setInterval(() => { if ($("app").style.display === "block" && !document.querySelector("dialog[open]")) load(); }, 4000);
+setInterval(() => { $("clock").textContent = new Date(Date.now() + skew).toLocaleTimeString(); tick(); }, 250);
+
+// ---------- rounds ----------
+function drawRounds() {
+  const box = $("roundBoxes"), focused = box.contains(document.activeElement);
+  if (focused) return;   // don't wipe a time the admin is typing
+  box.innerHTML = D.rounds.map(r => `
+    <div class="panel" data-r="${r.id}">
+      <div class="row" style="justify-content:space-between;align-items:center"><div class="label">ROUND 0${r.id} · ${esc(r.name)}</div><span class="pill p-${r.status}">${r.status.toUpperCase()}</span></div>
+      <div class="big" data-count="${r.id}" style="margin:10px 0 2px">—</div>
+      <div class="muted" style="font-size:13px">Starts ${fmt(r.starts_at)} · Ends ${fmt(r.ends_at)}</div>
+      <div class="row" style="margin-top:14px">
+        <label class="field"><span>Start</span><input type="datetime-local" step="1" data-k="starts_at" value="${local(r.starts_at)}"></label>
+        <label class="field"><span>End</span><input type="datetime-local" step="1" data-k="ends_at" value="${local(r.ends_at)}"></label>
+      </div>
+      <div class="acts" style="margin-top:12px">
+        <button class="btn small" data-a="save">Save times</button>
+        <button class="btn ghost small" data-a="now60">Start in 1 min · 60 min long</button>
+        ${r.locked ? `<button class="btn green small" data-a="unlock">Unlock</button>` : `<button class="btn small" data-a="lock">Lock now (everyone → lobby)</button>`}
+      </div>
+      ${r.id === 2 ? `<p class="muted" style="font-size:13px;margin:10px 0 0">Round 2 shows "UNDER CONSTRUCTION" in the lobby for now.</p>` : ""}
+    </div>`).join("");
+}
+function tick() {
+  if (!D) return; const now = Date.now() + skew;
+  for (const r of D.rounds) { const el = document.querySelector(`[data-count="${r.id}"]`); if (!el) continue;
+    const s = Date.parse(r.starts_at), e = Date.parse(r.ends_at);
+    el.textContent = r.locked ? "LOCKED" : !r.starts_at || !r.ends_at ? "NOT SET" : now < s ? "opens in " + span(s - now) : now < e ? "closes in " + span(e - now) : "ENDED"; }
+}
+$("roundBoxes").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return; const box = b.closest("[data-r]"), id = +box.dataset.r, val = k => box.querySelector(`[data-k="${k}"]`).value;
+  const a = b.dataset.a;
+  if (a === "save") act(() => api(`/api/admin/rounds/${id}`, { starts_at: val("starts_at") || null, ends_at: val("ends_at") || null }, "PATCH"), "Times saved");
+  if (a === "now60") { const s = new Date(Date.now() + skew + 60e3); s.setSeconds(0, 0); s.setMinutes(s.getMinutes() + 1);
+    act(() => api(`/api/admin/rounds/${id}`, { starts_at: s.toISOString(), ends_at: new Date(+s + 3600e3).toISOString() }, "PATCH"), "Starts at " + s.toLocaleTimeString()); }
+  if (a === "lock" && confirm(`Lock Round ${id}? Every team in it goes back to the lobby right away. Their progress is kept.`)) act(() => api(`/api/admin/rounds/${id}`, { locked: true }, "PATCH"), "Locked");
+  if (a === "unlock") { $("uR").textContent = "0" + id; $("unlockDlg").dataset.r = id; $("unlockDlg").showModal(); }
+};
+$("uCancel").onclick = () => $("unlockDlg").close();
+$("uCont").onclick = () => { const id = +$("unlockDlg").dataset.r; $("unlockDlg").close(); act(() => api(`/api/admin/rounds/${id}`, { locked: false }, "PATCH"), "Unlocked · teams continue"); };
+$("uFresh").onclick = async () => { const id = +$("unlockDlg").dataset.r; if (!confirm("Start fresh? Every team's progress in this round is cleared (kept in history, but it no longer counts).")) return;
+  $("unlockDlg").close(); await act(() => api(`/api/admin/rounds/${id}/fresh`, {}), null); act(() => api(`/api/admin/rounds/${id}`, { locked: false }, "PATCH"), "Unlocked · fresh start"); };
+
+function drawLive() {
+  const runs = D.runs.filter(r => r.round_id === 1), byTeam = Object.fromEntries(D.teams.map(t => [t.id, t]));
+  $("live").innerHTML = `<tr><th>TEAM</th><th>X</th><th>TAKEN</th><th>DROPPED</th><th>BUSTS</th><th>STARTED</th><th>STATUS</th><th></th></tr>` +
+    (runs.length ? runs.sort((a, b) => b.x - a.x).map(r => `<tr><td><span class="dot ${byTeam[r.team_id]?.online ? "on" : ""}"></span>${esc(byTeam[r.team_id]?.name)}</td><td class="mono"><b>${r.x}</b></td><td>${r.taken}</td><td>${r.dropped}</td><td>${r.busts}</td>
+      <td class="muted">${fmt(r.started_at)}</td><td>${r.finished_at ? '<span class="pill p-open">FINISHED</span>' : '<span class="pill p-waiting">PLAYING</span>'}</td>
+      <td><button class="btn ghost small" data-reset="${r.team_id}">Reset team</button></td></tr>`).join("") : `<tr><td colspan="8" class="muted">No team has entered Round 1 yet.</td></tr>`);
+}
+$("live").onclick = e => { const b = e.target.closest("[data-reset]"); if (!b) return; const t = D.teams.find(t => t.id === +b.dataset.reset);
+  if (confirm(`Reset ${t.name} in Round 1? They start again at x = 0 with every card back.`)) act(() => api(`/api/admin/teams/${t.id}/reset`, { round: 1 }), "Team reset"); };
+
+// ---------- teams ----------
+function drawTeams() {
+  const r1 = Object.fromEntries(D.runs.filter(r => r.round_id === 1).map(r => [r.team_id, r]));
+  $("teamsTitle").textContent = `TEAMS · ${D.teams.length}`;
+  $("teams").innerHTML = `<tr><th>TEAM</th><th>MEMBERS</th><th>LOGGED IN</th><th>ROUND 1 X</th><th></th></tr>` + (D.teams.length ? D.teams.map(t => `
+    <tr class="${t.active ? "" : "off"}" data-id="${t.id}"><td><b>${esc(t.name)}</b>${t.active ? "" : ' <span class="pill p-locked">DISABLED</span>'}</td><td class="muted">${esc(t.members || "")}</td>
+    <td><span class="dot ${t.online ? "on" : ""}"></span>${t.online ? "yes" : "no"}</td><td class="mono">${r1[t.id] ? r1[t.id].x : "—"}</td>
+    <td><div class="acts"><button class="btn ghost small" data-a="edit">Edit</button><button class="btn ghost small" data-a="pw">New password</button>
+      ${t.online ? '<button class="btn ghost small" data-a="kick">Log out</button>' : ""}<button class="btn ghost small" data-a="toggle">${t.active ? "Disable" : "Enable"}</button>
+      <button class="btn ghost small" data-a="del">Delete</button></div></td></tr>`).join("") : `<tr><td colspan="5" class="muted">No teams yet. Add them above.</td></tr>`);
+}
+$("teams").onclick = e => { const b = e.target.closest("button"); if (!b) return; const id = +b.closest("tr").dataset.id, t = D.teams.find(t => t.id === id), a = b.dataset.a;
+  if (a === "edit") { const name = prompt("Team name", t.name); if (name === null) return; const members = prompt("Members", t.members || ""); if (members === null) return; act(() => api(`/api/admin/teams/${id}`, { name, members }, "PATCH"), "Saved"); }
+  if (a === "pw") { const pw = prompt(`New password for ${t.name} (4+ characters). They will be logged out.`); if (pw) act(() => api(`/api/admin/teams/${id}`, { password: pw }, "PATCH"), "Password changed"); }
+  if (a === "kick") act(() => api(`/api/admin/teams/${id}/kick`, {}), "Logged out");
+  if (a === "toggle") act(() => api(`/api/admin/teams/${id}`, { active: !t.active }, "PATCH"), t.active ? "Disabled" : "Enabled");
+  if (a === "del" && confirm(`Delete ${t.name} and all of their scores? This cannot be undone.`)) act(() => api(`/api/admin/teams/${id}`, undefined, "DELETE"), "Deleted"); };
+$("addTeam").onsubmit = async e => { e.preventDefault(); const f = e.target, body = Object.fromEntries(new FormData(f));
+  await act(() => api("/api/admin/teams", body), "Team added"); f.reset(); f.name.focus(); };
+$("bulk").onsubmit = async e => { e.preventDefault(); const lines = e.target.lines.value.split("\n").map(l => l.trim()).filter(Boolean); let ok = 0, bad = [];
+  for (const l of lines) { const [name, password, ...m] = l.split(",").map(s => s.trim());
+    try { await api("/api/admin/teams", { name, password, members: m.join(", ") }); ok++; } catch (x) { bad.push(`${name || l}: ${x.message}`); } }
+  toast(`${ok} added` + (bad.length ? ` · ${bad.length} failed` : "")); if (bad.length) alert("Not added:\n" + bad.join("\n")); else e.target.reset(); load(); };
+
+// ---------- cards ----------
+function drawCards() {
+  const n = l => D.cards.filter(c => c.level === l && c.active).length, f = $("cardFilter").value;
+  $("cardStats").innerHTML = `<div><span>EASY</span><b class="big lv-easy">${n("easy")}</b></div><div><span>MEDIUM</span><b class="big lv-medium">${n("medium")}</b></div><div><span>HARD</span><b class="big lv-hard">${n("hard")}</b></div><div><span>IN PLAY</span><b class="big">${D.cards.filter(c => c.active).length}</b></div>`;
+  const list = D.cards.filter(c => !f || c.level === f);
+  $("cards").innerHTML = `<tr><th>#</th><th>LEVEL</th><th>TOPIC</th><th>TITLE / CODE</th><th>EFFECT</th><th></th></tr>` + (list.length ? list.map(c => `
+    <tr class="${c.active ? "" : "off"}" data-id="${c.id}"><td class="muted">${c.id}</td><td><span class="lv lv-${c.level}">${c.level.toUpperCase()}</span></td><td>${esc(c.topic)}</td>
+    <td style="min-width:300px"><b>${esc(c.title)}</b>${c.active ? "" : ' <span class="pill p-locked">OFF</span>'}<pre class="code">${esc(c.code)}</pre></td><td class="mono" style="white-space:nowrap">${esc(c.effect)}</td>
+    <td><div class="acts"><button class="btn ghost small" data-a="edit">Edit</button><button class="btn ghost small" data-a="del">Remove</button></div></td></tr>`).join("") : `<tr><td colspan="6" class="muted">No cards.</td></tr>`);
+}
+$("cardFilter").onchange = drawCards;
+let editing = null;
+function openCardDlg(c) { editing = c ? c.id : null; const f = $("cardForm"); f.reset(); $("cardErr").textContent = ""; $("fxOut").textContent = "Integer maths like C++: 7 / 2 = 3.";
+  $("cardDlgT").textContent = c ? `Edit card #${c.id}` : "New card";
+  if (c) { for (const k of ["level", "topic", "title", "code", "effect"]) f[k].value = c[k]; f.active.checked = c.active; } $("cardDlg").showModal(); }
+$("newCard").onclick = () => openCardDlg(null);
+$("cardCancel").onclick = () => $("cardDlg").close();
+$("cards").onclick = e => { const b = e.target.closest("button"); if (!b) return; const id = +b.closest("tr").dataset.id, c = D.cards.find(c => c.id === id);
+  if (b.dataset.a === "edit") openCardDlg(c);
+  if (b.dataset.a === "del" && confirm(`Remove "${c.title}"? If a team already saw it, it is only switched off so their scores stay right.`)) act(() => api(`/api/admin/cards/${id}`, undefined, "DELETE"), "Removed"); };
+$("testFx").onclick = async () => { try { const r = await api("/api/admin/cards/test", { effect: $("cardForm").effect.value, x: +$("tx").value }); $("fxOut").textContent = `x = ${$("tx").value}  →  ${r.x}`; } catch (e) { $("fxOut").textContent = "⚠ " + e.message; } };
+$("cardForm").onsubmit = async e => { e.preventDefault(); const f = e.target, body = { level: f.level.value, topic: f.topic.value, title: f.title.value, code: f.code.value, effect: f.effect.value, active: f.active.checked };
+  try { await api(editing ? `/api/admin/cards/${editing}` : "/api/admin/cards", body, editing ? "PATCH" : "POST"); $("cardDlg").close(); toast("Card saved"); load(); } catch (x) { $("cardErr").textContent = x.message; } };
+
+// ---------- leaderboards ----------
+const BOARDS = { round1: ["ROUND 01", "THE MANSION", [["rank", "#"], ["team", "TEAM"], ["x", "X"], ["busts", "BUSTS"]]],
+                 round2: ["ROUND 02", "THE FOREST", [["rank", "#"], ["team", "TEAM"], ["points", "POINTS"]]],
+                 final: ["FINAL", "ROUND 1 + ROUND 2", [["rank", "#"], ["team", "TEAM"], ["round1", "ROUND 1"], ["round2", "ROUND 2"], ["total", "TOTAL"]]] };
+const boardTable = k => { const [, , cols] = BOARDS[k], rows = D.boards[k];
+  return `<table><tr>${cols.map(c => `<th>${c[1]}</th>`).join("")}</tr>${rows.length ? rows.map(r => `<tr>${cols.map(c => `<td class="${c[0] === "team" ? "" : "mono"}">${c[0] === "team" ? `<b>${esc(r[c[0]])}</b>` : esc(r[c[0]])}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${cols.length}" class="muted">No scores yet.</td></tr>`}</table>`; };
+function drawBoards() {
+  $("boards").innerHTML = Object.keys(BOARDS).map(k => `<div class="panel"><div class="row" style="justify-content:space-between;align-items:center"><div class="label">${BOARDS[k][0]} · ${BOARDS[k][1]}</div><button class="btn ghost small" data-screen="${k}">Big screen</button></div><div class="tablewrap" style="margin-top:10px">${boardTable(k)}</div></div>`).join("")
+    + `<p class="muted" style="grid-column:1/-1">Same score = same rank (tie rule not decided yet).</p>`;
+  if (screenBoard) $("screenIn").innerHTML = `<div class="neon"><i class="bar"></i><span class="w1">${BOARDS[screenBoard][1]}</span><span class="w2">${BOARDS[screenBoard][0]}</span><i class="bar"></i></div>${boardTable(screenBoard)}`;
+}
+$("boards").onclick = e => { const b = e.target.closest("[data-screen]"); if (!b) return; screenBoard = b.dataset.screen; drawBoards(); $("screen").classList.add("on"); document.documentElement.requestFullscreen?.().catch(() => {}); };
+$("screenX").onclick = () => { screenBoard = null; $("screen").classList.remove("on"); if (document.fullscreenElement) document.exitFullscreen(); };
+
+load();
+</script>
+</body>
+</html>

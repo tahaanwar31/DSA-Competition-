@@ -199,7 +199,7 @@
   requestAnimationFrame(rain);
 })();
 </script>
-<div class="screen" id="end" hidden><div><h1 id="endT">MANSION CLEARED</h1><p id="endP"></p><div class="go">CLICK TO PLAY AGAIN</div></div></div>
+<div class="screen" id="end" hidden><div><h1 id="endT">MANSION CLEARED</h1><p id="endP"></p><div class="go">CLICK TO RETURN TO THE LOBBY</div></div></div>
 
 <script type="module">
 import * as THREE from "three";
@@ -212,7 +212,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { CARDS, GOLD_CARD, GOLD } from "./cards.js";
+const GOLD_CARD = null, GOLD = 15;   // golden card is off; the real cards come from the server (never shipped to the browser)
 
 const Q = new URLSearchParams(location.search), LOW = Q.get("q") === "low";
 const $ = id => document.getElementById(id), PI = Math.PI, FH = 5;   // FH = floor height (upper floor is at y = 5)
@@ -915,7 +915,7 @@ const WP = new THREE.Vector3();
 const scaryPlace = o => { o.slot[0].updateWorldMatrix(true, false); o.slot[0].getWorldPosition(WP); return WP.y > 3.5 || WP.z > 14.4 || Math.abs(WP.x) > 26.4; };  // upstairs or outside
 function dealCards() {
   for (const o of OPEN) { if (o.card) o.card.mesh.parent.remove(o.card.mesh); o.card = null; o.open = false; }
-  const free = shuffle(OPEN.filter(o => !o.noCard)), deck = shuffle(CARDS.slice());
+  const free = shuffle(OPEN.filter(o => !o.noCard)), deck = shuffle(NET.deck.slice());   // {id, lvl} only, the code arrives when a card is opened
   const take = pred => { const i = free.findIndex(pred); return i < 0 ? null : free.splice(i, 1)[0]; };
   const put = (o, card, mat) => { if (!o) return 0; const mesh = new THREE.Mesh(CARD_GEO, mat); mesh.rotation.set(-PI / 2, 0, (Math.random() - .5) * 1.2); mesh.position.copy(o.slot[1]); o.slot[0].add(mesh); o.card = { card, mesh }; return 1; };
   let n = GOLDEN ? put(take(() => true), GOLD_CARD, GOLD_MAT) : 0;
@@ -1097,19 +1097,48 @@ const ROUND = +Q.get("time") || 3600;   // seconds per team (60 minutes); ?time=
 const GOLDEN = false;   // golden card switched off for now (set to true to bring it back)
 const CARD_TIME = { easy: 60, medium: 120, hard: 240 };   // seconds to decide on a card (golden: 10)
 const S = { mode: "start", x: 0, busts: 0, left: 10, clock: ROUND, taken: 0, dropped: 0, card: null, ans: false, buf: "", t: 0, room: null, haunt: 12, bolt: 20, flash: 0, outK: 0 };
+/* ================= the server: x, the deck and the clock live there ================= */
+const NET = { deck: [], x: 0, busts: 0, taken: 0, dropped: 0, endsAt: Date.now() + ROUND * 1000, skew: 0, loaded: false, busy: false, gone: false };
+async function call(url, body) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  const d = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(d.error || "network"), { status: r.status }); return d; }
+const clockLeft = () => Math.max(0, (NET.endsAt - (Date.now() + NET.skew)) / 1000);
+// the round was paused by the organisers, its time is over, or the team logged in somewhere else: back to the lobby
+function leave(why) { if (NET.gone) return; NET.gone = true; S.mode = "over"; try { controls.unlock(); } catch (e) {} $("inspect").classList.remove("on"); $("start").hidden = true;
+  $("endT").innerHTML = why === "logged_out" ? "LOGGED <span style='color:var(--red)'>OUT</span>" : why === "ended" ? "TIME'S <span style='color:var(--red)'>UP</span>" : "ROUND <span style='color:var(--gold)'>PAUSED</span>";
+  $("endP").innerHTML = why === "logged_out" ? "Your team logged in on another device." : why === "ended" ? `Final x = <b>${S.x}</b>` : "The organisers paused the round. Your progress is saved.<br>Going back to the lobby…";
+  $("end").hidden = false; setTimeout(() => location.href = why === "logged_out" ? "/?why=other" : "/lobby", 2600); }
+function netErr(e) { if (e.status === 401) leave("logged_out"); else if (e.message === "round_closed") leave("closed"); else toast("CONNECTION PROBLEM · TRY AGAIN", "#ff6a5a"); }
+const runReady = (async () => { const t0 = Date.now(), d = await call("/api/r1/start"); NET.skew = Date.parse(d.now) - (t0 + Date.now()) / 2;
+  Object.assign(NET, { endsAt: Date.parse(d.ends_at), deck: d.deck, x: d.x, busts: d.busts, taken: d.taken, dropped: d.dropped, loaded: true });
+  if (d.finished || !d.deck.length) leave("closed"); })().catch(e => { netErr(e); if (e.status !== 401 && e.message !== "round_closed") setTimeout(() => location.reload(), 3000); });
+// take / drop / timeout: the server works out the new x
+async function decide(action) { const c = S.card; if (!c || c.loading || c.done || NET.busy) return; c.done = true; NET.busy = true; const before = S.x;
+  try { const d = await call("/api/r1/decide", { card: c.id, action }); S.x = d.x;
+    if (d.action === "take") { S.taken++; toast(`x: ${before} → ${S.x}`, S.x < before ? "#ff6a5a" : "#f3d48a"); audio.take(); }
+    else { S.dropped++; toast(d.action === "timeout" ? "TIME'S UP · CARD DROPPED" : "CARD DROPPED", "#c9bfae"); audio.click(); } }
+  catch (e) { netErr(e); }
+  NET.busy = false; if (S.card === c) { closeCard(); hud(); checkOut(); } }
+// every 3 s: is the round still open? also keeps the clock in step with the server
+setInterval(async () => { if (NET.gone || !NET.loaded) return;
+  try { const t0 = Date.now(), r = await fetch("/api/state"); if (r.status === 401) return leave("logged_out"); const d = await r.json(), r1 = d.rounds[0];
+    NET.skew = Date.parse(d.now) - (t0 + Date.now()) / 2;
+    if (!r1.open) return leave(r1.status === "ended" ? "ended" : "closed");
+    NET.endsAt = Date.parse(r1.ends_at); if (S.mode === "play" || S.mode === "inspect") S.clock = clockLeft(); } catch (e) {} }, 3000);
 function hud() { $("x").textContent = "x = " + S.x; $("x").className = S.x < 0 ? "hot" : ""; $("busts").textContent = "BUSTS: " + S.busts; $("left").textContent = S.left; }
 let toastT; function toast(msg, col = "#f3d48a") { const t = $("toast"); t.textContent = msg; t.style.color = col; t.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => t.style.opacity = 0, 1800); }
 let roomT; function roomName(n) { const r = $("room"); r.textContent = n; r.style.opacity = 1; clearTimeout(roomT); roomT = setTimeout(() => r.style.opacity = 0, 2200); }
-function reset() { computeZones(); S.x = 0; S.busts = 0; S.left = 0; S.clock = ROUND; S.taken = 0; S.dropped = 0; clockText(); S.card = null; S.room = null; P.x = 0; P.z = 11.5; P.L = 0; P.y = 0; camera.rotation.set(0, 0, 0);
+function reset() { computeZones(); S.x = NET.x; S.busts = NET.busts; S.left = 0; S.clock = clockLeft(); S.taken = NET.taken; S.dropped = NET.dropped; clockText(); S.card = null; S.room = null; P.x = 0; P.z = 11.5; P.L = 0; P.y = 0; camera.rotation.set(0, 0, 0);
   for (const o of OPEN) { o.t = 0; animateOpen(o); } dealCards(); hideGhost(false, 14); GH.scare = 0; hud(); }
-function busted(why) { S.busts++; S.x -= 3; audio.sting(); $("hit").style.opacity = 1; setTimeout(() => $("hit").style.opacity = 0, 250);
+function busted(why) { S.busts++; S.x -= 3; audio.sting();
+  call("/api/r1/bust").then(d => { S.x = d.x; S.busts = d.busts; hud(); }).catch(netErr); $("hit").style.opacity = 1; setTimeout(() => $("hit").style.opacity = 0, 250);
   toast(why + "  ·  BUSTED −3", "#ff6a5a"); closeCard(); hud(); checkOut(); }
 const clockText = () => { const s = Math.max(0, Math.ceil(S.clock)); $("clock").textContent = String(s / 60 | 0).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); $("clock").className = s <= 60 ? "low" : ""; };
-function checkOut() { if (S.left === 0) end(true); }
+function checkOut() { if (S.left === 0) { call("/api/r1/finish").catch(() => {}); end(true); } }
 function end(cleared) { S.mode = "over"; controls.unlock(); $("inspect").classList.remove("on");
   $("endT").innerHTML = cleared ? "MANSION <span style='color:var(--gold)'>CLEARED</span>" : "TIME'S <span style='color:var(--red)'>UP</span>";
   $("endP").innerHTML = `Final x = <b>${S.x}</b><br>Cards taken: ${S.taken} · dropped: ${S.dropped} · busts: ${S.busts}`;
-  $("end").hidden = false; }
+  $("end").hidden = false; NET.gone = true; }
 
 /* the card close-up */
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -1117,12 +1146,16 @@ const KW = new Set("class public return if else for while void new struct int ch
 function hl(code) { const re = /(\/\/[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(\d+)\b|\b([A-Za-z_]\w*)\b/g; let o = "", l = 0, m;
   while ((m = re.exec(code))) { o += esc(code.slice(l, m.index)); o += m[1] ? `<span class="co">${esc(m[1])}</span>` : m[2] ? `<span class="st">${esc(m[2])}</span>` : m[3] ? `<span class="nu">${m[3]}</span>` : KW.has(m[4]) ? `<span class="kw">${m[4]}</span>` : TY.has(m[4]) ? `<span class="ty">${m[4]}</span>` : m[4]; l = re.lastIndex; }
   return o + esc(code.slice(l)); }
-function openCard(o) { const c = o.card.card; if (GH.on) hideGhost(false, 6 + Math.random() * 8); o.card.mesh.parent.remove(o.card.mesh); o.card = null;
-  S.mode = "inspect"; S.card = c; S.t = S.tmax = CARD_TIME[c.lvl] || 10; S.ans = false; S.buf = ""; const red = /♥|♦/.test(c.cat);
+function openCard(o) { const c = { id: o.card.card.id, lvl: o.card.card.lvl, cat: "", t: "Opening…", code: "", loading: true };
+  if (GH.on) hideGhost(false, 6 + Math.random() * 8); o.card.mesh.parent.remove(o.card.mesh); o.card = null;
+  S.mode = "inspect"; S.card = c; S.t = S.tmax = CARD_TIME[c.lvl] || 10; S.ans = false; S.buf = ""; showCard(c);
+  call("/api/r1/open", { card: c.id }).then(d => { if (S.card !== c) return; Object.assign(c, d, { loading: false }); S.t = Math.min(S.tmax, d.secs); showCard(c); })
+    .catch(e => { if (S.card !== c) return; if (e.message === "card_used") { c.done = true; toast("THAT CARD IS ALREADY GONE", "#c9bfae"); closeCard(); hud(); checkOut(); } else netErr(e); }); }
+function showCard(c) { const red = /♥|♦/.test(c.cat);
   $("pcard").style.setProperty("--suit", c.gold ? "#b8860b" : red ? "#b3262d" : "#1d2320");
   $("timer").style.visibility = "visible"; $("keys").innerHTML = `<span>E · ${c.gold ? "PLAY" : "TAKE"}</span><span>Q · DROP</span>`;
   $("pcard").innerHTML = `<div class="head"><span>${esc(c.cat)}${c.lvl ? `<i class="lv lv-${c.lvl}">${c.lvl.toUpperCase()}</i>` : ""}</span><span>x = ${S.x}</span></div><h2>${esc(c.t)}</h2><pre>${hl(c.code)}</pre><div class="note" id="note">${c.gold ? `Play it and you cannot skip. Right answer +${GOLD}, wrong answer −${GOLD}.` : "int x is your team's value. Take it or drop it."}</div>`;
-  $("inspect").classList.add("on"); audio.flip(); }
+  if (!$("inspect").classList.contains("on")) { $("inspect").classList.add("on"); audio.flip(); } }
 function closeCard() { if (S.card) { S.left--; burnCard(); } S.card = null; S.ans = false; $("inspect").classList.remove("on"); if (S.mode === "inspect") S.mode = "play"; }
 let aim = null, grab = null;   // grab = an open drawer/door/lid with a card that you are looking towards
 const CP = new THREE.Vector3(), CD = new THREE.Vector3();
@@ -1175,8 +1208,8 @@ function onKey(code) {
   else if (S.mode === "play" && (code === "KeyC" || code === "KeyG") && grab) { const o = grab; grab = null; openCard(o); }
   else if (S.mode === "inspect" && S.ans) goldKey(code);
   else if (S.mode === "inspect" && S.card.gold && code === "KeyE") goldStart();
-  else if (S.mode === "inspect" && code === "KeyE") { const before = S.x; S.x = S.card.f(S.x); S.taken++; toast(`x: ${before} → ${S.x}`, S.x < before ? "#ff6a5a" : "#f3d48a"); audio.take(); closeCard(); hud(); checkOut(); }
-  else if (S.mode === "inspect" && code === "KeyQ") { S.dropped++; toast("CARD DROPPED", "#c9bfae"); audio.click(); closeCard(); hud(); checkOut(); }
+  else if (S.mode === "inspect" && code === "KeyE") decide("take");
+  else if (S.mode === "inspect" && code === "KeyQ") decide("drop");
 }
 
 /* ================= sound (synthesised, no files) ================= */
@@ -1286,8 +1319,8 @@ function applyZones() {
     else o.visible = z.wing === "H" || z.wing === wing || (wing === "H" && (z.wing === "W" ? nearW : nearE)); } }
 
 /* ================= start / pointer lock ================= */
-$("start").addEventListener("click", () => { if (window.__intro && !window.__intro.done) return window.__intro.finish(); if (!ready) return; audio.init(); $("start").hidden = true; S.mode = "play"; reset(); controls.lock(); });
-$("end").addEventListener("click", () => { $("end").hidden = true; reset(); S.mode = "play"; controls.lock(); });
+$("start").addEventListener("click", () => { if (window.__intro && !window.__intro.done) return window.__intro.finish(); if (!ready || !NET.loaded) return; audio.init(); $("start").hidden = true; S.mode = "play"; reset(); controls.lock(); });
+$("end").addEventListener("click", () => { location.href = "/lobby"; });
 renderer.domElement.addEventListener("click", () => { if (S.mode === "play" || S.mode === "inspect") controls.lock(); });
 controls.addEventListener("lock", () => $("paused").style.display = "none");
 controls.addEventListener("unlock", () => { if (S.mode === "play" || S.mode === "inspect") $("paused").style.display = "block"; });
@@ -1303,8 +1336,8 @@ function update(dt, t) {
     const rm = roomAt(P.x, P.z, P.L); if (rm && rm[0] !== S.room) { S.room = rm[0]; roomName(rm[0]); }
   }
   if (S.mode === "play" || S.mode === "inspect") { const before = Math.ceil(S.clock); S.clock -= dt; if (Math.ceil(S.clock) !== before) clockText(); if (S.clock <= 0) { if (S.mode === "inspect") closeCard(); end(false); return; } }
-  if (S.mode === "inspect" && !S.ans) { S.t -= dt; const s = Math.max(0, Math.ceil(S.t)); $("secs").style.fontSize = s >= 60 ? "30px" : ""; $("secs").textContent = s >= 60 ? (s / 60 | 0) + ":" + String(s % 60).padStart(2, "0") : String(s).padStart(2, "0"); $("ring").style.strokeDashoffset = 276.5 * (1 - Math.max(0, S.t) / S.tmax);
-    if (s !== lastTick) { lastTick = s; if (s <= 10) audio.tick(1 - S.t / 10); /* tick only in the last 10 s */ } if (S.t <= 0) { S.dropped++; toast("TIME'S UP · CARD DROPPED", "#c9bfae"); closeCard(); hud(); checkOut(); } /* timeout = drop, no penalty */ }
+  if (S.mode === "inspect" && !S.ans && S.card && !S.card.loading) { S.t -= dt; const s = Math.max(0, Math.ceil(S.t)); $("secs").style.fontSize = s >= 60 ? "30px" : ""; $("secs").textContent = s >= 60 ? (s / 60 | 0) + ":" + String(s % 60).padStart(2, "0") : String(s).padStart(2, "0"); $("ring").style.strokeDashoffset = 276.5 * (1 - Math.max(0, S.t) / S.tmax);
+    if (s !== lastTick) { lastTick = s; if (s <= 10) audio.tick(1 - S.t / 10); /* tick only in the last 10 s */ } if (S.t <= 0) decide("timeout"); /* timeout = drop, no penalty */ }
   jumpStep(dt); camera.position.set(P.x, P.y + P.jy + 1.65 + Math.sin(P.bob) * .035, P.z);
   camera.getWorldDirection(V); torch.position.copy(camera.position).addScaledVector(V2.set(-V.z, 0, V.x), .25).y -= .2; torch.target.position.copy(camera.position).addScaledVector(V, 6);
   // drawers / doors / lids
@@ -1385,7 +1418,7 @@ function frame(now) { requestAnimationFrame(frame);
       if (want !== PR) { PR = want; renderer.setPixelRatio(PR); composer.setPixelRatio(PR); composer.setSize(innerWidth, innerHeight); } } } }
 function matte() { scene.traverse(o => { if (!o.material || o === ghost) return; for (const m of [].concat(o.material)) { if (!m.isMeshStandardMaterial || m.userData.matte) continue; m.userData.matte = 1;
       const metal = m.metalness > .5; if (m.roughnessMap && !metal) m.roughnessMap = null; m.roughness = Math.max(m.roughness, metal ? .55 : .85); m.envMapIntensity = .4; m.needsUpdate = true; } }); }
-Promise.all(placed).then(() => { matte(); setTimeout(matte, 1500); dealCards(); computeZones(); window.__game = { audio, computeZones, applyZones, S, P, GH, camera, ghost, OPEN, controls, torch, composer, renderer, update, hud, reset, aimAt: () => aim, COLL, roomAt, ROOMS, movePlayer, spawnGhost, hideGhost, inWorld }; });
+Promise.all([...placed, runReady]).then(() => { matte(); setTimeout(matte, 1500); dealCards(); computeZones(); window.__game = { audio, computeZones, applyZones, S, P, GH, NET, openCard, onKey, camera, ghost, OPEN, controls, torch, composer, renderer, update, hud, reset, aimAt: () => aim, COLL, roomAt, ROOMS, movePlayer, spawnGhost, hideGhost, inWorld }; });
 requestAnimationFrame(frame);
 </script>
 </body></html>

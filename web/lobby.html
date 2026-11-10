@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Depth First Fear · Lobby</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=JetBrains+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="/web/ui.css">
+<style>
+  header { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px max(4vw, 16px); }
+  .brand { font: 700 13px "JetBrains Mono", monospace; letter-spacing: .45em; color: #cbbfae; }
+  .who { display: flex; align-items: center; gap: 14px; font: 600 14px "JetBrains Mono", monospace; letter-spacing: .1em; }
+  .who b { color: #fff; }
+  main { position: relative; z-index: 1; min-height: calc(100vh - 80px); display: grid; align-content: center; justify-items: center; gap: 4vh; padding: 0 16px 40px; }
+  .clock { font: 700 12px "JetBrains Mono", monospace; letter-spacing: .4em; color: var(--muted); }
+  .rounds { display: grid; grid-template-columns: repeat(2, minmax(0, 380px)); gap: 28px; width: min(820px, 100%); }
+  .round { position: relative; display: grid; gap: 18px; justify-items: start; padding: 26px 28px 24px; min-height: 330px; }
+  .round .neon .w1 { font-size: clamp(16px, 2vw, 24px); margin-top: 10px; }
+  .round .neon .w2 { font-size: clamp(56px, 7vw, 96px); }
+  .round.dim .neon { filter: grayscale(1) brightness(.55); }
+  .round.dim .neon .w2 { animation: none; }
+  .round .sub { font: 700 12px "JetBrains Mono", monospace; letter-spacing: .4em; color: #cbbfae; margin-top: -8px; }
+  .state { display: grid; gap: 6px; align-self: end; width: 100%; }
+  .state .big { font: 700 15px "JetBrains Mono", monospace; letter-spacing: .2em; }
+  .state .count { font: 700 34px "JetBrains Mono", monospace; letter-spacing: .06em; color: #fff; text-shadow: 0 0 14px rgba(255,30,40,.5); }
+  .state .btn { width: 100%; padding: 14px; font-size: 15px; }
+  .tape { position: absolute; left: -10px; right: -10px; top: 46%; transform: rotate(-6deg); padding: 9px 0; text-align: center; background: repeating-linear-gradient(-45deg, #e8b84a 0 22px, #141008 22px 44px); box-shadow: 0 6px 20px rgba(0,0,0,.7); }
+  .tape span { display: inline-block; background: #141008; color: #e8b84a; padding: 4px 14px; font: 700 15px "JetBrains Mono", monospace; letter-spacing: .3em; }
+  .note { max-width: 640px; text-align: center; font-size: 14px; }
+  @media (max-width: 760px) { .rounds { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="storm"><img class="b0" src="/assets/ui/intro-dark.jpg" alt=""><img class="b1" src="/assets/ui/intro-flash.jpg" alt=""><canvas></canvas><div class="vig"></div></div>
+<header>
+  <div class="brand">DEPTH FIRST FEAR</div>
+  <div class="who">TEAM <b id="team">…</b><button class="btn ghost small" id="out">Log out</button></div>
+</header>
+<main>
+  <div class="clock">LOBBY · <span id="now">--:--:--</span></div>
+  <div class="rounds">
+    <section class="round panel" id="r1">
+      <div class="neon"><i class="bar"></i><span class="w1">ROUND</span><span class="w2">01</span><i class="bar"></i></div>
+      <div class="sub">THE MANSION</div>
+      <div class="state" id="s1"><span class="big muted">LOADING…</span></div>
+    </section>
+    <section class="round panel dim" id="r2">
+      <div class="neon"><i class="bar"></i><span class="w1">ROUND</span><span class="w2">02</span><i class="bar"></i></div>
+      <div class="sub">THE FOREST</div>
+      <div class="state" id="s2"></div>
+    </section>
+  </div>
+  <p class="note muted">Rounds open by themselves at the start time set by the organisers. Stay on this page. If the organisers pause a round, everyone comes back here.</p>
+</main>
+<script src="/web/storm.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let st = null, skew = 0;   // skew = server clock - this PC's clock
+const pad = n => String(n).padStart(2, "0");
+const span = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${pad(s / 3600 | 0)}:${pad((s % 3600) / 60 | 0)}:${pad(s % 60)}`; };
+const at = iso => new Date(iso).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" });
+function draw() {
+  if (!st) return; const now = Date.now() + skew; $("now").textContent = new Date(now).toLocaleTimeString();
+  for (const r of st.rounds) {
+    const el = $("s" + r.id), box = $("r" + r.id); let html;
+    if (r.status === "construction") { box.classList.add("dim"); el.innerHTML = ""; if (!box.querySelector(".tape")) box.insertAdjacentHTML("beforeend", '<div class="tape"><span>UNDER CONSTRUCTION</span></div>'); continue; }
+    const s = Date.parse(r.starts_at), e = Date.parse(r.ends_at);
+    const live = r.status !== "locked" && r.starts_at && r.ends_at && now >= s && now < e;
+    const done = r.id === 1 && st.r1 && st.r1.finished;
+    box.classList.toggle("dim", !live);
+    if (r.status === "locked") html = `<span class="big" style="color:var(--gold)">LOCKED</span><span class="muted">Wait here. The organisers will open it.</span>`;
+    else if (!r.starts_at || !r.ends_at) html = `<span class="big muted">NOT SCHEDULED YET</span>`;
+    else if (now < s) html = `<span class="big muted">OPENS IN</span><span class="count">${span(s - now)}</span><span class="muted">${at(r.starts_at)}</span>`;
+    else if (now >= e) html = `<span class="big muted">ENDED</span>${r.id === 1 && st.r1 ? `<span class="muted">Your x = <b style="color:#fff">${st.r1.x}</b></span>` : ""}`;
+    else if (done) html = `<span class="big" style="color:var(--green)">COMPLETED</span><span class="muted">Every card is gone. Your x = <b style="color:#fff">${st.r1.x}</b></span>`;
+    else html = `<span class="big" style="color:var(--green)">OPEN · CLOSES IN ${span(e - now)}</span><a class="btn" href="/round${r.id}">${r.id === 1 && st.r1 ? "Continue" : "Enter"}</a>`;
+    if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
+  }
+}
+async function poll() {
+  try { const t0 = Date.now(); st = await api("/api/state"); skew = Date.parse(st.now) - (t0 + Date.now()) / 2; $("team").textContent = st.team; draw(); }
+  catch (e) { if (e.status === 401) location.href = "/?why=other"; }
+}
+poll(); setInterval(poll, 2500); setInterval(draw, 250);
+$("out").onclick = async () => { await api("/api/logout", {}).catch(() => {}); location.href = "/"; };
+</script>
+</body>
+</html>

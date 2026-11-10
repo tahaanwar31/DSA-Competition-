@@ -8,6 +8,7 @@
 git clone https://github.com/tahaanwar31/DSA-Competition-.git
 cd DSA-Competition-
 ```
+Ask Taha for the **`.env`** file and put it in the folder. **Never commit it or share it.**
 
 ## Every time you change something
 
@@ -26,7 +27,7 @@ git checkout -b new-cards
 ```bash
 node server.js
 ```
-Open http://localhost:8780 in Chrome and play to check your change works.
+Open http://localhost:8780 in Chrome and check your change works. (To play, an admin must add a test team and open Round 1 in /admin.)
 
 **4. Save and push your branch**
 ```bash
@@ -52,5 +53,6 @@ The Pull Request updates by itself.
 - ❌ Don't push to `main`.
 - ✅ One branch per change (e.g. `new-cards`, `fix-ghost`, `kitchen-drawers`).
 - ✅ Test the game before you push.
-- ✅ In `cards.js`, the `code` on a card and its `f` must give the same result.
+- ✅ Cards are edited in **/admin → Cards**. A card's code and its effect must give the same x.
+- ❌ Never commit `.env` or `db/cards-data.js` (they are in `.gitignore`).
 - ❌ Don't commit big files you don't need (videos, recordings, zips).

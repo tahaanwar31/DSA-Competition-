@@ -39,23 +39,60 @@ But you are not alone in the house. She appears without warning. **Don't look in
 
 ## 🚀 Quick start
 
-You only need **[Node.js](https://nodejs.org)** (any recent version). No `npm install` is needed.
+You need **[Node.js](https://nodejs.org)** 18 or newer. No `npm install` is needed.
 
 ```bash
 git clone https://github.com/tahaanwar31/DSA-Competition-.git
 cd DSA-Competition-
+```
+
+**1. Add the secret settings.** Create a file called **`.env`** in the folder (ask Taha for the values):
+
+```
+SUPABASE_URL=https://<project>.supabase.co
+SUPABASE_SECRET_KEY=sb_secret_...
+PORT=8780
+```
+
+> [!CAUTION]
+> `.env` holds the database's secret key. It is in `.gitignore`. **Never commit it, never paste it in chats.**
+
+**2. Start the server**
+
+```bash
 node server.js
 ```
 
-Then open **http://localhost:8780** in **Google Chrome** and click to enter.
+| Page | Who | What |
+| --- | --- | --- |
+| **http://localhost:8780** | teams | login (team name + password) |
+| **/lobby** | teams | Round 01 and Round 02. A round opens by itself at its start time |
+| **/round1** | teams | the mansion (only while Round 1 is open) |
+| **/admin** | organisers | teams, cards, round times, lock / unlock, leaderboards |
 
-> [!IMPORTANT]
-> Don't double-click `index.html`. Browsers block the 3D models when a page is opened as a file, so the game must be served by `server.js`.
+**3. Make your admin login** (once):
+
+```bash
+node scripts/add-admin.js taha
+```
 
 > [!NOTE]
-> An internet connection is needed the first time, because the 3D engine (Three.js) and the fonts load from a CDN.
+> An internet connection is needed: the database is on Supabase, and the 3D engine and fonts load from a CDN.
 
-**Another port:** `node server.js 9000` → http://localhost:9000
+---
+
+## 🛡️ Running the competition
+
+1. **/admin → Teams:** add every team with a password (or paste many at once: `name, password, members` per line).
+2. **/admin → Rounds:** set Round 1's **start** and **end** time and click **Unlock**. Teams wait in the lobby with a countdown; the round opens for everyone at the same moment, using the server's clock (a PC's own clock doesn't matter).
+3. **Power cut or problem?** Click **Lock now**. Every team is sent back to the lobby at once and their progress is saved. When you unlock, choose:
+   - **Continue**: same x, same used cards.
+   - **Start fresh**: everyone back to x = 0 with every card.
+   - One PC crashed? **Reset team** for just that team.
+4. **One device per team:** if a team logs in on another PC, the first PC is logged out.
+5. **Leaderboards:** Round 1, Round 2 and Final (Round 1 + Round 2). Click **Big screen** for the projector.
+
+Round 2 shows **UNDER CONSTRUCTION** in the lobby for now.
 
 ---
 
@@ -122,27 +159,21 @@ The tie rule is **not decided yet**. For now, teams with the same `x` share the 
 
 ---
 
-## 🃏 Editing the cards
+## 🃏 The cards
 
-All the questions live in **`cards.js`**. Each card looks like this:
+The deck is **65 cards: 20 easy, 30 medium, 15 hard**, across every topic. Cards live in the **Supabase database**, not in the game files, so teams can't read them in the browser. The server only sends a card's code when a team opens it, and the **server** works out the new `x`.
 
-```js
-{ lvl: "medium", cat: "♠ STACK", t: "Two stacks", f: x => x + 7, code:
-`stack<int> a, b;
-...` }
-```
+Manage them in **/admin → Cards** (add, edit, remove, test an effect).
 
 | Field | Meaning |
 | --- | --- |
-| `lvl` | `"easy"`, `"medium"` or `"hard"` |
-| `cat` | Small label on top of the card (the topic) |
-| `t` | Card title |
-| `code` | The code snippet players read |
-| `f` | What **taking** the card really does to `x`, so it must match the code |
+| Level | easy, medium or hard |
+| Topic | small label on top of the card |
+| Title | card title |
+| Code | the C++ snippet players read (`x` is the team's int) |
+| Effect | what **taking** the card does to `x`, e.g. `x + 7`, `x * 2`, `0`. Only `x`, numbers and `+ - * / % ( )`. Integer maths like C++ (7 / 2 = 3) |
 
-Every card in this list is hidden **once** per round, in a random place. Hard cards go to the scariest places.
-
-To test with a short round, open `http://localhost:8780/?time=60` (60 seconds).
+The organisers keep the full deck in `db/cards-data.js`, which is **not** on GitHub (it holds the answers). `node scripts/check-cards.js` compiles every card with g++ and checks its effect; `node scripts/seed-cards.js` loads it into the database.
 
 ---
 
@@ -156,14 +187,18 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 ## 🗂️ Project structure
 
 ```
-├── index.html      the whole game (Three.js, WebAudio, shaders)
-├── cards.js        the cards and their code snippets
-├── server.js       tiny local server (Node.js, no packages)
-├── package.json    `npm start` also runs the server
+├── index.html          the whole game (Three.js, WebAudio, shaders)
+├── server.js           web server + game rules API (Node.js, no packages)
+├── web/                login, lobby and admin pages
+├── db/
+│   ├── schema.sql      tables and the 3 leaderboards (run in Supabase SQL Editor)
+│   └── functions.sql   take / drop / bust / timers, all checked on the server
+├── scripts/            add-admin, seed-cards, check-cards
 ├── assets/
-│   ├── models/     3D furniture, statues, trees, gates (glTF)
-│   └── tex/        wall, floor and stone textures
-└── docs/           screenshots for this page
+│   ├── models/         3D furniture, statues, trees, gates (glTF)
+│   ├── tex/            wall, floor and stone textures
+│   └── ui/             menu backgrounds
+└── docs/               screenshots and the proposal
 ```
 
 ---
@@ -172,6 +207,7 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 - 🏚️ A full two-floor mansion: grand hall, library, study, kitchen, dining room, nursery, master bedroom, gallery and an abandoned indoor pool
 - 🌲 Haunted grounds: courtyard, dead forest, cemetery and crypt, with rain, fog and lightning
+- 🔐 Team login, lobby with timed rounds, admin panel, 3 live leaderboards (Supabase)
 - ⏱️ 60-minute rounds, with easy / medium / hard cards that each appear once
 - 🔥 Cards burn away after you take or drop them
 - 🗄️ Working drawers, cupboards, chests, coffins, doors and gates
