@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Depth First Fear</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Rock+Salt&family=JetBrains+Mono:wght@400;600;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Nosifer&family=Caveat:wght@600;700&family=Rock+Salt&family=JetBrains+Mono:wght@400;600;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <style>
   :root { --gold: #f3d48a; --red: #d8443a; --ghost: #9cc4ff; --ink: #1d2320; --card: #fbf8f1; --code-bg: #f2ede1; }
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: "IBM Plex Sans", Arial, sans-serif; color: #eae3d6; user-select: none; }
@@ -53,6 +53,37 @@
   /* screens */
   .screen { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at center, rgba(20,14,10,.75), rgba(0,0,0,.96)); text-align: center; pointer-events: auto; cursor: pointer; }
   .screen[hidden] { display: none; }
+  body:has(#start:not([hidden])) #hud { visibility: hidden; }   /* no HUD behind the intro */
+  /* ---------- the intro: title traced in blood, rules written by a drop of blood ---------- */
+  #start { background: radial-gradient(ellipse at 50% 38%, rgba(48,6,9,.62), rgba(4,1,1,.97) 68%); overflow: hidden; }
+  #start::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(90,0,6,.28)); animation: dff-pulse 5s ease-in-out infinite; }
+  @keyframes dff-pulse { 50% { opacity: .35; } }
+  #start .intro { position: relative; width: min(960px, 94vw); }
+  #start .ttl { display: block; width: 100%; height: auto; overflow: visible; }
+  #start .ttl text { font-family: Nosifer, Cinzel, serif; font-size: 60px; fill: rgba(150, 8, 14, 0); stroke: #c3141d; stroke-width: 1.5; stroke-dasharray: 1700; stroke-dashoffset: 1700; filter: drop-shadow(0 0 7px rgba(200, 10, 20, .5)); }
+  #start.go-title .ttl text { animation: dff-draw 2.5s cubic-bezier(.45, .05, .3, 1) forwards, dff-fill 1.2s 1.8s forwards; }
+  @keyframes dff-draw { to { stroke-dashoffset: 0; } }
+  @keyframes dff-fill { to { fill: #9e0b13; stroke: #6d050b; } }
+  #start .sub { font: 700 clamp(14px, 1.9vw, 21px) Cinzel, serif; letter-spacing: 10px; color: #d9cbb6; opacity: 0; margin-top: -4px; transition: opacity 1.2s, letter-spacing 1.6s; }
+  #start.go-sub .sub { opacity: .8; letter-spacing: 16px; }
+  #start .rules { position: relative; text-align: left; margin: 22px auto 0; width: fit-content; max-width: 94vw; }
+  #start .rh { font: 700 13px Cinzel, serif; letter-spacing: 9px; color: #8f7f6c; margin: 0 0 8px 2.6em; opacity: 0; transition: opacity 1s; }
+  #start.go-sub .rh { opacity: 1; }
+  #start .rl { position: relative; z-index: 1; width: fit-content; font: 700 clamp(19px, 2.15vw, 27px)/1.42 Caveat, cursive; color: #e3333b; text-shadow: 0 0 10px rgba(170, 0, 12, .55), 0 1px 0 #3a0003; margin: 2px 0; }
+  #start .rl .n { display: inline-block; width: 2.6em; font: 700 .6em Cinzel, serif; color: #8b1c21; letter-spacing: 1px; text-shadow: none; }
+  #start .rl em { font-style: normal; color: #f3e5d0; text-shadow: 0 0 8px rgba(255, 190, 160, .22), 0 1px 0 #2a0002; }
+  #start .pen { position: absolute; z-index: 2; width: 11px; height: 11px; border-radius: 50% 50% 50% 0; background: radial-gradient(circle at 35% 35%, #ff5555, #8a0008 70%); box-shadow: 0 0 14px 4px rgba(220, 20, 30, .6); transform: translate(-50%, -50%) rotate(-45deg); opacity: 0; transition: opacity .3s; pointer-events: none; }
+  #start .drip { position: absolute; z-index: 0; opacity: .85; width: 3px; height: 0; background: linear-gradient(#6e0007, #b3121b); border-radius: 0 0 3px 3px; animation: dff-drip 1.8s ease-in forwards; pointer-events: none; }
+  #start .drip::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 6px; height: 8px; transform: translateX(-50%); background: #b3121b; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+  @keyframes dff-drip { to { height: var(--h); } }
+  #start .after { opacity: 0; transition: opacity 1.2s; }
+  #start.go-rest .after { opacity: 1; }
+  #start .controls { margin-top: 24px; }
+  #start #load { margin-top: 20px; color: #8f7f6c; }
+  #start.go-rest #load.ready { color: #e3333b; text-shadow: 0 0 12px rgba(200, 10, 20, .6); animation: dff-blink 1.6s ease-in-out infinite; }
+  @keyframes dff-blink { 50% { opacity: .45; } }
+  #start.skip .ttl text { animation: none; stroke-dashoffset: 0; fill: #9e0b13; stroke: #6d050b; }
+  #start.skip .drip { animation: none; height: var(--h); }
   .screen h1 { font: 800 clamp(48px, 8vw, 110px)/.9 Cinzel, serif; margin: 0; letter-spacing: 4px; }
   .screen h1 span { color: var(--gold); }
   .screen p { font-size: 18px; color: #c9bfae; max-width: 680px; margin: 18px auto 0; line-height: 1.6; padding: 0 16px; }
@@ -67,7 +98,7 @@
 <div class="layer" id="hit"></div>
 <div class="layer" id="hud">
   <div class="tl">TEAM<b id="x">x = 0</b><small id="busts">BUSTS: 0</small></div>
-  <div class="tr">TIME<span id="clock">10:00</span>EYE CONTACT<div class="meter"><i id="gm"></i></div>CARDS LEFT: <span id="left">10</span></div>
+  <div class="tr">TIME<span id="clock">60:00</span>EYE CONTACT<div class="meter"><i id="gm"></i></div>CARDS LEFT: <span id="left">10</span></div>
   <div class="cross"></div><div id="prompt"></div><div id="toast"></div><div id="room"></div><div id="paused">CLICK TO RESUME</div>
 </div>
 <div id="inspect">
@@ -76,11 +107,47 @@
   <div class="keys" id="keys"><span>E · TAKE</span><span>Q · DROP</span></div>
 </div>
 <div class="screen" id="start">
-  <div><h1>DEPTH FIRST <span>FEAR</span></h1><h1 style="font-size:clamp(26px,3.6vw,46px);margin-top:10px">THE MANSION</h1>
-  <p>Drawers, cabinets, chests and coffins hide <b>cards</b>. Each card is in the mansion <b>once</b>. Open one and you have <b>1 min</b> (easy), <b>2 min</b> (medium) or <b>4 min</b> (hard) to decide: <b>take it</b> and its code changes <b>x</b>, or <b>drop it</b> and x stays. Either way the card <b>burns</b>.<br>Cards can <b>raise or lower</b> x, so read the code. <span style="color:#4fbf5f">Easy</span>, <span style="color:#e0b030">medium</span> and <span style="color:#e0504a">hard</span> cards. The hard ones hide in the scariest places.<br>You have <b>60 minutes</b>. <b>Highest x wins.</b><br>She appears without warning. <b>Never look into her eyes</b> for a full second. If you do, or a card's time runs out: <b>−3</b>.</p>
-  <div class="controls"><span><kbd>W A S D</kbd>move</span><span><kbd>Mouse</kbd>look</span><span><kbd>Shift</kbd>run</span><span><kbd>E</kbd>open / close</span><span><kbd>C</kbd>grab card</span><span><kbd>E</kbd>/<kbd>Q</kbd>take / drop</span><span><kbd>Space</kbd>jump</span><span><kbd>F</kbd>flashlight</span></div>
-  <div id="load">LOADING THE MANSION… 0%</div></div>
+  <div class="intro">
+    <svg class="ttl" viewBox="0 0 1000 130" aria-label="Depth First Fear"><text x="500" y="92" text-anchor="middle" textLength="950" lengthAdjust="spacingAndGlyphs">DEPTH FIRST FEAR</text></svg>
+    <div class="sub">THE MANSION</div>
+    <div class="rules">
+      <div class="rh">THE RULES</div>
+      <div class="rl"><b class="n">I</b>Search the mansion. <em>Drawers, cupboards, chests and coffins</em> hide cards.</div>
+      <div class="rl"><b class="n">II</b>Read the code. <em>E</em> takes it and x changes. <em>Q</em> drops it. Either way, it <em>burns</em>.</div>
+      <div class="rl"><b class="n">III</b>Easy <em>1 min</em> · Medium <em>2 min</em> · Hard <em>4 min</em>. Hard cards hide <em>upstairs and outside</em>.</div>
+      <div class="rl"><b class="n">IV</b>Cards can <em>raise or lower</em> x. Highest x after <em>60 minutes</em> wins.</div>
+      <div class="rl"><b class="n">V</b>Never look into <em>her eyes</em>. Busted: <em>−3</em>. Card time runs out: <em>−3</em>.</div>
+      <i class="pen"></i>
+    </div>
+    <div class="controls after"><span><kbd>W A S D</kbd>move</span><span><kbd>Mouse</kbd>look</span><span><kbd>Shift</kbd>run</span><span><kbd>E</kbd>open / close</span><span><kbd>C</kbd>grab card</span><span><kbd>E</kbd>/<kbd>Q</kbd>take / drop</span><span><kbd>Space</kbd>jump</span><span><kbd>F</kbd>flashlight</span></div>
+    <div id="load">LOADING THE MANSION… 0%</div>
+  </div>
 </div>
+<script>
+// the intro: the title is traced in blood, then a drop of blood writes each rule like a pen
+(() => {
+  const st = document.getElementById("start"), box = st.querySelector(".rules"), pen = st.querySelector(".pen"), lines = [...st.querySelectorAll(".rl")];
+  let done = false, skip = false;
+  window.__intro = { get done() { return done; }, finish() { skip = true; st.classList.add("skip", "go-title", "go-sub", "go-rest"); } };
+  const sleep = ms => new Promise(r => { const t0 = performance.now(), f = () => (skip || performance.now() - t0 >= ms) ? r() : requestAnimationFrame(f); f(); });
+  const drip = (x, y) => { const d = document.createElement("i"); d.className = "drip"; d.style.left = x + "px"; d.style.top = y + "px"; d.style.setProperty("--h", (5 + Math.random() * 9) + "px"); box.appendChild(d); };
+  lines.forEach(l => l.style.clipPath = "inset(-30% 100% -60% 0)");
+  const write = el => new Promise(res => {
+    const W = el.offsetWidth, dur = Math.max(600, el.textContent.length * 17), t0 = performance.now(); let next = .12 + Math.random() * .3;
+    const f = now => { const p = skip ? 1 : Math.min(1, (now - t0) / dur);
+      el.style.clipPath = `inset(-30% ${(1 - p) * 100}% -60% 0)`;
+      pen.style.left = el.offsetLeft + W * p + "px"; pen.style.top = el.offsetTop + el.offsetHeight * .6 + (Math.sin(now / 37) * 3) + "px";
+      if (p > next && !skip) { drip(el.offsetLeft + W * p - 4, el.offsetTop + el.offsetHeight * .78); next += .3 + Math.random() * .55; }
+      p < 1 ? requestAnimationFrame(f) : res(); };
+    requestAnimationFrame(f); });
+  (async () => {
+    try { await Promise.race([document.fonts.load("60px Nosifer"), sleep(2500)]); } catch (e) {}
+    st.classList.add("go-title"); await sleep(2700);
+    st.classList.add("go-sub"); await sleep(700);
+    pen.style.opacity = 1; for (const l of lines) { await write(l); await sleep(220); } pen.style.opacity = 0;
+    st.classList.add("go-rest"); done = true; })();
+})();
+</script>
 <div class="screen" id="end" hidden><div><h1 id="endT">MANSION CLEARED</h1><p id="endP"></p><div class="go">CLICK TO PLAY AGAIN</div></div></div>
 
 <script type="module">
@@ -130,7 +197,7 @@ addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; cam
 /* ================= loading + materials ================= */
 const manager = new THREE.LoadingManager(); let ready = false;
 manager.onProgress = (u, a, b) => $("load").textContent = `LOADING THE MANSION… ${Math.round(a / b * 100)}%`;
-manager.onLoad = () => { ready = true; $("load").textContent = "CLICK ANYWHERE TO ENTER"; };
+manager.onLoad = () => { ready = true; $("load").textContent = "CLICK ANYWHERE TO ENTER"; $("load").classList.add("ready"); };
 const texLoader = new THREE.TextureLoader(manager), gltf = new GLTFLoader(manager);
 const MATS = {};
 function surface(id, tint = 0xffffff, rough = 1) {
@@ -1168,7 +1235,7 @@ function applyZones() {
     else o.visible = z.wing === "H" || z.wing === wing || (wing === "H" && (z.wing === "W" ? nearW : nearE)); } }
 
 /* ================= start / pointer lock ================= */
-$("start").addEventListener("click", () => { if (!ready) return; audio.init(); $("start").hidden = true; S.mode = "play"; reset(); controls.lock(); });
+$("start").addEventListener("click", () => { if (window.__intro && !window.__intro.done) return window.__intro.finish(); if (!ready) return; audio.init(); $("start").hidden = true; S.mode = "play"; reset(); controls.lock(); });
 $("end").addEventListener("click", () => { $("end").hidden = true; reset(); S.mode = "play"; controls.lock(); });
 renderer.domElement.addEventListener("click", () => { if (S.mode === "play" || S.mode === "inspect") controls.lock(); });
 controls.addEventListener("lock", () => $("paused").style.display = "none");
