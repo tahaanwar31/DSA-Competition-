@@ -101,6 +101,7 @@ async function handle(req, res) {
     if (!(await teamFrom(req))) return redirect(res, "/");
     return (await roundsNow()).rounds[0].open ? serveFile(res, "index.html") : redirect(res, "/lobby"); }
   if (M === "GET" && p === "/admin") return serveFile(res, "web/admin.html");
+  if (M === "GET" && p === "/board") return adminFrom(req) ? serveFile(res, "web/board.html") : redirect(res, "/admin");   // leaderboard screen (admins only)
   // public files: only the assets folder and the shared web files (never cards, db, .env, server)
   if (M === "GET" && (p.startsWith("/assets/") || /^\/web\/[\w-]+\.(css|js|svg|png|jpg)$/.test(p))) return serveFile(res, p.slice(1));
   if (!p.startsWith("/api/")) { res.writeHead(404); return res.end("not found"); }
@@ -152,6 +153,10 @@ async function handle(req, res) {
     const body = M === "GET" ? {} : await readBody(req), seg = p.split("/").slice(3);   // e.g. ["teams","5","reset"]
     const num = v => { const n = Number(v); if (!Number.isInteger(n) || n <= 0) throw fail(400, "bad id"); return n; };
     if (M === "POST" && seg[0] === "logout") { adminSessions.delete(cookies(req).dff_admin); return send(res, 200, { ok: true }, { "Set-Cookie": cookie("dff_admin", "", 0) }); }
+    if (M === "GET" && seg[0] === "boards") {   // just the three leaderboards, for the big screen
+      const [st, b1, b2, bf] = await Promise.all([roundsNow(), sb("leaderboard_round1?select=*&order=rank"), sb("leaderboard_round2?select=*&order=rank"), sb("leaderboard_final?select=*&order=rank")]);
+      return send(res, 200, { ...st, boards: { round1: b1, round2: b2, final: bf } });
+    }
     if (M === "GET" && seg[0] === "overview") {
       const [st, teams, cards, runs, b1, b2, bf] = await Promise.all([roundsNow(),
         sb("teams?select=id,name,members,active,session_token,created_at&order=name"), sb("cards?select=*&order=id"),

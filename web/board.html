@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Depth First Fear · Leaderboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cinzel:wght@800&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="/web/dff.css">
+<style>
+  /* Leaderboard: the storm behind, the top three as the game's playing cards, everyone else as blood-red slabs */
+  :root { --gold: #d4a531; --silver: #a9b2bc; --bronze: #b06a3c; --bone: #f1ece2; --blood: #d21a24; }
+  body { --shade: radial-gradient(ellipse 80% 70% at 50% 55%, rgba(7,8,11,.62), rgba(7,8,11,.35) 70%, rgba(7,8,11,.6)), linear-gradient(0deg, rgba(0,0,0,.85), transparent 30%); }
+  .worn { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.07' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 7 -2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  header.bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding-block: 2vh 1vh; }
+  .tt.mini { position: relative; display: grid; justify-items: start; margin: 0; line-height: 1; width: fit-content; }
+  .tt.mini .w1 { font: 400 13px "Anton", Impact, sans-serif; letter-spacing: .5em; color: var(--blood); }
+  .tt.mini .w2 { font: 400 52px/.95 "Anton", Impact, sans-serif; letter-spacing: .04em; color: var(--bone); text-shadow: 0 4px 14px rgba(0,0,0,.85); }
+  .tt.mini .slash { position: absolute; left: -4px; right: -6px; top: 64%; height: 5px; background: var(--blood); transform: rotate(-4deg); box-shadow: 0 0 14px rgba(210,26,36,.6); }
+  .tabs { display: flex; gap: 6px; padding: 5px; background: rgba(8,4,5,.7); border: 1px solid rgba(210,26,36,.35); }
+  .tabs button { position: relative; border: 0; background: none; cursor: pointer; padding: 10px 22px; font: 400 18px "Anton", Impact, sans-serif; letter-spacing: .18em; color: rgba(241,236,226,.45); }
+  .tabs button:hover { color: var(--bone); }
+  .tabs button.on { color: #fff; background: linear-gradient(180deg, #a3111a, #5c070c); box-shadow: 0 0 22px rgba(210,26,36,.45); }
+  .right { justify-self: end; display: grid; justify-items: end; gap: 6px; }
+  .live { display: flex; align-items: center; gap: 8px; font: 400 14px "Anton", Impact, sans-serif; letter-spacing: .3em; color: var(--blood); }
+  .live i { width: 9px; height: 9px; border-radius: 50%; background: var(--blood); box-shadow: 0 0 10px var(--blood); animation: blink 1.2s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+  .clock { font: 800 26px var(--f-code); font-variant-numeric: tabular-nums; color: var(--bone); text-shadow: 0 0 14px rgba(210,26,36,.5); }
+  .clock small { display: block; text-align: right; font: 700 10px var(--f-code); letter-spacing: .25em; color: var(--dim); }
+  .tools { display: flex; gap: 8px; } .tools .key { padding: 7px 12px; font-size: 12px; }
+  .tools .key.on { background: linear-gradient(180deg, #a3111a, #5c070c); color: #fff; }
+
+  main { flex: 1; min-height: 0; display: grid; place-items: center; }
+  .fit { width: min(1500px, 100%); display: grid; gap: 3vh; justify-items: center; }
+  .board-title { display: grid; justify-items: center; gap: 6px; text-align: center; }
+  .board-title h2 { margin: 0; font: 400 clamp(30px, 4.6vh, 48px)/1 "Anton", Impact, sans-serif; letter-spacing: .08em; color: var(--bone); }
+  .board-title span { font: 400 14px "Anton", Impact, sans-serif; letter-spacing: .35em; color: var(--blood); }
+
+  /* the podium: three playing cards */
+  .podium { display: grid; grid-template-columns: repeat(3, auto); align-items: end; justify-content: center; gap: clamp(18px, 3vw, 46px); padding-top: 46px; }
+  .pc { position: relative; width: 270px; transition: transform .5s; }
+  .pc.p1 { width: 320px; order: 2; transform: translateY(-26px); z-index: 2; } .pc.p2 { order: 1; transform: rotate(-4deg); } .pc.p3 { order: 3; transform: rotate(4deg); }
+  .pc .face { --suit: var(--silver); gap: 10px; padding: 16px 20px 14px; border-color: var(--suit); min-height: 0; }
+  .pc.p1 .face { --suit: var(--gold); box-shadow: 0 30px 80px rgba(0,0,0,.8), 0 0 70px rgba(212,165,49,.45); }
+  .pc.p3 .face { --suit: var(--bronze); }
+  .pc .head { color: var(--suit); font-size: 18px; }
+  .pc .head small { font: 700 11px var(--f-code); letter-spacing: .12em; color: #5b645e; }
+  .pc .team { margin: 0; font: 800 clamp(20px, 2.6vh, 26px)/1.15 var(--f-card); color: var(--ink); text-wrap: balance; overflow-wrap: anywhere; min-height: 2.3em; display: grid; align-items: center; }
+  .pc .score { background: var(--code); border-radius: 10px; padding: 10px 12px; text-align: center; font: 800 clamp(36px, 6vh, 56px)/1 var(--f-code); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .pc .score em { font-style: normal; font-size: .45em; color: #858c87; vertical-align: .5em; margin-right: 6px; }
+  .pc.p1 .score { color: #8a5a00; }
+  .pc .note { font-size: 12.5px; }
+  .pc .crown { position: absolute; left: 50%; top: -36px; transform: translateX(-50%); width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; z-index: 3;
+    background: var(--back); border: 3px solid var(--seal); box-shadow: 0 0 0 6px var(--back), 0 0 30px rgba(243,212,138,.5); font: 800 22px Georgia, serif; color: var(--seal); }
+  .pc .big { position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%); font: 400 46px/1 "Anton", Impact, sans-serif; color: var(--suit, #fff); text-shadow: 0 4px 12px rgba(0,0,0,.9); }
+
+  /* everyone else */
+  .rows { width: 100%; display: grid; grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); gap: 8px 22px; }
+  .row { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 8px 18px 8px 10px;
+    background: linear-gradient(90deg, rgba(60,7,11,.82), rgba(14,7,8,.78)); border-left: 4px solid var(--blood); box-shadow: 0 8px 22px rgba(0,0,0,.45); }
+  .row .r { font: 400 34px/1 "Anton", Impact, sans-serif; color: var(--blood); text-align: center; text-shadow: 0 0 12px rgba(210,26,36,.4); }
+  .row .n { font: 400 22px/1.1 "Anton", Impact, sans-serif; letter-spacing: .06em; color: var(--bone); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .sub { font: 700 11px var(--f-code); letter-spacing: .14em; color: #b2a999; white-space: nowrap; }
+  .row .s { min-width: 90px; text-align: right; font: 400 32px/1 "Anton", Impact, sans-serif; color: #fff; font-variant-numeric: tabular-nums; }
+  .row .s.neg, .pc .score.neg { color: #ff4b52; }
+  .flash { animation: flash 1.6s ease-out; }
+  @keyframes flash { 0% { box-shadow: 0 0 0 2px #fff, 0 0 40px rgba(255,60,70,.9); } 100% { box-shadow: 0 8px 22px rgba(0,0,0,.45); } }
+  .pc.flash .face { animation: flash 1.6s ease-out; }
+
+  /* nothing yet */
+  .empty { display: grid; justify-items: center; gap: 22px; }
+  .empty .sealed { position: relative; width: 300px; height: 420px; }
+  .empty .sealed .back { position: absolute; inset: 0; transform: none; }
+  .empty p { margin: 0; font: 400 18px "Anton", Impact, sans-serif; letter-spacing: .25em; color: var(--bone); text-align: center; }
+  .tape { position: absolute; left: -30px; right: -30px; top: 42%; transform: rotate(-8deg); padding: 9px 0; text-align: center; background: repeating-linear-gradient(-45deg, #e8b84a 0 22px, #15110a 22px 44px); box-shadow: 0 10px 26px rgba(0,0,0,.7); }
+  .tape span { display: inline-block; padding: 5px 16px; background: #15110a; color: #e8b84a; font: 800 15px var(--f-code); letter-spacing: .3em; }
+  .demo { position: fixed; z-index: 30; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 4px 12px; font: 700 11px var(--f-code); letter-spacing: .3em; color: #15110a; background: #e8b84a; }
+  @media (max-width: 1000px) { header.bar { grid-template-columns: 1fr; justify-items: center; } .right { justify-self: center; justify-items: center; } .podium { grid-template-columns: 1fr; } .pc.p1, .pc.p2, .pc.p3 { order: 0; transform: none; } }
+</style>
+</head>
+<body data-scene="poster">
+<div class="page">
+  <header class="bar">
+    <h1 class="tt mini" aria-label="Depth First Fear"><span class="w1">DEPTH FIRST</span><span class="w2 worn">FEAR</span><i class="slash"></i></h1>
+    <nav class="tabs" id="tabs"><button data-b="round1" class="on">ROUND 01</button><button data-b="round2">ROUND 02</button><button data-b="final">FINAL</button></nav>
+    <div class="right">
+      <div class="live"><i></i>LIVE</div>
+      <div class="clock" id="clock">--:--:--<small>ROUND 01</small></div>
+      <div class="tools"><button class="key" id="auto" title="Switch boards every 20 seconds (A)">Auto</button><button class="key" id="full" title="Full screen (F)">Full screen</button></div>
+    </div>
+  </header>
+  <main><div class="fit" id="fit">
+    <div class="board-title"><h2 id="bt">THE MANSION</h2><span id="bs">ROUND 01 · HIGHEST X WINS</span></div>
+    <div id="stage"></div>
+  </div></main>
+</div>
+
+<script src="/web/dff.js"></script>
+<script>
+const $ = id => document.getElementById(id), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const BOARDS = {
+  round1: { t: "THE MANSION", s: "ROUND 01 · HIGHEST X WINS", key: "x", label: "x =", sub: r => `BUSTS ${r.busts}${r.finished ? " · OUT" : ""}`, note: r => r.finished ? "made it out of the mansion" : "still inside the mansion" },
+  round2: { t: "THE FOREST", s: "ROUND 02", key: "points", label: "pts", sub: r => r.finished ? "FINISHED" : "", note: () => "in the forest" },
+  final:  { t: "FINAL RANKING", s: "ROUND 01 + ROUND 02", key: "total", label: "total", sub: r => `R1 ${r.round1} · R2 ${r.round2}`, note: r => `round 1: ${r.round1} · round 2: ${r.round2}` },
+};
+const ORD = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "TH" : ["TH", "ST", "ND", "RD"][n % 10] || "TH");
+const SUIT = ["♦", "♠", "♣"];
+let data = null, board = "round1", skew = 0, last = {}, auto = null;
+const demo = new URLSearchParams(location.search).has("demo");
+
+function fakeData() {   // only with ?demo: sample teams to preview the layout
+  const names = ["Null Pointers", "Stack Smashers", "The Recursives", "Queue Tips", "Segfault Society", "Depth Chargers", "Linked Lost", "Binary Banshees", "Heap of Bones", "Dead Nodes", "The Traversals", "Off By One", "Ghost in the Stack", "Pop Goes the Ghost", "Circular Dread", "Tree Hollow", "Breadth of Fear", "Dangling Refs"];
+  const r1 = names.map((n, i) => ({ team: n, x: Math.round(60 - i * 3.4 + (i % 3) * 2), busts: i % 4, finished: i < 3 })).sort((a, b) => b.x - a.x).map((r, i) => ({ ...r, rank: i + 1 }));
+  return { now: new Date().toISOString(), rounds: [{ id: 1, starts_at: new Date(Date.now() - 2e6).toISOString(), ends_at: new Date(Date.now() + 1.6e6).toISOString(), locked: false, status: "open" }, { id: 2, status: "construction" }],
+    boards: { round1: r1, round2: [], final: r1.map(r => ({ rank: r.rank, team: r.team, round1: r.x, round2: 0, total: r.x })) } };
+}
+
+function render() {
+  if (!data) return; const B = BOARDS[board], rows = data.boards[board] || [];
+  $("bt").textContent = B.t; $("bs").textContent = B.s;
+  for (const b of $("tabs").children) b.classList.toggle("on", b.dataset.b === board);
+  const stage = $("stage");
+  // remember where everyone was, so rank changes slide (FLIP)
+  const before = {}; stage.querySelectorAll("[data-team]").forEach(e => before[e.dataset.team] = e.getBoundingClientRect());
+  if (board === "round2" && !rows.length) { stage.innerHTML = `<div class="empty"><div class="sealed"><div class="back"><div class="in"><div class="seal">DFF</div></div></div><div class="tape"><span>UNDER CONSTRUCTION</span></div></div><p>THE FOREST IS STILL GROWING</p></div>`; return; }
+  if (!rows.length) { stage.innerHTML = `<div class="empty"><div class="sealed"><div class="back"><div class="in"><div class="seal">DFF</div></div></div><div class="tape"><span>THE NIGHT HAS NOT BEGUN</span></div></div><p>NO TEAM HAS ENTERED YET</p></div>`; return; }
+  const top = rows.slice(0, 3), rest = rows.slice(3), val = r => r[B.key];
+  const card = (r, i) => `<div class="pc p${i + 1}" data-team="${esc(r.team)}">${i === 0 ? '<div class="crown">♛</div>' : ""}
+      <div class="face"><div class="head"><span>${SUIT[i]} ${ORD(r.rank)}</span><small>${esc(B.sub(r))}</small></div>
+        <h3 class="team">${esc(r.team)}</h3><div class="score ${val(r) < 0 ? "neg" : ""}"><em>${B.label}</em>${val(r)}</div><div class="note">${esc(B.note(r))}</div></div></div>`;
+  const row = r => `<div class="row" data-team="${esc(r.team)}"><span class="r">${r.rank}</span><span class="n">${esc(r.team)}</span><span class="sub">${esc(B.sub(r))}</span><span class="s ${val(r) < 0 ? "neg" : ""}">${val(r)}</span></div>`;
+  stage.innerHTML = `<div style="display:grid;gap:3.4vh;justify-items:center;width:100%"><div class="podium">${top.map(card).join("")}</div>${rest.length ? `<div class="rows" style="--cols:${rest.length > 16 ? 3 : rest.length > 6 ? 2 : 1};${rest.length <= 6 ? "max-width:760px" : ""}">${rest.map(row).join("")}</div>` : ""}</div>`;
+  // slide from the old place; flash anyone whose score changed
+  stage.querySelectorAll("[data-team]").forEach(e => { const t = e.dataset.team, o = before[t], n = e.getBoundingClientRect(), r = rows.find(q => q.team === t);
+    if (o && (o.top !== n.top || o.left !== n.left)) e.animate([{ translate: `${o.left - n.left}px ${o.top - n.top}px` }, { translate: "0 0" }], { duration: 700, easing: "cubic-bezier(.2,.8,.2,1)" });
+    const k = board + ":" + t; if (last[k] !== undefined && last[k] !== val(r)) { e.classList.remove("flash"); void e.offsetWidth; e.classList.add("flash"); } last[k] = val(r); });
+}
+function clock() {
+  if (!data) return; const r = data.rounds[0], now = Date.now() + skew, s = Date.parse(r.starts_at), e = Date.parse(r.ends_at), pad = n => String(n).padStart(2, "0");
+  const span = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${pad(t / 3600 | 0)}:${pad((t % 3600) / 60 | 0)}:${pad(t % 60)}`; };
+  let txt = "--:--:--", sub = "ROUND 01";
+  if (r.locked) sub = "ROUND 01 · LOCKED"; else if (r.starts_at && now < s) { txt = span(s - now); sub = "ROUND 01 · STARTS IN"; } else if (r.ends_at && now < e) { txt = span(e - now); sub = "ROUND 01 · TIME LEFT"; } else if (r.ends_at) { txt = "00:00:00"; sub = "ROUND 01 · ENDED"; }
+  $("clock").innerHTML = `${txt}<small>${sub}</small>`;
+}
+async function poll() {
+  if (demo) { data = data || fakeData(); render(); return; }
+  try { const t0 = Date.now(); data = await api("/api/admin/boards"); skew = Date.parse(data.now) - (t0 + Date.now()) / 2; render(); }
+  catch (e) { if (e.status === 401) location.href = "/admin"; }
+}
+const show = b => { board = b; render(); };
+$("tabs").onclick = e => { const b = e.target.closest("button"); if (b) show(b.dataset.b); };
+const order = ["round1", "round2", "final"];
+const toggleAuto = () => { if (auto) { clearInterval(auto); auto = null; } else auto = setInterval(() => show(order[(order.indexOf(board) + 1) % 3]), 20000); $("auto").classList.toggle("on", !!auto); };
+const full = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.().catch(() => {});
+$("auto").onclick = toggleAuto; $("full").onclick = full;
+addEventListener("keydown", e => { if (e.key === "1") show("round1"); if (e.key === "2") show("round2"); if (e.key === "3") show("final"); if (e.key === "a" || e.key === "A") toggleAuto(); if (e.key === "f" || e.key === "F") full(); });
+if (demo) document.body.insertAdjacentHTML("beforeend", '<div class="demo">DEMO DATA · NOT REAL SCORES</div>');
+fitTo($("fit")); poll(); setInterval(poll, 3000); setInterval(clock, 500);
+</script>
+</body>
+</html>

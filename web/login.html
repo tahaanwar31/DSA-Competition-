@@ -51,7 +51,7 @@
       <div class="tag"><i></i>A Software Engineering Category Competition<i></i></div>
     </div>
 
-    <div class="stack"><div class="tilt"><div class="card3d down" id="card">
+    <div class="stack"><div class="tilt"><div class="card3d" id="card">
       <form class="face" id="f" autocomplete="off">
         <div class="head"><span>♥ ONE WAY IN</span><span>NO WAY OUT ♠</span></div>
         <h2>The Front Door</h2>
@@ -66,7 +66,6 @@
         <div class="note">Fill in the two blanks, then open the door.</div>
         <div class="keys"><button class="key red" id="go"><kbd>⏎</kbd><span id="goT">Open the door</span></button></div>
       </form>
-      <div class="back"><div class="in"><div class="seal">DFF</div></div></div>
     </div></div></div>
   </div></main>
 
@@ -88,7 +87,7 @@
 const $ = id => document.getElementById(id);
 if (innerWidth > 900) fitTo($("fit"));
 // the card is dealt face down, then turns over
-setTimeout(() => { $("card").classList.remove("down"); setTimeout(() => $("name").focus(), 700); }, 1500);
+setTimeout(() => $("name").focus(), 1100);   // the card is dealt face up, ready to fill in
 
 $("peek").onclick = () => { const p = $("pw"); p.type = p.type === "password" ? "text" : "password"; p.focus(); };
 addEventListener("keyup", e => { if (e.getModifierState) $("caps").hidden = !e.getModifierState("CapsLock"); });
