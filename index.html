@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Depth First Fear</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Libre+Baskerville:wght@700&family=Rock+Salt&family=JetBrains+Mono:wght@400;600;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Libre+Baskerville:wght@700&family=Anton&family=Rock+Salt&family=JetBrains+Mono:wght@400;600;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <style>
   :root { --gold: #f3d48a; --red: #d8443a; --ghost: #9cc4ff; --ink: #1d2320; --card: #fbf8f1; --code-bg: #f2ede1; }
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: "IBM Plex Sans", Arial, sans-serif; color: #eae3d6; user-select: none; }
@@ -22,6 +22,35 @@
   #toast { position: absolute; left: 50%; top: 30%; transform: translateX(-50%); font: 800 34px "JetBrains Mono", monospace; letter-spacing: 3px; text-shadow: 0 0 20px #000; opacity: 0; transition: opacity .4s; white-space: nowrap; }
   #room { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); font: 800 30px Cinzel, serif; letter-spacing: 8px; color: #e9dcc4; text-shadow: 0 0 24px #000, 0 0 8px #000; opacity: 0; transition: opacity 1.2s; white-space: nowrap; }
   #paused { position: absolute; left: 50%; top: 58%; transform: translateX(-50%); font: 700 14px "JetBrains Mono", monospace; letter-spacing: 4px; color: #b9b0a0; display: none; }
+  /* ---------- rules & controls (H) ---------- */
+  .helpkey { position: absolute; left: 28px; bottom: 26px; display: flex; align-items: center; gap: 10px; font: 400 14px "Anton", Impact, sans-serif; letter-spacing: .28em; color: #e9dfcf; text-shadow: 0 2px 8px #000; opacity: .85; }
+  .helpkey kbd, #help kbd { display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 4px; font: 800 13px "JetBrains Mono", monospace; letter-spacing: 0; color: #fff;
+    background: linear-gradient(180deg, #c4141e, #6a080d); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 3px 0 #3a0306, 0 0 14px rgba(210,26,36,.4); }
+  #rulesBtn { position: absolute; left: 50%; top: calc(58% + 34px); transform: translateX(-50%); display: none; pointer-events: auto; cursor: pointer; padding: 12px 26px; border: 0; border-radius: 2px; color: #f6efe3;
+    font: 400 16px "Anton", Impact, sans-serif; letter-spacing: .26em; background: linear-gradient(180deg, #c4141e, #6a080d); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 26px rgba(140,0,12,.5); }
+  #rulesBtn:hover { background: linear-gradient(180deg, #e01822, #7a0a10); box-shadow: 0 0 34px rgba(230,20,30,.65); }
+  #help { position: fixed; inset: 0; z-index: 40; display: none; place-items: center; padding: 20px; background: radial-gradient(ellipse at 50% 45%, rgba(20,6,8,.88), rgba(0,0,0,.96)); }
+  #help.on { display: grid; animation: helpIn .25s ease-out; }
+  @keyframes helpIn { from { opacity: 0; transform: scale(1.02); } to { opacity: 1; transform: none; } }
+  #help .box { width: min(1100px, 100%); max-height: 100%; overflow: auto; display: grid; gap: 22px; }
+  #help .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  #help h2 { position: relative; margin: 0; font: 400 clamp(34px, 6vh, 56px)/1 "Anton", Impact, sans-serif; letter-spacing: .06em; color: #f1ece2; }
+  #help h2 small { display: block; margin-bottom: 6px; font-size: 14px; letter-spacing: .5em; color: #d21a24; }
+  #help h2::after { content: ""; position: absolute; left: -6px; right: -10px; top: 70%; height: 6px; background: #d21a24; transform: rotate(-3deg); box-shadow: 0 0 14px rgba(210,26,36,.6); }
+  #help .close { font: 600 13px "JetBrains Mono", monospace; letter-spacing: .2em; color: #b9b0a0; }
+  #help .cols { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; }
+  #help .panel { padding: 18px 22px; background: linear-gradient(90deg, rgba(40,6,9,.8), rgba(12,7,8,.75)); border-left: 3px solid #d21a24; }
+  #help h3 { margin: 0 0 12px; font: 400 18px "Anton", Impact, sans-serif; letter-spacing: .22em; color: #ff3a44; }
+  #help ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: s; }
+  #help ol li { position: relative; padding-left: 38px; font: 400 16px/1.5 "IBM Plex Sans", sans-serif; color: #e9e2d6; counter-increment: s; }
+  #help ol li::before { content: counter(s); position: absolute; left: 0; top: 1px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #d21a24; color: #fff; font: 800 13px "JetBrains Mono", monospace; }
+  #help b { color: #fff; } #help .g { color: #6fd07c; font-weight: 600; } #help .y { color: #e8b84a; font-weight: 600; } #help .r { color: #ff5a62; font-weight: 600; }
+  #help .keyrow { display: grid; grid-template-columns: 172px 1fr; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.06); font: 400 15px "IBM Plex Sans", sans-serif; color: #e9e2d6; }
+  #help .keyrow span:first-child { display: flex; gap: 5px; justify-content: flex-end; }
+  #help .back { justify-self: center; padding: 14px 34px; border: 0; border-radius: 2px; cursor: pointer; color: #f6efe3; font: 400 18px "Anton", Impact, sans-serif; letter-spacing: .26em;
+    background: linear-gradient(180deg, #c4141e, #6a080d); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 12px 30px rgba(140,0,12,.5); }
+  #help .back:hover { background: linear-gradient(180deg, #e01822, #7a0a10); box-shadow: 0 0 40px rgba(230,20,30,.7); }
+  @media (max-width: 860px) { #help .cols { grid-template-columns: 1fr; } }
   /* the card */
   #inspect { position: fixed; inset: 0; display: none; place-items: center; background: rgba(0,0,0,.55); }
   #inspect.on { display: grid; }
@@ -133,8 +162,37 @@
 <div class="layer" id="hud">
   <div class="tl">TEAM<b id="x">x = 0</b><small id="busts">BUSTS: 0</small></div>
   <div class="tr">TIME<span id="clock">60:00</span>EYE CONTACT<div class="meter"><i id="gm"></i></div>CARDS LEFT: <span id="left">10</span></div>
-  <div class="cross"></div><div id="prompt"></div><div id="toast"></div><div id="room"></div><div id="paused">CLICK TO RESUME</div>
+  <div class="cross"></div><div id="prompt"></div><div id="toast"></div><div id="room"></div><div id="paused">CLICK TO RESUME</div><button id="rulesBtn">RULES &amp; CONTROLS</button>
+  <div class="helpkey"><kbd>H</kbd>RULES</div>
 </div>
+<div id="help" aria-hidden="true"><div class="box">
+  <div class="top"><h2><small>ROUND 01 · THE MANSION</small>HOW TO PLAY</h2><span class="close">PRESS <kbd>H</kbd> TO CLOSE</span></div>
+  <div class="cols">
+    <div class="panel"><h3>THE RULES</h3><ol>
+      <li><b>x</b> is your team's score. Everyone starts at <b>x = 0</b>.</li>
+      <li>Code cards are hidden in <b>drawers, cupboards, chests and coffins</b>. Look at one, press <kbd>E</kbd> to open it, then <kbd>C</kbd> to pick up the card.</li>
+      <li>Read the code on the card. Work out what it will do to <b>x</b>.</li>
+      <li>Press <kbd>E</kbd> to <b>accept</b>: the code runs on <b>x</b> and <b>x</b> is updated. Press <kbd>Q</kbd> to <b>reject</b>: <b>x</b> stays the same. Either way the card burns and is gone.</li>
+      <li>Time to decide: <span class="g">easy 1 min</span>, <span class="y">medium 2 min</span>, <span class="r">hard 4 min</span>. If time runs out, the card is rejected.</li>
+      <li>Hard cards hide <b>upstairs and outside</b>.</li>
+      <li>Don't look into <span class="r">her eyes</span>. If she catches you, <span class="r">x − 3</span>.</li>
+      <li>When the <b>60 minutes</b> end, the team with the <b>highest x</b> wins.</li>
+    </ol></div>
+    <div class="panel"><h3>CONTROLS</h3>
+      <div class="keyrow"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Move</span></div>
+      <div class="keyrow"><span><kbd>MOUSE</kbd></span><span>Look around</span></div>
+      <div class="keyrow"><span><kbd>SHIFT</kbd></span><span>Run</span></div>
+      <div class="keyrow"><span><kbd>SPACE</kbd></span><span>Jump</span></div>
+      <div class="keyrow"><span><kbd>E</kbd></span><span>Open / close · accept a card</span></div>
+      <div class="keyrow"><span><kbd>C</kbd></span><span>Pick up the card inside</span></div>
+      <div class="keyrow"><span><kbd>Q</kbd></span><span>Reject a card</span></div>
+      <div class="keyrow"><span><kbd>F</kbd></span><span>Flashlight on / off</span></div>
+      <div class="keyrow"><span><kbd>H</kbd></span><span>These rules</span></div>
+      <div class="keyrow"><span><kbd>ESC</kbd></span><span>Pause</span></div>
+    </div>
+  </div>
+  <button class="back" id="helpBack">BACK TO THE MANSION</button>
+</div></div>
 <div id="inspect">
   <div class="timer" id="timer"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="rgba(0,0,0,.5)" stroke="rgba(255,255,255,.15)" stroke-width="8"/><circle id="ring" cx="50" cy="50" r="44" fill="none" stroke="#d8443a" stroke-width="8" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><span id="secs">10</span></div>
   <div class="pcard" id="pcard"></div>
@@ -1082,7 +1140,7 @@ scrawl("help me", -15.2, 2.9, -.18, PI, 2, 1, 140);
 /* ================= player ================= */
 const controls = new PointerLockControls(camera, document.body);
 const P = { x: 0, z: 11.5, y: 0, L: 0, bob: 0, step: 0, jy: 0, vy: 0, sx: 0, sz: 0 }; const keys = {};
-addEventListener("keydown", e => { keys[e.code] = true; if (e.code === "Space") { e.preventDefault(); if (S.mode === "play" && P.jy === 0 && P.vy === 0) P.vy = 6.2; } onKey(e.code); }); addEventListener("keyup", e => keys[e.code] = false);
+addEventListener("keydown", e => { keys[e.code] = true; if (e.code === "Space") { e.preventDefault(); if (S.mode === "play" && !S.help && P.jy === 0 && P.vy === 0) P.vy = 6.2; } onKey(e.code); }); addEventListener("keyup", e => keys[e.code] = false);
 const R = .35;
 const overlaps = (x, z, L, jy) => COLL.some(b => !b.off && jy < (b.h ?? 99) - .35 && (b.l === 2 || b.l === L) && x + R > b.x0 && x - R < b.x1 && z + R > b.z0 && z - R < b.z1);
 const blockedAt = (x, z, L) => !inWorld(x, z, L) || overlaps(x, z, L, P.jy);
@@ -1130,7 +1188,7 @@ let toastT; function toast(msg, col = "#f3d48a") { const t = $("toast"); t.textC
 let roomT; function roomName(n) { const r = $("room"); r.textContent = n; r.style.opacity = 1; clearTimeout(roomT); roomT = setTimeout(() => r.style.opacity = 0, 2200); }
 function reset() { computeZones(); S.x = NET.x; S.busts = NET.busts; S.left = 0; S.clock = clockLeft(); S.taken = NET.taken; S.dropped = NET.dropped; clockText(); S.card = null; S.room = null; P.x = 0; P.z = 11.5; P.L = 0; P.y = 0; camera.rotation.set(0, 0, 0);
   for (const o of OPEN) { o.t = 0; animateOpen(o); } dealCards(); hideGhost(false, 14); GH.scare = 0; hud(); }
-function busted(why) { S.busts++; S.x -= 3; audio.sting();
+function busted(why) { if (S.help) return; S.busts++; S.x -= 3; audio.sting();
   call("/api/r1/bust").then(d => { S.x = d.x; S.busts = d.busts; hud(); }).catch(netErr); $("hit").style.opacity = 1; setTimeout(() => $("hit").style.opacity = 0, 250);
   toast(why + "  ·  BUSTED −3", "#ff6a5a"); closeCard(); hud(); checkOut(); }
 const clockText = () => { const s = Math.max(0, Math.ceil(S.clock)); $("clock").textContent = String(s / 60 | 0).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); $("clock").className = s <= 60 ? "low" : ""; };
@@ -1199,7 +1257,13 @@ function goldDone() { const ok = Number(S.buf) === S.card.ans, before = S.x; S.x
   toast(`GOLDEN ${ok ? "+" : "−"}${GOLD}  ·  x: ${before} → ${S.x}`, ok ? "#f3d48a" : "#ff6a5a"); ok ? audio.take() : audio.sting();
   if (!ok) { $("hit").style.opacity = 1; setTimeout(() => $("hit").style.opacity = 0, 250); }
   closeCard(); hud(); checkOut(); }
+function setHelp(on) { S.help = on; $("help").classList.toggle("on", on); controls.enabled = !on; if (on && GH.on) hideGhost(false, 8);
+  const pausedNow = !on && !controls.isLocked && (S.mode === "play" || S.mode === "inspect"); $("paused").style.display = $("rulesBtn").style.display = pausedNow ? "block" : "none"; }
+$("helpBack").addEventListener("click", () => { setHelp(false); if (!controls.isLocked && (S.mode === "play" || S.mode === "inspect")) controls.lock(); });
+$("rulesBtn").addEventListener("click", e => { e.stopPropagation(); setHelp(true); });
 function onKey(code) {
+  if (code === "KeyH" && (S.mode === "play" || S.mode === "inspect")) { setHelp(!S.help); return; }
+  if (S.help) return;
   if (code === "KeyF" && S.mode !== "start") { torchOn = !torchOn; torch.visible = torchOn; audio.click(); }
   if (S.mode === "play" && code === "KeyE" && aim) {
     if (!aim.open) { aim.open = true; aim.kind === "drawer" ? audio.drawer() : aim.kind === "lid" ? audio.lid() : audio.creak(); }
@@ -1322,14 +1386,14 @@ function applyZones() {
 $("start").addEventListener("click", () => { if (window.__intro && !window.__intro.done) return window.__intro.finish(); if (!ready || !NET.loaded) return; audio.init(); $("start").hidden = true; S.mode = "play"; reset(); controls.lock(); });
 $("end").addEventListener("click", () => { location.href = "/lobby"; });
 renderer.domElement.addEventListener("click", () => { if (S.mode === "play" || S.mode === "inspect") controls.lock(); });
-controls.addEventListener("lock", () => $("paused").style.display = "none");
-controls.addEventListener("unlock", () => { if (S.mode === "play" || S.mode === "inspect") $("paused").style.display = "block"; });
+controls.addEventListener("lock", () => { $("paused").style.display = "none"; $("rulesBtn").style.display = "none"; });
+controls.addEventListener("unlock", () => { if (S.mode === "play" || S.mode === "inspect") { $("paused").style.display = "block"; $("rulesBtn").style.display = "block"; } });
 
 /* ================= loop ================= */
 const ray = new THREE.Raycaster(), CENTER = new THREE.Vector2(0, 0), V = new THREE.Vector3(), V2 = new THREE.Vector3();
 let last = performance.now(), lastTick = 10, aimTick = 0, ema = 16, prT = 0;
 function update(dt, t) {
-  if (S.mode === "play") {
+  if (S.mode === "play" && !S.help) {
     const run = keys.ShiftLeft || keys.ShiftRight, sp = (run ? 6.6 : 4.2) * dt; camera.getWorldDirection(V); V.y = 0; V.normalize(); const r = V2.set(-V.z, 0, V.x);
     const mv = new THREE.Vector3(); if (keys.KeyW) mv.add(V); if (keys.KeyS) mv.sub(V); if (keys.KeyD) mv.add(r); if (keys.KeyA) mv.sub(r);
     if (mv.lengthSq()) { mv.normalize().multiplyScalar(sp); movePlayer(mv.x, mv.z); P.bob += dt * (run ? 13 : 10); if (Math.floor(P.bob / PI) !== P.step) { P.step = Math.floor(P.bob / PI); audio.step(); } }
