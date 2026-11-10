@@ -70,10 +70,21 @@
   @keyframes m-grain { 25% { background-position: 40px -30px; } 50% { background-position: -60px 20px; } 75% { background-position: 20px 50px; } }
   #start .vig { background: linear-gradient(270deg, transparent 32%, rgba(3,2,3,.5) 55%, rgba(3,2,3,.84)), radial-gradient(ellipse at 62% 45%, transparent 40%, rgba(0,0,0,.75)); }
   #start .white { background: #dfe6ff; opacity: 0; mix-blend-mode: screen; }
-  #start .menu { position: relative; z-index: 2; width: min(590px, 92vw); margin-left: max(5vw, 16px); text-align: left; }
+  #start .menu { position: relative; z-index: 2; width: min(1000px, 66vw); margin-left: max(4.5vw, 16px); text-align: left; transform-origin: left center; }
+  #start .panels { display: flex; align-items: stretch; gap: 16px; margin-top: 3.2vh; }
+  #start .panels .file { margin-top: 0; flex: 1 1 0; min-width: 0; }
+  #start .keys2 { flex: 0 0 auto; display: grid; grid-template-columns: auto auto; column-gap: 18px; align-content: start; padding: 1.6vh 18px 1.4vh; background: linear-gradient(90deg, rgba(10,6,7,.82), rgba(10,6,7,.6)); border-left: 3px solid #a10f17; box-shadow: 0 10px 40px rgba(0,0,0,.6); backdrop-filter: blur(3px);
+    opacity: 0; transform: translateY(10px); transition: opacity .7s 1.2s, transform .7s 1.2s; }
+  #start.show .keys2 { opacity: 1; transform: none; }
+  #start .keys2 .fh { grid-column: 1 / -1; }
+  #start .kr { display: grid; grid-template-columns: 86px auto; align-items: center; gap: 10px; font: 500 clamp(12px, 1.6vh, 15px) "IBM Plex Sans", sans-serif; color: #cfc6b8; margin: .55vh 0; }
+  #start .kr span { display: flex; gap: 4px; justify-content: flex-end; align-items: center; }
+  #start .kr i { font-style: normal; color: #6f6458; }
+  #start .keys2 kbd { min-width: 26px; height: clamp(22px, 2.9vh, 28px); padding: 0 7px; display: inline-grid; place-items: center; box-sizing: border-box; font: 700 11px "JetBrains Mono", monospace; color: #f1e8da;
+    background: linear-gradient(#2d2729, #151113); border: 1px solid rgba(255,255,255,.22); border-bottom: 3px solid rgba(0,0,0,.85); border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,.6); }
   #start .ttl { line-height: .9; opacity: 0; }
-  #start .t1 { display: block; font: 800 clamp(30px, 3.6vw, 54px) Cinzel, serif; letter-spacing: .22em; color: #e9dfcf; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
-  #start .t2 { position: relative; display: block; font: 800 clamp(84px, 10.5vw, 168px) Cinzel, serif; letter-spacing: .06em; margin-left: -.04em; color: transparent;
+  #start .t1 { display: block; font: 800 clamp(24px, min(3.6vw, 5.4vh), 54px) Cinzel, serif; letter-spacing: .22em; color: #e9dfcf; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
+  #start .t2 { position: relative; display: block; font: 800 clamp(64px, min(10.5vw, 16vh), 168px) Cinzel, serif; letter-spacing: .06em; margin-left: -.04em; color: transparent;
     background: linear-gradient(180deg, #d01822 0%, #9a0d15 55%, #4e0408 100%); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 22px rgba(190,10,22,.45)) drop-shadow(0 6px 24px rgba(0,0,0,.9)); }
   #start .t2::before, #start .t2::after { content: attr(data-t); position: absolute; inset: 0; opacity: 0; }
   #start .t2::before { color: rgba(0,190,255,.5); }
@@ -84,13 +95,13 @@
   @keyframes m-flicker { 0% { opacity: 1; } 8% { opacity: 0; } 14% { opacity: .9; } 22% { opacity: .1; } 30% { opacity: 1; } 52% { opacity: .55; } 58%, 100% { opacity: 1; } }
   @keyframes m-glitchA { 0% { opacity: 1; transform: translate(-6px, 2px); clip-path: inset(10% 0 55% 0); } 2% { transform: translate(5px, -1px); clip-path: inset(60% 0 8% 0); } 4%, 100% { opacity: 0; transform: none; } }
   @keyframes m-glitchB { 0% { opacity: 1; transform: translate(6px, -2px); clip-path: inset(40% 0 30% 0); } 2.4% { transform: translate(-4px, 1px); clip-path: inset(5% 0 70% 0); } 4.6%, 100% { opacity: 0; transform: none; } }
-  #start .sub { display: flex; align-items: center; gap: 14px; margin: 14px 0 0 4px; font: 700 clamp(13px, 1.25vw, 17px) Cinzel, serif; letter-spacing: .5em; color: #cbbfae; opacity: 0; transition: opacity 1s .5s; }
+  #start .sub { display: flex; align-items: center; gap: 14px; margin: 1.4vh 0 0 4px; font: 700 clamp(13px, 1.25vw, 17px) Cinzel, serif; letter-spacing: .5em; color: #cbbfae; opacity: 0; transition: opacity 1s .5s; }
   #start .sub i { width: 54px; height: 2px; background: #a10f17; box-shadow: 0 0 10px #a10f17; }
   #start.lit .sub { opacity: 1; }
-  #start .file { margin-top: 26px; padding: 16px 20px 14px 22px; background: linear-gradient(90deg, rgba(10,6,7,.82), rgba(10,6,7,.58)); border-left: 3px solid #a10f17; box-shadow: 0 10px 40px rgba(0,0,0,.6); backdrop-filter: blur(3px); opacity: 0; transform: translateY(10px); transition: opacity .7s, transform .7s; }
+  #start .file { margin-top: 26px; padding: 1.6vh 20px 1.4vh 22px; background: linear-gradient(90deg, rgba(10,6,7,.82), rgba(10,6,7,.58)); border-left: 3px solid #a10f17; box-shadow: 0 10px 40px rgba(0,0,0,.6); backdrop-filter: blur(3px); opacity: 0; transform: translateY(10px); transition: opacity .7s, transform .7s; }
   #start .fh { font: 700 12px "JetBrains Mono", monospace; letter-spacing: .45em; color: #c4232c; margin-bottom: 10px; }
-  #start .file ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
-  #start .file li { display: grid; grid-template-columns: 34px 1fr; align-items: baseline; font: 400 clamp(14px, 1.15vw, 16.5px)/1.45 "IBM Plex Sans", sans-serif; color: #cfc6b8; opacity: 0; transform: translateX(-14px); transition: opacity .5s, transform .5s; }
+  #start .file ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.1vh; }
+  #start .file li { display: grid; grid-template-columns: 34px 1fr; align-items: baseline; font: 400 clamp(13px, min(1.15vw, 1.9vh), 16.5px)/1.42 "IBM Plex Sans", sans-serif; color: #cfc6b8; opacity: 0; transform: translateX(-14px); transition: opacity .5s, transform .5s; }
   #start .file li b { font: 700 13px "JetBrains Mono", monospace; color: #8f1a20; }
   #start .file em { font-style: normal; font-weight: 600; color: #f4ece0; }
   #start .file em.r { color: #ff4b52; } #start .file em.y { color: #e8b84a; } #start .file em.g { color: #6fd07c; }
@@ -101,10 +112,10 @@
   #start.show .file li:nth-child(4) { transition-delay: 1.5s; } #start.show .file li:nth-child(5) { transition-delay: 1.9s; }
   #start .controls { justify-content: flex-start; margin-top: 16px; font-size: 12px; opacity: 0; transition: opacity 1s 2.3s; }
   #start.show .controls { opacity: .85; }
-  #start #load { margin-top: 22px; font: 700 14px "JetBrains Mono", monospace; letter-spacing: .4em; color: #8d8274; }
+  #start #load { margin-top: 3vh; font: 700 14px "JetBrains Mono", monospace; letter-spacing: .4em; color: #8d8274; }
   #start #load.ready { color: #e9dfcf; animation: m-enter 2.2s ease-in-out infinite; }
   @keyframes m-enter { 0%, 100% { opacity: 1; text-shadow: 0 0 14px rgba(200,20,30,.8); } 50% { opacity: .35; text-shadow: none; } 52% { opacity: .9; } 54% { opacity: .35; } }
-  @media (max-width: 900px) { #start { place-items: center; } #start .menu { margin: 0 auto; } #start .vig { background: rgba(3,2,3,.6); } }
+  @media (max-width: 900px) { #start { place-items: center; } #start .menu { margin: 0 auto; width: 92vw; } #start .panels { flex-direction: column; } #start .vig { background: rgba(3,2,3,.6); } }
   .screen h1 { font: 800 clamp(48px, 8vw, 110px)/.9 Cinzel, serif; margin: 0; letter-spacing: 4px; }
   .screen h1 span { color: var(--gold); }
   .screen p { font-size: 18px; color: #c9bfae; max-width: 680px; margin: 18px auto 0; line-height: 1.6; padding: 0 16px; }
@@ -133,6 +144,7 @@
   <div class="menu">
     <div class="ttl"><span class="t1">DEPTH FIRST</span><span class="t2" data-t="FEAR">FEAR</span></div>
     <div class="sub"><i></i>THE MANSION</div>
+    <div class="panels">
     <div class="file">
       <div class="fh">SURVIVAL RULES</div>
       <ol>
@@ -143,7 +155,19 @@
         <li><b>05</b><span>Never look into <em class="r">her eyes</em>. Busted <em class="r">−3</em>. Card time runs out <em class="r">−3</em>.</span></li>
       </ol>
     </div>
-    <div class="controls"><span><kbd>W A S D</kbd>move</span><span><kbd>Mouse</kbd>look</span><span><kbd>Shift</kbd>run</span><span><kbd>E</kbd>open / close</span><span><kbd>C</kbd>grab card</span><span><kbd>E</kbd>/<kbd>Q</kbd>take / drop</span><span><kbd>Space</kbd>jump</span><span><kbd>F</kbd>flashlight</span></div>
+    <div class="keys2">
+      <div class="fh">CONTROLS</div>
+      <div class="kr"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>Move</div>
+      <div class="kr"><span><kbd>MOUSE</kbd></span>Look</div>
+      <div class="kr"><span><kbd>SHIFT</kbd></span>Run</div>
+      <div class="kr"><span><kbd>SPACE</kbd></span>Jump</div>
+      <div class="kr"><span><kbd>E</kbd></span>Open / close</div>
+      <div class="kr"><span><kbd>C</kbd></span>Grab card</div>
+      <div class="kr"><span><kbd>E</kbd><i>/</i><kbd>Q</kbd></span>Take / drop</div>
+      <div class="kr"><span><kbd>F</kbd></span>Flashlight</div>
+      <div class="kr"><span><kbd>ESC</kbd></span>Pause</div>
+    </div>
+    </div>
     <div id="load">LOADING THE MANSION… 0%</div>
   </div>
 </div>
@@ -159,6 +183,9 @@
     bg.classList.remove("shake"); void bg.offsetWidth; bg.classList.add("shake"); };
   const loop = () => { if (st.hidden) return; strike(); setTimeout(loop, 5200 + Math.random() * 6500); };
   setTimeout(() => { strike(); st.classList.add("lit"); setTimeout(() => { st.classList.add("show"); setTimeout(() => done = true, 2600); }, 1300); setTimeout(loop, 6000); }, 1100);
+  // never needs scrolling: shrink the whole menu if the screen is short
+  const menu = st.querySelector(".menu"), fit = () => { menu.style.transform = "none"; const h = menu.offsetHeight, w = menu.offsetWidth, k = Math.min(1, innerHeight * .94 / h, innerWidth * .96 / (w + 40)); menu.style.transform = k < 1 ? `scale(${k})` : "none"; };
+  fit(); addEventListener("resize", fit); document.fonts && document.fonts.ready.then(fit);
   // rain streaks
   const cv = st.querySelector(".rain"), g = cv.getContext("2d"), drops = [];
   const size = () => { cv.width = innerWidth; cv.height = innerHeight; }; size(); addEventListener("resize", size);
