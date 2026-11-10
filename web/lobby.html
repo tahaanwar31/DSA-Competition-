@@ -10,7 +10,8 @@
   header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 2vh 0; }
   .tt.mini { position: relative; display: grid; justify-items: start; margin: 0; line-height: 1; user-select: none; }
   .tt.mini .w1 { font: 400 12px "Anton", Impact, sans-serif; letter-spacing: .5em; color: #d21a24; }
-  .tt.mini .w2 { font: 400 46px/.95 "Anton", Impact, sans-serif; letter-spacing: .04em; color: #f1ece2; text-shadow: 0 4px 14px rgba(0,0,0,.85); }
+  .tt.mini .w2 { font: 400 46px/.95 "Anton", Impact, sans-serif; letter-spacing: .04em; color: #f1ece2; text-shadow: 0 4px 14px rgba(0,0,0,.85);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.12' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 7 -2.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   .tt.mini .slash { position: absolute; left: -4px; right: -6px; top: 64%; height: 5px; background: #d21a24; transform: rotate(-4deg); box-shadow: 0 0 14px rgba(210,26,36,.6); }
   .team { display: flex; align-items: center; gap: 16px; font: 700 12px var(--f-code); letter-spacing: .25em; color: var(--dim); text-transform: uppercase; }
   .team b { color: #fff; letter-spacing: .12em; font-size: 15px; }
