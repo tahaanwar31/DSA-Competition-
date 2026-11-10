@@ -3,13 +3,15 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Depth First Fear · Lobby</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Cinzel:wght@800&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cinzel:wght@800&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <link rel="stylesheet" href="/web/dff.css">
 <style>
   body { --shade: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(7,8,11,.5), rgba(7,8,11,.2) 70%, rgba(7,8,11,.45)), linear-gradient(0deg, rgba(0,0,0,.85), transparent 28%); }
   header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 2vh 0; }
-  .mark.mini { --m1: 11px; --m2: clamp(34px, 5.4vh, 50px); }
-  .mark.mini .top { margin-top: 0; letter-spacing: .32em; margin-right: -.32em; } .mark.mini .big { margin: 2px 0 0; }
+  .tt.mini { position: relative; display: grid; justify-items: start; margin: 0; line-height: 1; user-select: none; }
+  .tt.mini .w1 { font: 400 12px "Anton", Impact, sans-serif; letter-spacing: .5em; color: #d21a24; }
+  .tt.mini .w2 { font: 400 46px/.95 "Anton", Impact, sans-serif; letter-spacing: .04em; color: #f1ece2; text-shadow: 0 4px 14px rgba(0,0,0,.85); }
+  .tt.mini .slash { position: absolute; left: -4px; right: -6px; top: 64%; height: 5px; background: #d21a24; transform: rotate(-4deg); box-shadow: 0 0 14px rgba(210,26,36,.6); }
   .team { display: flex; align-items: center; gap: 16px; font: 700 12px var(--f-code); letter-spacing: .25em; color: var(--dim); text-transform: uppercase; }
   .team b { color: #fff; letter-spacing: .12em; font-size: 15px; }
   .team .key { padding: 7px 12px; font-size: 11px; box-shadow: 0 3px 0 var(--ink); }
@@ -49,7 +51,7 @@
 <body data-scene="statue">
 <div class="page">
   <header class="top">
-    <h1 class="mark mini" aria-label="Depth First Fear"><span class="top">DEPTH<b>◆</b>FIRST</span><span class="big">FEAR</span></h1>
+    <h1 class="tt mini" aria-label="Depth First Fear"><span class="w1">DEPTH FIRST</span><span class="w2">FEAR</span><i class="slash"></i></h1>
     <div class="team"><span>Team <b id="team">…</b></span><button class="key" id="out">Log out</button></div>
   </header>
 
