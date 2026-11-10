@@ -44,8 +44,11 @@
   .tape span { display: inline-block; padding: 5px 16px; background: #15110a; color: #e8b84a; font: 800 15px var(--f-code); letter-spacing: .3em; }
   .tape + .tape { top: 54%; transform: rotate(6deg); } .tape + .tape span { font-size: 11px; }
 
-  .notes { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 26px; max-width: 900px; font: 500 12.5px var(--f-text); color: #b2a999; text-align: center; }
-  .notes span::before { content: "◆ "; color: var(--neon); font-size: 9px; vertical-align: 2px; }
+  .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(1000px, 100%); }
+  .notes div { position: relative; padding: 12px 16px 12px 20px; background: linear-gradient(90deg, rgba(40,6,9,.85), rgba(10,6,7,.7)); border-left: 3px solid #d21a24; box-shadow: 0 10px 26px rgba(0,0,0,.5); }
+  .notes b { display: block; margin-bottom: 4px; font: 400 15px/1 "Anton", Impact, sans-serif; letter-spacing: .16em; color: #ff3a44; text-transform: uppercase; }
+  .notes span { font: 500 14px/1.45 var(--f-text); color: #e9e2d6; }
+  @media (max-width: 860px) { .notes { grid-template-columns: 1fr; } }
   @media (max-width: 960px) { body { overflow: auto; } .page { height: auto; min-height: 100%; } .face, .sealed { min-height: 0; } .sealed { height: 360px; } }
 </style>
 </head>
@@ -84,7 +87,11 @@
         <div class="cap">Round 02 · The Forest · sealed</div>
       </div>
     </div>
-    <div class="notes"><span>One team, one PC. Logging in elsewhere logs this PC out.</span><span>Rounds open on their own, for every team at once. Stay here.</span><span>If the round is paused, you come back here with your progress saved.</span><span>Final ranking = Round 1 x + Round 2 points.</span></div>
+    <div class="notes">
+      <div><b>One team · one PC</b><span>Log in somewhere else and this PC is thrown out.</span></div>
+      <div><b>Don't leave</b><span>The round opens on its own, for every team at the same moment.</span></div>
+      <div><b>If the lights go out</b><span>A paused round sends you back here. Your progress is saved.</span></div>
+    </div>
   </div></main>
 
   <footer class="credits" aria-label="Organisers">
