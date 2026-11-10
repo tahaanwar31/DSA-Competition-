@@ -115,8 +115,11 @@ window.burnCard = (src, done) => {
 };
 
 // fit a block to the screen height (scales it down on short screens)
-window.fitTo = (el) => { const f = () => { el.style.transform = "none"; el.style.marginBlock = ""; const avail = el.parentElement.clientHeight, h = el.offsetHeight, k = Math.min(1, avail / h);
-  if (k < 1) { el.style.transform = `scale(${k})`; el.style.marginBlock = `${-(1 - k) * h / 2}px`; } };
+// it re-measures whenever the block or the space around it changes size (e.g. when the lobby card fills in)
+window.fitTo = (el) => {
+  const f = () => { const avail = el.parentElement.clientHeight, h = el.offsetHeight, k = Math.min(1, (avail - 4) / h);
+    el.style.transformOrigin = "center center"; el.style.transform = k < 1 ? `scale(${k})` : "none"; el.style.marginBlock = k < 1 ? `${-(1 - k) * h / 2}px` : ""; };
+  const ro = new ResizeObserver(() => requestAnimationFrame(f)); ro.observe(el); ro.observe(el.parentElement);
   addEventListener("resize", f); document.fonts.ready.then(f); f(); };
 
 window.api = async (url, body, method) => {
