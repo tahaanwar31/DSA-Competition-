@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🕯️ CODE 21: THE MANSION
+# 🕯️ DEPTH FIRST FEAR
 
 ### A haunted first-person card game for the **PROCOM DSA Competition**
 
@@ -14,7 +14,7 @@
 
 ## 👻 What is it?
 
-**Code 21: The Mansion** turns a Data Structures & Algorithms quiz into a horror game.
+**Depth First Fear** turns a Data Structures quiz into a horror game set in a haunted mansion.
 
 Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Drawers, cupboards, chests and coffins hide cards with a short piece of code on them. Read the code, work out what it does to your team's value `x`, and decide in **10 seconds**: take it or drop it. Some cards raise `x`, some lower it.
 

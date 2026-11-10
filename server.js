@@ -1,4 +1,4 @@
-// Tiny local web server for Code 21: The Mansion. No packages needed, only Node.js.
+// Tiny local web server for Depth First Fear. No packages needed, only Node.js.
 // Run:  node server.js        then open  http://localhost:8780
 const http = require("http"), fs = require("fs"), path = require("path");
 
@@ -15,4 +15,4 @@ http.createServer((req, res) => {
   if (!p.startsWith(root) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.writeHead(404); return res.end("not found"); }
   res.writeHead(200, { "Content-Type": types[path.extname(p).toLowerCase()] || "application/octet-stream" });
   fs.createReadStream(p).pipe(res);
-}).listen(port, () => console.log(`Code 21: The Mansion is running.\nOpen  http://localhost:${port}  in Chrome.  (Ctrl + C to stop)`));
+}).listen(port, () => console.log(`Depth First Fear is running.\nOpen  http://localhost:${port}  in Chrome.  (Ctrl + C to stop)`));

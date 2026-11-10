@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Code 21: The Mansion</title>
+<title>Depth First Fear</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Rock+Salt&family=JetBrains+Mono:wght@400;600;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <style>
   :root { --gold: #f3d48a; --red: #d8443a; --ghost: #9cc4ff; --ink: #1d2320; --card: #fbf8f1; --code-bg: #f2ede1; }
@@ -76,7 +76,7 @@
   <div class="keys" id="keys"><span>E · TAKE</span><span>Q · DROP</span></div>
 </div>
 <div class="screen" id="start">
-  <div><h1>CODE <span>21</span></h1><h1 style="font-size:clamp(26px,3.6vw,46px);margin-top:10px">THE MANSION</h1>
+  <div><h1>DEPTH FIRST <span>FEAR</span></h1><h1 style="font-size:clamp(26px,3.6vw,46px);margin-top:10px">THE MANSION</h1>
   <p>Drawers, cabinets, chests and coffins hide <b>cards</b>. Each card is in the mansion <b>once</b>. Open one and you have <b>10 seconds</b>: <b>take it</b> and its code changes <b>x</b>, or <b>drop it</b> and x stays. Either way the card <b>burns</b>.<br>Cards can <b>raise or lower</b> x, so read the code. <span style="color:#4fbf5f">Easy</span>, <span style="color:#e0b030">medium</span> and <span style="color:#e0504a">hard</span> cards. The hard ones hide in the scariest places.<br>One card is <b>golden</b>: play it and type the answer. Right <b>+15</b>, wrong <b>−15</b>.<br>You have <b>10 minutes</b>. <b>Highest x wins.</b><br>She appears without warning. <b>Never look into her eyes</b> for a full second. If you do, or a card's time runs out: <b>−3</b>.</p>
   <div class="controls"><span><kbd>W A S D</kbd>move</span><span><kbd>Mouse</kbd>look</span><span><kbd>Shift</kbd>run</span><span><kbd>E</kbd>open / close</span><span><kbd>C</kbd>grab card</span><span><kbd>E</kbd>/<kbd>Q</kbd>take / drop</span><span><kbd>Space</kbd>jump</span><span><kbd>F</kbd>flashlight</span></div>
   <div id="load">LOADING THE MANSION… 0%</div></div>
@@ -789,7 +789,7 @@ const cardBack = canvasTex(256, 360, g => {
   g.fillStyle = "#fbf8f1"; g.beginPath(); g.roundRect(0, 0, 256, 360, 22); g.fill(); g.fillStyle = "#8f1a20"; g.beginPath(); g.roundRect(14, 14, 228, 332, 14); g.fill();
   g.strokeStyle = "rgba(243,212,138,.6)"; g.lineWidth = 2; for (let i = -360; i < 360; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 360, 360); g.stroke(); }
   g.fillStyle = "#8f1a20"; g.beginPath(); g.arc(128, 180, 62, 0, 7); g.fill(); g.strokeStyle = "#f3d48a"; g.lineWidth = 4; g.stroke();
-  g.fillStyle = "#f3d48a"; g.font = "800 64px Georgia"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("21", 128, 184); });
+  g.fillStyle = "#f3d48a"; g.font = "800 50px Georgia"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("DFF", 128, 184); });
 const CARD_GEO = new THREE.PlaneGeometry(.1, .14), CARD_MAT = new THREE.MeshStandardMaterial({ map: cardBack, emissive: 0xffffff, emissiveMap: cardBack, emissiveIntensity: .35, roughness: .6 });
 const GOLD_MAT = new THREE.MeshStandardMaterial({ map: cardBack, color: 0xffc94d, emissive: 0xffb300, emissiveMap: cardBack, emissiveIntensity: .8, roughness: .4 });
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
