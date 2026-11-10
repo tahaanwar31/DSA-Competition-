@@ -6,41 +6,175 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=JetBrains+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <link rel="stylesheet" href="/web/ui.css">
 <style>
-  main { position: relative; z-index: 1; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
-  .wrap { display: grid; justify-items: center; gap: 4vh; width: min(460px, 100%); }
-  .neon { margin: 0 auto; text-align: center; }
-  .neon .w1 { font-size: clamp(18px, 2.6vw, 34px); }
-  .neon .w2 { font-size: clamp(54px, 8.5vw, 116px); }
-  .tag { margin: -2vh 0 0; font: 700 13px "JetBrains Mono", monospace; letter-spacing: .5em; color: #cbbfae; text-align: center; }
-  form { width: 100%; }
-  .btn { width: 100%; margin-top: 8px; padding: 13px; }
-  .foot { font: 500 11px "JetBrains Mono", monospace; letter-spacing: .3em; color: var(--muted); text-align: center; }
+  html, body { height: 100%; overflow: hidden; }
+  body { cursor: default; }
+
+  /* ---------- the scene ---------- */
+  .scene { position: fixed; inset: -2%; z-index: 0; pointer-events: none; transition: transform .25s ease-out; }
+  .scene img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 62% 60%; }
+  .scene .dark { filter: brightness(1.25) contrast(1.08) saturate(.85); animation: drift 50s ease-in-out infinite alternate; }
+  .scene .lit { opacity: 0; animation: drift 50s ease-in-out infinite alternate; }
+  /* the flashlight: a brighter copy of the scene, only visible in a circle around the mouse */
+  .scene .torch { filter: brightness(2.6) contrast(1.05) saturate(.9) sepia(.15); animation: drift 50s ease-in-out infinite alternate;
+    -webkit-mask-image: radial-gradient(circle var(--r, 190px) at var(--mx, 70%) var(--my, 62%), rgba(0,0,0,.95) 0%, rgba(0,0,0,.55) 45%, transparent 100%);
+            mask-image: radial-gradient(circle var(--r, 190px) at var(--mx, 70%) var(--my, 62%), rgba(0,0,0,.95) 0%, rgba(0,0,0,.55) 45%, transparent 100%); transition: opacity .4s; }
+  @keyframes drift { from { transform: scale(1.03); } to { transform: scale(1.1) translate(-1%, -.5%); } }
+  .fog { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .fog i { position: absolute; left: -50%; width: 200%; height: 45%; bottom: -8%; opacity: .5;
+    background: radial-gradient(ellipse 30% 50% at 20% 60%, rgba(150,165,185,.22), transparent 70%), radial-gradient(ellipse 25% 45% at 55% 50%, rgba(150,165,185,.18), transparent 70%), radial-gradient(ellipse 30% 50% at 85% 65%, rgba(150,165,185,.2), transparent 70%);
+    animation: fog 38s linear infinite; }
+  .fog i:nth-child(2) { bottom: 8%; height: 35%; opacity: .3; animation-duration: 60s; animation-direction: reverse; }
+  @keyframes fog { to { transform: translateX(25%); } }
+  canvas.rain { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+  .shade { position: fixed; inset: 0; z-index: 3; pointer-events: none;
+    background: linear-gradient(90deg, rgba(3,2,4,.92) 0%, rgba(3,2,4,.78) 30%, rgba(3,2,4,.25) 55%, transparent 70%), radial-gradient(ellipse at 60% 45%, transparent 35%, rgba(0,0,0,.7) 100%), linear-gradient(0deg, rgba(0,0,0,.85), transparent 22%); }
+  .grain { position: fixed; inset: 0; z-index: 4; pointer-events: none; opacity: .08; animation: grain .5s steps(4) infinite;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  @keyframes grain { 25% { background-position: 40px -30px; } 50% { background-position: -60px 20px; } 75% { background-position: 20px 50px; } }
+  .white { position: fixed; inset: 0; z-index: 5; pointer-events: none; background: #dfe6ff; opacity: 0; mix-blend-mode: screen; }
+  body.shake .scene { animation: shake .45s linear; }
+  @keyframes shake { 20% { translate: -5px 2px; } 40% { translate: 4px -3px; } 60% { translate: -2px 1px; } 80% { translate: 1px 0; } }
+
+  /* ---------- the left column ---------- */
+  main { position: relative; z-index: 6; height: 100%; display: grid; grid-template-rows: 1fr auto; padding: 0 max(5vw, 18px); }
+  .left { align-self: center; width: min(470px, 100%); display: grid; gap: 3.2vh; }
+  .kicker { display: flex; align-items: center; gap: 12px; font: 700 clamp(9px, 1.35vh, 12px) "JetBrains Mono", monospace; letter-spacing: .26em; white-space: nowrap; color: #cbbfae; text-transform: uppercase; opacity: 0; animation: fadeUp 1s 1.6s forwards; }
+  .kicker i { flex: 0 0 34px; height: 2px; background: var(--red); box-shadow: 0 0 10px var(--red); }
+  .neon { opacity: 0; }
+  .neon .w1 { font-size: clamp(20px, min(3vw, 4.6vh), 40px); margin-top: 1.4vh; }
+  .neon .w2 { font-size: clamp(62px, min(9.5vw, 15vh), 150px); margin-bottom: 1.2vh; }
+  body.on .neon { animation: powerOn 1.6s steps(1) forwards; }
+  @keyframes powerOn { 0% { opacity: 1; } 6% { opacity: 0; } 12% { opacity: .9; } 18% { opacity: .05; } 26% { opacity: 1; } 44% { opacity: .5; } 50%, 100% { opacity: 1; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* the login card */
+  .card { position: relative; padding: 3vh 28px 2.6vh; background: linear-gradient(160deg, rgba(20,10,12,.82), rgba(8,5,7,.88)); border: 1px solid rgba(255,255,255,.07);
+    box-shadow: 0 24px 60px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.04); backdrop-filter: blur(6px); opacity: 0; animation: fadeUp .9s 1.9s forwards; }
+  .card::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: linear-gradient(90deg, transparent, var(--neon) 20%, var(--neon) 80%, transparent); box-shadow: 0 0 16px var(--neon); }
+  .card .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.4vh; }
+  .card .head b { font: 700 12px "JetBrains Mono", monospace; letter-spacing: .4em; color: #ff4b52; }
+  .card .head span { font: 500 11px "JetBrains Mono", monospace; letter-spacing: .2em; color: var(--muted); }
+  .in { position: relative; margin: 1.5vh 0; }
+  .in label { display: block; font: 700 10.5px "JetBrains Mono", monospace; letter-spacing: .3em; color: var(--muted); margin-bottom: 7px; }
+  .in input { padding: 13px 44px 13px 14px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.12); border-radius: 2px; font: 500 15px "JetBrains Mono", monospace; letter-spacing: .04em; transition: border-color .2s, box-shadow .2s, background .2s; }
+  .in input:focus { background: rgba(30,4,8,.55); }
+  .in .eye { position: absolute; right: 8px; bottom: 7px; width: 32px; height: 32px; border: 0; background: none; color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+  .in .eye:hover { color: #fff; }
+  .caps { font: 500 11px "JetBrains Mono", monospace; color: var(--gold); letter-spacing: .1em; margin-top: 6px; visibility: hidden; }
+  .go { position: relative; width: 100%; margin-top: 1.2vh; padding: 15px; overflow: hidden; font-size: 14px; letter-spacing: .45em; }
+  .go::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.12) 50%, transparent 70%); transform: translateX(-120%); animation: sweep 3.6s 3s infinite; }
+  @keyframes sweep { 30%, 100% { transform: translateX(120%); } }
+  .card.bad { animation: no .4s; } .card.bad input { border-color: var(--neon); }
+  @keyframes no { 20% { transform: translateX(-9px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+  .err { margin: 1.2vh 0 0; min-height: 1.3em; }
+
+  /* ---------- credits ---------- */
+  .credits { justify-self: center; display: flex; align-items: end; gap: clamp(14px, 3vw, 48px); padding: 0 0 3.2vh; opacity: 0; animation: fadeUp 1s 2.5s forwards; text-align: center; }
+  .credits div { display: grid; gap: 4px; }
+  .credits span { font: 700 clamp(9px, 1.2vh, 11px) "JetBrains Mono", monospace; letter-spacing: .35em; color: #a8323a; }
+  .credits b { font: 600 clamp(12px, 1.7vh, 15px) "IBM Plex Sans", sans-serif; color: #d9cfc0; letter-spacing: .04em; white-space: nowrap; }
+  .credits .head span { color: #ff4b52; text-shadow: 0 0 10px rgba(255,40,50,.5); }
+  .credits .head b { font: 700 clamp(15px, 2.3vh, 21px) "Libre Baskerville", serif; color: #fff; text-shadow: 0 0 18px rgba(255,40,50,.35); }
+  .credits .sep { width: 1px; height: 30px; background: rgba(255,255,255,.12); align-self: center; }
+
+  /* leaving: fade to black */
+  .black { position: fixed; inset: 0; z-index: 20; background: #000; opacity: 0; pointer-events: none; transition: opacity .9s; display: grid; place-items: center; font: 700 13px "JetBrains Mono", monospace; letter-spacing: .6em; color: #8d8274; }
+  body.leaving .black { opacity: 1; }
+
+  @media (max-width: 900px) {
+    .shade { background: rgba(3,2,4,.72); }
+    main { padding: 0 16px; } .left { justify-self: center; padding-top: 4vh; }
+    .credits { flex-wrap: wrap; justify-content: center; gap: 10px 18px; } .credits .sep { display: none; } .credits .head { order: -1; flex-basis: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .scene img, .fog i, .grain, .go::after { animation: none !important; } }
 </style>
 </head>
 <body>
-<div class="storm"><img class="b0" src="/assets/ui/intro-dark.jpg" alt=""><img class="b1" src="/assets/ui/intro-flash.jpg" alt=""><canvas></canvas><div class="vig"></div></div>
+<div class="scene" id="scene">
+  <img class="dark" src="/assets/ui/login-dark.jpg" alt="">
+  <img class="torch" src="/assets/ui/login-dark.jpg" alt="">
+  <img class="lit" id="lit" src="/assets/ui/login-flash.jpg" alt="">
+</div>
+<div class="fog"><i></i><i></i></div>
+<canvas class="rain"></canvas>
+<div class="shade"></div><div class="grain"></div><div class="white" id="white"></div>
+
 <main>
-  <div class="wrap">
+  <div class="left">
     <h1 class="neon" aria-label="Depth First Fear"><i class="bar"></i><span class="w1">DEPTH FIRST</span><span class="w2">FEAR</span><i class="bar"></i></h1>
-    <p class="tag">PROCOM · DATA STRUCTURES</p>
-    <form class="panel" id="f" autocomplete="off">
-      <div class="label">Team login</div>
-      <label class="field"><span>Team name</span><input id="name" required maxlength="60" autofocus></label>
-      <label class="field"><span>Password</span><input id="pw" type="password" required maxlength="100"></label>
-      <button class="btn" id="go">Enter</button>
+    <div class="kicker"><i></i>A Software Engineering Category Competition</div>
+    <form class="card" id="f" autocomplete="off">
+      <div class="head"><b>TEAM LOGIN</b><span id="clock"></span></div>
+      <div class="in"><label for="name">TEAM NAME</label><input id="name" required maxlength="60" autofocus spellcheck="false"></div>
+      <div class="in"><label for="pw">PASSWORD</label><input id="pw" type="password" required maxlength="100">
+        <button type="button" class="eye" id="eye" aria-label="Show password"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      <div class="caps" id="caps">CAPS LOCK IS ON</div>
+      <button class="btn go" id="go">Enter the mansion</button>
       <p class="err" id="err"></p>
     </form>
-    <div class="foot">ONE DEVICE PER TEAM</div>
   </div>
+
+  <footer class="credits" aria-label="Organisers">
+    <div><span>DEPUTY</span><b>Ayesha Nehal</b></div>
+    <div><span>CO-HEAD</span><b>Muhammad Abbas</b></div>
+    <i class="sep"></i>
+    <div class="head"><span>HEAD</span><b>Ali Asghar</b></div>
+    <i class="sep"></i>
+    <div><span>CO-HEAD</span><b>Muhammad Umar</b></div>
+    <div><span>DEPUTY</span><b>Hamza Zaidi</b></div>
+  </footer>
 </main>
-<script src="/web/storm.js"></script>
+<div class="black">ENTERING…</div>
+
 <script>
-const f = document.getElementById("f"), err = document.getElementById("err"), go = document.getElementById("go");
-const why = new URLSearchParams(location.search).get("why");
-if (why === "other") err.textContent = "Your team logged in on another device, so this one was logged out.";
-f.addEventListener("submit", async e => { e.preventDefault(); err.textContent = ""; go.disabled = true;
-  try { await api("/api/login", { name: document.getElementById("name").value, password: document.getElementById("pw").value }); location.href = "/lobby"; }
-  catch (x) { err.textContent = x.message; go.disabled = false; } });
+const $ = id => document.getElementById(id);
+// title powers on, then lightning every few seconds reveals her in the doorway
+requestAnimationFrame(() => document.body.classList.add("on"));
+const lit = $("lit"), white = $("white");
+const strike = (big) => {
+  const seq = big ? [[0, .95], [60, 0], [120, 1], [240, .4], [300, .9], [900, 0]] : [[0, .6], [80, 0], [150, .45], [500, 0]];
+  for (const [ms, v] of seq) setTimeout(() => { lit.style.opacity = v; white.style.opacity = v * .16; }, ms);
+  if (big) { document.body.classList.remove("shake"); void document.body.offsetWidth; document.body.classList.add("shake"); }
+};
+const storm = () => { strike(Math.random() < .6); setTimeout(storm, 5500 + Math.random() * 7000); };
+setTimeout(() => { strike(true); setTimeout(storm, 6000); }, 900);
+
+// flashlight follows the mouse; the scene leans a little (parallax)
+const scene = $("scene"); let tx = innerWidth * .7, ty = innerHeight * .62, cx = tx, cy = ty, moved = false;
+addEventListener("pointermove", e => { tx = e.clientX; ty = e.clientY; moved = true; });
+(function loop(t) {
+  if (!moved) { tx = innerWidth * (.66 + .1 * Math.sin(t / 2600)); ty = innerHeight * (.6 + .06 * Math.sin(t / 1900)); }   // wanders by itself until you move
+  cx += (tx - cx) * .12; cy += (ty - cy) * .12;
+  const flick = Math.random() < .015 ? 120 : 190 + Math.sin(t / 90) * 3;
+  scene.style.setProperty("--mx", cx + "px"); scene.style.setProperty("--my", cy + "px"); scene.style.setProperty("--r", flick + "px");
+  scene.style.transform = `translate(${(cx / innerWidth - .5) * -14}px, ${(cy / innerHeight - .5) * -8}px)`;
+  requestAnimationFrame(loop); })(0);
+
+// rain
+(() => { const cv = document.querySelector("canvas.rain"), g = cv.getContext("2d"), drops = [];
+  const size = () => { cv.width = innerWidth; cv.height = innerHeight; }; size(); addEventListener("resize", size);
+  for (let i = 0; i < 240; i++) drops.push({ x: Math.random(), y: Math.random(), v: .9 + Math.random() * .9, l: 12 + Math.random() * 22, a: .05 + Math.random() * .2 });
+  (function rain() { g.clearRect(0, 0, cv.width, cv.height); g.lineWidth = 1;
+    for (const d of drops) { d.y += d.v * .016; d.x -= .0025; if (d.y > 1.05) { d.y = -.05; d.x = Math.random() * 1.1; }
+      const x = d.x * cv.width, y = d.y * cv.height; g.strokeStyle = `rgba(190,200,220,${d.a})`; g.beginPath(); g.moveTo(x, y); g.lineTo(x - d.l * .18, y + d.l); g.stroke(); }
+    requestAnimationFrame(rain); })(); })();
+
+// clock in the card
+setInterval(() => $("clock").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }), 1000);
+
+// password eye + caps lock
+$("eye").onclick = () => { const p = $("pw"); p.type = p.type === "password" ? "text" : "password"; p.focus(); };
+addEventListener("keyup", e => { if (e.getModifierState) $("caps").style.visibility = e.getModifierState("CapsLock") ? "visible" : "hidden"; });
+
+// login
+const f = $("f"), err = $("err"), go = $("go");
+if (new URLSearchParams(location.search).get("why") === "other") err.textContent = "Your team logged in on another device, so this one was logged out.";
+f.addEventListener("submit", async e => { e.preventDefault(); err.textContent = ""; go.disabled = true; f.classList.remove("bad");
+  try {
+    const r = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: $("name").value, password: $("pw").value }) });
+    const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || "Network problem");
+    strike(true); document.body.classList.add("leaving"); setTimeout(() => location.href = "/lobby", 1000);
+  } catch (x) { err.textContent = x.message; go.disabled = false; void f.offsetWidth; f.classList.add("bad"); } });
 </script>
 </body>
 </html>
