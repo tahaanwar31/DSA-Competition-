@@ -92,6 +92,22 @@ Then open **http://localhost:8780** in **Google Chrome** and click to enter.
 | 🟡 **Medium** | about ±5 to ±15 | anywhere |
 | 🔴 **Hard** | big or tricky: ×2, ×0, −20 … | the scariest places (upstairs and outside) |
 
+#### Topics at each level
+
+Every topic appears at **every** level, getting harder:
+
+| Topic | 🟢 Easy | 🟡 Medium | 🔴 Hard |
+| --- | --- | --- | --- |
+| **Stack** | push / pop / top | reverse a string, bracket matching | postfix evaluation, two stacks |
+| **Queue** | enqueue / dequeue / front | rotate a queue, queue + stack | circular queue, queue from 2 stacks |
+| **Singly linked list** | traverse, sum, count | insert / delete in the middle, middle node | reverse the list, list with a loop |
+| **Doubly linked list** | walk forward, read a value | walk backward with `prev`, insert | delete a node and fix both links |
+| **Circular linked list** | steps back to the head | stop after k laps | Josephus (remove every k-th node) |
+| **BST** | insert, find min / max | in-order traversal | pre-order / post-order, after a delete |
+| **Recursion** | factorial, sum 1..n | power, reverse | two recursive calls, recursion on a tree |
+| **BFS** | first nodes visited | k-th node visited, level of a node | graph with cycles, shortest path length |
+| **DFS** | first nodes visited | k-th node visited, finish order | DFS with a stack, cycle detection |
+
 Every team gets **the same cards**. Only the hiding places change from laptop to laptop, so no team gets an easier deck and teams can't tell each other where a card is.
 
 ### ⭐ The golden card

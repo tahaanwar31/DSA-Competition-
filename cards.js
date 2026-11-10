@@ -14,6 +14,19 @@
 //    f    : what TAKING the card does to the team's x
 //           (must match what the code really does!)
 //
+//  TOPICS: every topic appears at EVERY level, getting harder:
+//                 EASY                      MEDIUM                        HARD
+//    Stack        push/pop/top              reverse, bracket matching     postfix eval, two stacks
+//    Queue        enqueue/dequeue/front     rotate, queue + stack         circular queue, queue from 2 stacks
+//    Singly LL    traverse, sum, count      insert/delete mid, middle     reverse list, list with a loop
+//    Doubly LL    walk forward, read        walk back with prev, insert   delete + fix both links
+//    Circular LL  steps back to head        stop after k laps             Josephus (remove every k-th)
+//    BST          insert, min/max           in-order traversal            pre-order / post-order, delete
+//    Recursion    factorial, sum 1..n       power, reverse                two calls (fib-style), on a tree
+//    BFS          first nodes visited       k-th visited, node level      cycles, shortest path length
+//    DFS          first nodes visited       k-th visited, finish order    stack-based DFS, cycle detection
+//  Only these topics are tested.
+//
 //  HOW A ROUND USES THEM
 //  - Every card in this list is hidden ONCE per round, in a random place.
 //    Every team gets the same cards; only the places change per laptop.
@@ -205,13 +218,18 @@ while (!q.empty()) {
 if (cnt == 4) x = 0;
 else x = x + 20;` },
 
-  { lvl: "hard", cat: "★ BITS", t: "Counting ones", f: x => x + 20, code:
-`int n = 45, c = 0;
-while (n) {
-  n &= n - 1;   // removes the lowest 1 bit
-  c++;
+  { lvl: "hard", cat: "♦ BST", t: "Post-order picks", f: x => x + 13, code:
+`// BST: insert 8, 3, 10, 1, 6, 14 in this order
+int k = 0, s = 0;
+void post(N* t) {
+  if (!t) return;
+  post(t->l);
+  post(t->r);
+  k++;
+  if (k == 3 || k == 5) s += t->v;
 }
-x = x + c * 5;` },
+post(root);
+x = x + s;` },
 ];
 
 export const GOLD = 15;   // whole number, so scores never have .5
