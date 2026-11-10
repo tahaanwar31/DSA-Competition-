@@ -1236,7 +1236,8 @@ function update(dt, t) {
   bolt.update(dt);
   let f = 0; if (S.flash > 0) { S.flash -= dt; f = (S.flash > .55 || (S.flash > .25 && S.flash < .36)) ? 1 : S.flash > 0 ? S.flash * .4 : 0; }
   WINMAT.uniforms.flash.value = f; WINMAT.uniforms.time.value = t; EXTU.flash.value = f; EXTU.time.value = t; BEAM.opacity = .07 + f * .5; grade.uniforms.time.value = t; hemi.intensity = .1 + .24 * S.outK + f * (1 + 2 * S.outK); moon.intensity = .04 + .55 * S.outK + f * (.6 + 3 * S.outK); water.material.uniforms.flash.value = f;
-  scene.fog.density = .052 - .016 * S.outK; scene.fog.color.lerpColors(FOG_IN, FOG_OUT, S.outK); scene.background.copy(scene.fog.color); if (f > 0 && S.outK > .05) { scene.background.lerp(SKYFLASH, f * .5 * S.outK); scene.fog.color.lerp(SKYFLASH, f * .35 * S.outK); } torch.intensity = 34 * dimK(t) * (GH.on ? (Math.random() < .25 ? .15 : 1) : 1);
+  torch.distance = 17 + 15 * S.outK; torch.angle = .3 + .13 * S.outK;   // outside: brighter, wider, reaches further
+  scene.fog.density = .052 - .016 * S.outK; scene.fog.color.lerpColors(FOG_IN, FOG_OUT, S.outK); scene.background.copy(scene.fog.color); if (f > 0 && S.outK > .05) { scene.background.lerp(SKYFLASH, f * .5 * S.outK); scene.fog.color.lerp(SKYFLASH, f * .35 * S.outK); } torch.intensity = (34 + 66 * S.outK) * dimK(t) * (GH.on ? (Math.random() < .25 ? .15 : 1) : 1);
   // small things that move
   water.material.uniforms.time.value = t;
   chandLight.intensity = 38 * (.9 + .1 * Math.sin(t * 7)) * (hash(Math.floor(t * 6)) < .06 ? .2 : 1) * dimK(t);
