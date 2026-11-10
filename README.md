@@ -118,7 +118,7 @@ Every team gets **the same cards**. Only the hiding places change from laptop to
 
 ### 🏆 Ties
 
-If two teams finish with the same `x`, the team with **fewer busts** ranks higher.
+The tie rule is **not decided yet**. For now, teams with the same `x` share the same rank.
 
 ---
 

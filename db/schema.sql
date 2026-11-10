@@ -99,22 +99,22 @@ alter table plays  enable row level security;
 
 -- ============================================================
 --  THE THREE LEADERBOARDS (live views)
+--  Tie rule NOT decided yet: equal scores share the same rank for now.
 -- ============================================================
 create or replace view leaderboard_round1 with (security_invoker = true) as
-select rank() over (order by r.x desc, r.busts asc) as rank,
+select rank() over (order by r.x desc) as rank,
        t.name as team, r.x, r.busts, r.timeouts, r.finished_at is not null as finished
 from runs r join teams t on t.id = r.team_id
 where r.round_id = 1 and not r.voided and t.active;
 
 create or replace view leaderboard_round2 with (security_invoker = true) as
-select rank() over (order by r.points desc, r.wrong asc) as rank,
+select rank() over (order by r.points desc) as rank,
        t.name as team, r.points, r.wrong, r.finished_at is not null as finished
 from runs r join teams t on t.id = r.team_id
 where r.round_id = 2 and not r.voided and t.active;
 
 create or replace view leaderboard_final with (security_invoker = true) as
-select rank() over (order by coalesce(r1.x, 0) + coalesce(r2.points, 0) desc,
-                             coalesce(r1.busts, 0) + coalesce(r2.wrong, 0) asc) as rank,
+select rank() over (order by coalesce(r1.x, 0) + coalesce(r2.points, 0) desc) as rank,
        t.name as team,
        coalesce(r1.x, 0)      as round1,
        coalesce(r2.points, 0) as round2,
