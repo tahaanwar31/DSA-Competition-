@@ -13,7 +13,7 @@
   window.strike = big => {
     const seq = big ? [[0, .95], [60, 0], [120, 1], [240, .4], [300, .9], [950, 0]] : [[0, .55], [80, 0], [150, .4], [500, 0]];
     for (const [ms, v] of seq) setTimeout(() => { lit.style.opacity = v; flash.style.opacity = v * .15; }, ms);
-    if (big) { document.body.classList.remove("shake"); void document.body.offsetWidth; document.body.classList.add("shake"); }
+    if (big) { document.body.classList.remove("shake"); void document.body.offsetWidth; document.body.classList.add("shake", "lit"); setTimeout(() => document.body.classList.remove("lit"), 900); }
   };
   const storm = () => { strike(Math.random() < .55); setTimeout(storm, 6500 + Math.random() * 7000); };
   setTimeout(() => { strike(true); setTimeout(storm, 7000); }, 2200);

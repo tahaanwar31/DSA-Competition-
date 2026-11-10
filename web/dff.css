@@ -64,6 +64,21 @@ body.shake .night { animation: shake .45s linear; }
 .sign.on { animation: powerOn 1.6s steps(1) both; }
 @keyframes powerOn { 0% { opacity: 0; } 6% { opacity: 1; } 12% { opacity: 0; } 18% { opacity: .9; } 24% { opacity: .1; } 32%, 100% { opacity: 1; } }
 
+/* ---------- the title, set like a card: Cinzel, paper, suit red, gold seal ---------- */
+.mark { margin: 0; display: grid; justify-items: center; width: fit-content; line-height: 1; user-select: none; }
+.mark .orn { display: flex; align-items: center; gap: 14px; width: 100%; color: var(--seal); font-size: var(--o, 15px); }
+.mark .orn::before, .mark .orn::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--seal)); opacity: .8; }
+.mark .orn::after { background: linear-gradient(270deg, transparent, var(--seal)); }
+.mark .top { margin-top: 1.4vh; font: 800 var(--m1, clamp(16px, min(2.3vw, 3.6vh), 32px)) var(--f-card); letter-spacing: .42em; margin-right: -.42em; color: var(--suit);
+  text-shadow: 0 0 18px rgba(179,38,45,.55); }
+.mark .top b { color: var(--seal); font-weight: 800; margin: 0 .25em; }
+.mark .big { margin: .6vh 0 1.2vh; font: 800 var(--m2, clamp(70px, min(10vw, 15vh), 156px))/.9 var(--f-card); letter-spacing: .06em; margin-right: -.06em; color: var(--paper);
+  text-shadow: 0 1px 0 #d9d0bf, 0 2px 0 #c9bfac, 0 3px 0 #a99e8a, 0 8px 18px rgba(0,0,0,.75), 0 0 46px rgba(179,38,45,.45); }
+.mark .big span { color: var(--suit); text-shadow: 0 1px 0 #8a1a20, 0 2px 0 #741419, 0 3px 0 #5a0e12, 0 8px 18px rgba(0,0,0,.75), 0 0 40px rgba(255,40,50,.5); }
+.mark.on { animation: markIn 1.4s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes markIn { from { opacity: 0; letter-spacing: .3em; filter: blur(6px); } to { opacity: 1; filter: none; } }
+body.lit .mark .big { text-shadow: 0 1px 0 #d9d0bf, 0 2px 0 #c9bfac, 0 3px 0 #a99e8a, 0 8px 18px rgba(0,0,0,.75), 0 0 70px rgba(220,230,255,.6); }
+
 /* ---------- the card (same as the game's) ---------- */
 .stack { perspective: 1600px; }
 .tilt { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transform-style: preserve-3d; transition: transform .25s ease-out; }

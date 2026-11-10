@@ -9,12 +9,12 @@
   body { --shade: linear-gradient(90deg, rgba(7,8,11,.9) 0%, rgba(7,8,11,.62) 38%, rgba(7,8,11,.25) 62%, rgba(7,8,11,.45) 100%), linear-gradient(0deg, rgba(0,0,0,.8), transparent 26%); }
   main { flex: 1; min-height: 0; display: grid; place-items: center; }
   .fit { width: min(1240px, 100%); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: clamp(28px, 5vw, 90px); padding-block: 2vh; }
-  .intro { display: grid; gap: 2.6vh; justify-items: start; min-width: 0; }
+  .intro { display: grid; gap: 2.4vh; justify-items: center; min-width: 0; }
   .tag { display: flex; align-items: center; gap: 12px; font: 700 12px var(--f-code); letter-spacing: .3em; color: var(--mist); text-transform: uppercase; }
   .tag i { width: 36px; height: 2px; background: var(--neon); box-shadow: 0 0 10px var(--neon); }
   .lede { margin: 0; max-width: 34ch; font: 400 17px/1.65 var(--f-text); color: #d8cfc1; text-wrap: pretty; }
   .lede b { color: #fff; font-weight: 600; }
-  .intro > :not(.sign) { opacity: 0; animation: up .8s ease-out forwards; } .tag { animation-delay: 1.3s !important; } .lede { animation-delay: 1.6s !important; }
+  .intro > :not(.mark) { opacity: 0; animation: up .8s ease-out forwards; } .tag { animation-delay: 1.3s !important; }
   @keyframes up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
   .stack { width: min(500px, calc(100vw - 32px)); opacity: 0; animation: deal .9s .5s cubic-bezier(.2,.8,.2,1) forwards; }
@@ -33,7 +33,7 @@
   @media (max-width: 900px) {
     body { overflow: auto; } .page { height: auto; min-height: 100%; }
     .fit { grid-template-columns: 1fr; justify-items: center; gap: 4vh; padding-block: 5vh; }
-    .intro { justify-items: center; text-align: center; } .lede { display: none; }
+    .intro { justify-items: center; text-align: center; }
   }
 </style>
 </head>
@@ -41,9 +41,8 @@
 <div class="page">
   <main><div class="fit" id="fit">
     <div class="intro">
-      <h1 class="sign on" aria-label="Depth First Fear"><i class="bar"></i><span class="w1">DEPTH FIRST</span><span class="w2">FEAR</span><i class="bar"></i></h1>
-      <div class="tag"><i></i>A Software Engineering Category Competition</div>
-      <p class="lede">Sixty-five code cards are hidden in this house. <b>Read the code.</b> Take the cards that raise your <b>x</b> and let the rest burn. And whatever you do, don't look into her eyes.</p>
+      <h1 class="mark on" aria-label="Depth First Fear"><span class="orn">♠ ♥ ♦ ♣</span><span class="top">DEPTH<b>◆</b>FIRST</span><span class="big">FEAR</span><span class="orn">◆</span></h1>
+      <div class="tag"><i></i>A Software Engineering Category Competition<i></i></div>
     </div>
 
     <div class="stack"><div class="tilt"><div class="card3d down" id="card">

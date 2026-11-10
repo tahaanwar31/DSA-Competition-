@@ -8,9 +8,8 @@
 <style>
   body { --shade: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(7,8,11,.5), rgba(7,8,11,.2) 70%, rgba(7,8,11,.45)), linear-gradient(0deg, rgba(0,0,0,.85), transparent 28%); }
   header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 2vh 0; }
-  .sign.mini { --s1: clamp(11px, 1.6vh, 15px); --s2: clamp(30px, 5vh, 46px); }
-  .sign.mini .w1 { margin-top: .7vh; letter-spacing: .32em; } .sign.mini .w2 { margin-bottom: .6vh; -webkit-text-stroke-width: 2px; }
-  .sign.mini .bar { height: 3px; }
+  .mark.mini { --m1: 11px; --m2: clamp(34px, 5.4vh, 50px); }
+  .mark.mini .top { margin-top: 0; letter-spacing: .32em; margin-right: -.32em; } .mark.mini .big { margin: 2px 0 0; }
   .team { display: flex; align-items: center; gap: 16px; font: 700 12px var(--f-code); letter-spacing: .25em; color: var(--dim); text-transform: uppercase; }
   .team b { color: #fff; letter-spacing: .12em; font-size: 15px; }
   .team .key { padding: 7px 12px; font-size: 11px; box-shadow: 0 3px 0 var(--ink); }
@@ -50,7 +49,7 @@
 <body data-scene="statue">
 <div class="page">
   <header class="top">
-    <h1 class="sign mini" aria-label="Depth First Fear"><i class="bar"></i><span class="w1">DEPTH FIRST</span><span class="w2">FEAR</span><i class="bar"></i></h1>
+    <h1 class="mark mini" aria-label="Depth First Fear"><span class="top">DEPTH<b>◆</b>FIRST</span><span class="big">FEAR</span></h1>
     <div class="team"><span>Team <b id="team">…</b></span><button class="key" id="out">Log out</button></div>
   </header>
 
