@@ -62,8 +62,6 @@ create table if not exists runs (
   x           integer not null default 0,   -- Round 1 score
   points      integer not null default 0,   -- Round 2 score
   busts       integer not null default 0,   -- ghost busts (Round 1)
-  timeouts    integer not null default 0,   -- card timer ran out (Round 1)
-  wrong       integer not null default 0,   -- wrong answers (Round 2)
   deck        bigint[] not null default '{}',  -- card ids dealt to this team
   started_at  timestamptz not null default now(),
   finished_at timestamptz,
@@ -82,7 +80,7 @@ create table if not exists plays (
   run_id     bigint not null references runs(id) on delete cascade,
   card_id    bigint not null references cards(id),
   opened_at  timestamptz not null default now(),
-  action     play_action,          -- empty while the card is still open
+  action     play_action,          -- empty while open; 'timeout' = dropped by the timer (no penalty)
   decided_at timestamptz,
   x_before   integer,
   x_after    integer,
@@ -103,13 +101,13 @@ alter table plays  enable row level security;
 -- ============================================================
 create or replace view leaderboard_round1 with (security_invoker = true) as
 select rank() over (order by r.x desc) as rank,
-       t.name as team, r.x, r.busts, r.timeouts, r.finished_at is not null as finished
+       t.name as team, r.x, r.busts, r.finished_at is not null as finished
 from runs r join teams t on t.id = r.team_id
 where r.round_id = 1 and not r.voided and t.active;
 
 create or replace view leaderboard_round2 with (security_invoker = true) as
 select rank() over (order by r.points desc) as rank,
-       t.name as team, r.points, r.wrong, r.finished_at is not null as finished
+       t.name as team, r.points, r.finished_at is not null as finished
 from runs r join teams t on t.id = r.team_id
 where r.round_id = 2 and not r.voided and t.active;
 
@@ -118,8 +116,7 @@ select rank() over (order by coalesce(r1.x, 0) + coalesce(r2.points, 0) desc) as
        t.name as team,
        coalesce(r1.x, 0)      as round1,
        coalesce(r2.points, 0) as round2,
-       coalesce(r1.x, 0) + coalesce(r2.points, 0) as total,
-       coalesce(r1.busts, 0) + coalesce(r2.wrong, 0) as mistakes
+       coalesce(r1.x, 0) + coalesce(r2.points, 0) as total
 from teams t
 left join runs r1 on r1.team_id = t.id and r1.round_id = 1 and not r1.voided
 left join runs r2 on r2.team_id = t.id and r2.round_id = 2 and not r2.voided

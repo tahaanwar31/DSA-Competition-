@@ -114,7 +114,7 @@ Every team gets **the same cards**. Only the hiding places change from laptop to
 
 - She appears suddenly: right in front of you, far away down a corridor, or upside down on the ceiling.
 - **Look into her eyes for a full second** and you are **busted: `x − 3`**.
-- Letting a card's time run out is also **−3**, and the card burns.
+- If a card's time runs out, it counts as a **drop**: no penalty, x stays the same, and the card burns.
 
 ### 🏆 Ties
 
