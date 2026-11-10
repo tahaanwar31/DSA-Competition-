@@ -3,3 +3,6 @@ out/
 .DS_Store
 Thumbs.db
 *.log
+
+# secrets (Supabase keys) - never commit
+.env
