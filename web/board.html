@@ -62,6 +62,8 @@
   .row .sub { font: 700 11px var(--f-code); letter-spacing: .14em; color: #b2a999; white-space: nowrap; }
   .row .s { min-width: 90px; text-align: right; font: 400 32px/1 "Anton", Impact, sans-serif; color: #fff; font-variant-numeric: tabular-nums; }
   .row .s.neg, .pc .score.neg { color: #ff4b52; }
+  .row .r em { font-style: normal; font-size: .5em; vertical-align: .55em; margin-right: 2px; opacity: .7; }
+  .row .s em { font: 700 13px var(--f-code); font-style: normal; letter-spacing: .05em; color: #b2a999; margin-right: 8px; vertical-align: .55em; }
   .flash { animation: flash 1.6s ease-out; }
   @keyframes flash { 0% { box-shadow: 0 0 0 2px #fff, 0 0 40px rgba(255,60,70,.9); } 100% { box-shadow: 0 8px 22px rgba(0,0,0,.45); } }
   .pc.flash .face { animation: flash 1.6s ease-out; }
@@ -127,7 +129,7 @@ function render() {
   const card = (r, i) => `<div class="pc p${i + 1}" data-team="${esc(r.team)}">${i === 0 ? '<div class="crown">♛</div>' : ""}
       <div class="face"><div class="head"><span>${SUIT[i]} ${ORD(r.rank)}</span><small>${esc(B.sub(r))}</small></div>
         <h3 class="team">${esc(r.team)}</h3><div class="score ${val(r) < 0 ? "neg" : ""}"><em>${B.label}</em>${val(r)}</div><div class="note">${esc(B.note(r))}</div></div></div>`;
-  const row = r => `<div class="row" data-team="${esc(r.team)}"><span class="r">${r.rank}</span><span class="n">${esc(r.team)}</span><span class="sub">${esc(B.sub(r))}</span><span class="s ${val(r) < 0 ? "neg" : ""}">${val(r)}</span></div>`;
+  const row = r => `<div class="row" data-team="${esc(r.team)}"><span class="r"><em>#</em>${r.rank}</span><span class="n">${esc(r.team)}</span><span class="sub">${esc(B.sub(r))}</span><span class="s ${val(r) < 0 ? "neg" : ""}"><em>${B.label}</em>${val(r)}</span></div>`;
   stage.innerHTML = `<div style="display:grid;gap:3.4vh;justify-items:center;width:100%"><div class="podium">${top.map(card).join("")}</div>${rest.length ? `<div class="rows" style="--cols:${rest.length > 16 ? 3 : rest.length > 6 ? 2 : 1};${rest.length <= 6 ? "max-width:760px" : ""}">${rest.map(row).join("")}</div>` : ""}</div>`;
   // slide from the old place; flash anyone whose score changed
   stage.querySelectorAll("[data-team]").forEach(e => { const t = e.dataset.team, o = before[t], n = e.getBoundingClientRect(), r = rows.find(q => q.team === t);
