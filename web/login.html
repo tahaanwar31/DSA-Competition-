@@ -1,110 +1,97 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Depth First Fear · Login</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
-<link rel="stylesheet" href="/web/fear.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Depth First Fear</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Cinzel:wght@800&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="/web/dff.css">
 <style>
-  .stage > .inner { display: flex; flex-direction: column; align-items: center; width: 100%; transform-origin: center top; }
-  [data-emblem] { --es: clamp(70px, 11vh, 108px); }
-  .auth { width: min(600px, 100%); opacity: 0; animation: authIn .8s 1s ease-out forwards; }
-  @keyframes authIn { from { opacity: 0; transform: translateY(40px) scale(.95); } to { opacity: 1; transform: none; } }
-  .auth .body { padding: 2.2vh 30px 1.8vh; }
-  .term { font: 500 12px/1.75 "JetBrains Mono", monospace; margin-bottom: 1.6vh; }
-  .term .c-r { color: var(--blood); font-weight: 700; } .term .c-w { color: rgba(255,255,255,.72); } .term .c-a { color: var(--amber); } .term .c-i { color: var(--ice); } .term .c-g { color: var(--toxic); } .term .c-m { color: rgba(255,255,255,.45); }
-  .term .cur { color: var(--blood); animation: blink .7s steps(1) infinite; }
-  .denied { display: none; gap: 12px; align-items: flex-start; padding: 10px 14px; margin-bottom: 1.4vh; background: rgba(120,0,10,.3); border: 1px solid rgba(255,42,53,.6); color: #ff8a90; }
-  .denied.on { display: flex; animation: deny .45s; }
-  .denied b { display: block; font: 800 10px "JetBrains Mono", monospace; letter-spacing: .3em; color: #ffc2c5; }
-  .denied span { font-size: 13px; }
-  @keyframes deny { 20% { transform: translateX(-10px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
-  .fld { margin-bottom: 1.6vh; }
-  .fld label { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font: 800 10.5px "JetBrains Mono", monospace; letter-spacing: .36em; }
-  .fld.a label { color: var(--amber); } .fld.r label { color: var(--blood); }
-  .fld .wrap { position: relative; }
-  .fld input { width: 100%; padding: 13px 46px 13px 16px; background: rgba(0,0,0,.6); border: 1px solid; outline: none; color: #fff; font: 500 15px "JetBrains Mono", monospace; letter-spacing: .06em; transition: border-color .25s, box-shadow .25s; }
-  .fld.a input { border-color: rgba(232,184,74,.28); } .fld.a input:hover { border-color: rgba(232,184,74,.5); } .fld.a input:focus { border-color: rgba(232,184,74,.85); box-shadow: 0 0 26px rgba(232,184,74,.16), inset 0 0 22px rgba(232,184,74,.04); }
-  .fld.r input { border-color: rgba(255,42,53,.25); padding-left: 42px; letter-spacing: .25em; } .fld.r input:hover { border-color: rgba(255,42,53,.5); } .fld.r input:focus { border-color: rgba(255,42,53,.85); box-shadow: 0 0 26px rgba(255,42,53,.16), inset 0 0 22px rgba(255,42,53,.04); }
-  .fld input::placeholder { color: rgba(233,223,207,.2); letter-spacing: .1em; }
-  .fld .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(255,42,53,.5); }
-  .fld .pulse { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: flex; gap: 5px; }
-  .fld .pulse i { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); animation: pl 2s infinite; } .fld .pulse i + i { animation-delay: .4s; opacity: .5; }
-  @keyframes pl { 50% { opacity: .15; } }
-  .eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border: 0; background: none; color: rgba(233,223,207,.45); cursor: pointer; display: grid; place-items: center; }
-  .eye:hover { color: #fff; }
-  .caps { font: 700 10px "JetBrains Mono", monospace; letter-spacing: .2em; color: var(--amber); margin-top: 6px; visibility: hidden; }
-  .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 1.6vh; padding-top: 1.2vh; border-top: 1px solid rgba(255,255,255,.05); font: 700 9px "JetBrains Mono", monospace; letter-spacing: .3em; color: rgba(159,214,255,.5); }
-  .foot .eyeball { display: flex; align-items: center; gap: 7px; } .foot .eyeball i { width: 6px; height: 6px; border-radius: 50%; background: var(--ice); box-shadow: 0 0 8px var(--ice); animation: blink 2s infinite; }
-  .spin { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+  body { --shade: linear-gradient(90deg, rgba(7,8,11,.9) 0%, rgba(7,8,11,.62) 38%, rgba(7,8,11,.25) 62%, rgba(7,8,11,.45) 100%), linear-gradient(0deg, rgba(0,0,0,.8), transparent 26%); }
+  main { flex: 1; min-height: 0; display: grid; place-items: center; }
+  .fit { width: min(1240px, 100%); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: clamp(28px, 5vw, 90px); padding-block: 2vh; }
+  .intro { display: grid; gap: 2.6vh; justify-items: start; min-width: 0; }
+  .tag { display: flex; align-items: center; gap: 12px; font: 700 12px var(--f-code); letter-spacing: .3em; color: var(--mist); text-transform: uppercase; }
+  .tag i { width: 36px; height: 2px; background: var(--neon); box-shadow: 0 0 10px var(--neon); }
+  .lede { margin: 0; max-width: 34ch; font: 400 17px/1.65 var(--f-text); color: #d8cfc1; text-wrap: pretty; }
+  .lede b { color: #fff; font-weight: 600; }
+  .intro > :not(.sign) { opacity: 0; animation: up .8s ease-out forwards; } .tag { animation-delay: 1.3s !important; } .lede { animation-delay: 1.6s !important; }
+  @keyframes up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  .stack { width: min(500px, calc(100vw - 32px)); opacity: 0; animation: deal .9s .5s cubic-bezier(.2,.8,.2,1) forwards; }
+  @keyframes deal { from { opacity: 0; transform: translate(80px, -40px) rotate(14deg); } to { opacity: 1; transform: rotate(-2deg); } }
+  .face pre { font-size: 15px; }
+  .face pre input { width: 12.5ch; padding: 0 2px; border: 0; border-bottom: 2px dashed rgba(29,35,32,.38); background: transparent; color: #2f7a36; font: inherit; outline: none; caret-color: var(--suit); }
+  .face pre input:focus { border-bottom: 2px solid var(--suit); background: rgba(179,38,45,.06); }
+  .face pre input::placeholder { color: rgba(47,122,54,.35); }
+  .peek { border: 0; background: none; padding: 0 0 0 6px; cursor: pointer; color: #858c87; vertical-align: -2px; }
+  .peek:hover { color: var(--ink); }
+  #err { display: none; } #err.on { display: inline; } #errT { white-space: pre-wrap; }
+  .face.shake { animation: no .45s; }
+  @keyframes no { 20% { transform: translateX(-9px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+  .caps { font: 700 11px var(--f-code); letter-spacing: .1em; color: var(--soon); text-align: center; margin-top: -6px; }
+
+  @media (max-width: 900px) {
+    body { overflow: auto; } .page { height: auto; min-height: 100%; }
+    .fit { grid-template-columns: 1fr; justify-items: center; gap: 4vh; padding-block: 5vh; }
+    .intro { justify-items: center; text-align: center; } .lede { display: none; }
+  }
 </style>
 </head>
-<body>
+<body data-scene="login">
 <div class="page">
-  <div class="osd">
-    <span class="rec"><i></i>REC</span><span class="sep"></span><span class="hide-s">CAM 03 · COURTYARD</span><span class="sep hide-s"></span>
-    <span class="boot" data-boot='["› waking the mansion…","› lights [FLICKERING]","› doors [LOCKED]","› ghost [AWAKE]","› hiding 65 cards in 186 places…","› wards [UP]","› waiting for a team…","[✓] THE MANSION IS READY · SHE IS WATCHING"]'></span>
-    <span class="grow"></span><span class="time" data-time></span>
-  </div>
-
-  <div class="stage"><div class="inner" id="inner">
-    <div data-emblem></div>
-    <h1 class="title" aria-label="Depth First Fear"><span class="t1">DEPTH FIRST</span><span class="t2" data-t="FEAR">FEAR</span></h1>
-    <div class="tagline"><i></i><span>A SOFTWARE ENGINEERING CATEGORY COMPETITION</span><i></i></div>
-
-    <form class="auth box" id="f" autocomplete="off">
-      <i class="hud a"></i><i class="hud b"></i><i class="hud c"></i><i class="hud d"></i>
-      <div class="bar"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secure entry · the front door<span class="grow"></span><span class="live"><i></i>LIVE</span></div>
-      <div class="body">
-        <div class="term">
-          <div><span class="c-r">$</span><span class="c-w"> unlock</span><span class="c-i"> --door=front</span><span class="c-a"> --team</span><span class="c-m"> @</span><span class="c-r">depth-first-fear</span></div>
-          <div><span class="c-g">✓</span><span class="c-w"> the door creaks open</span><span class="c-i"> — 186 places to hide</span></div>
-          <div><span class="c-a">⟩</span><span class="c-w"> she is waiting for your team name</span><span class="cur">_</span></div>
-        </div>
-        <div class="denied" id="denied"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><div><b>!! THE DOOR STAYS SHUT</b><span id="err"></span></div></div>
-        <div class="fld a"><label><span>❯</span>Team name</label><div class="wrap"><input id="name" required maxlength="60" placeholder="your team…" spellcheck="false" autofocus><span class="pulse"><i></i><i></i></span></div></div>
-        <div class="fld r"><label><span>❯</span>Password</label><div class="wrap">
-          <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-          <input id="pw" type="password" required maxlength="100" placeholder="••••••••">
-          <button type="button" class="eye" id="eye" aria-label="Show password"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
-          <div class="caps" id="caps">⚠ CAPS LOCK IS ON</div></div>
-        <button class="btn" id="go"><span class="mono">&gt;</span><span id="goT">Enter the mansion</span><span class="arrow">→</span></button>
-        <div class="foot"><span>ROUND 01 · THE MANSION</span><span class="eyeball"><i></i>SHE IS WATCHING</span></div>
-      </div>
-    </form>
-
-    <div class="credits box">
-      <div class="top"></div>
-      <div class="bar"><span class="dots"><i></i><i></i><i></i></span>credits@the-mansion:~/organisers</div>
-      <div class="body">
-        <div><div class="role h">━━ HEAD ━━</div><div class="head-name">ALI ASGHAR</div></div>
-        <div class="rule"></div>
-        <div class="row"><div><span class="role">▸ CO-HEAD</span><b>MUHAMMAD ABBAS</b></div><div><span class="role">▸ CO-HEAD</span><b>MUHAMMAD UMAR</b></div></div>
-        <div class="row dep"><div><span class="role">▸ DEPUTY</span><b>AYESHA NEHAL</b></div><div><span class="role">▸ DEPUTY</span><b>HAMZA ZAIDI</b></div></div>
-      </div>
+  <main><div class="fit" id="fit">
+    <div class="intro">
+      <h1 class="sign on" aria-label="Depth First Fear"><i class="bar"></i><span class="w1">DEPTH FIRST</span><span class="w2">FEAR</span><i class="bar"></i></h1>
+      <div class="tag"><i></i>A Software Engineering Category Competition</div>
+      <p class="lede">Sixty-five code cards are hidden in this house. <b>Read the code.</b> Take the cards that raise your <b>x</b> and let the rest burn. And whatever you do, don't look into her eyes.</p>
     </div>
-  </div></div>
 
-  <div class="strip"><span>CAM 03</span><span>│</span><span>2 FLOORS</span><span>│</span><span>65 CARDS</span><span>│</span><span><i class="dot"></i>SIGNAL</span><span class="cur">█</span></div>
+    <div class="stack"><div class="tilt"><div class="card3d down" id="card">
+      <form class="face" id="f" autocomplete="off">
+        <div class="head"><span>♥ ENTRY<i class="lv">ROUND 01</i></span><span>x = 0</span></div>
+        <h2>The Front Door</h2>
+<pre><span class="co">// your team is standing at the door</span>
+<span class="ty">string</span> team = <span class="st">"</span><input id="name" aria-label="Team name" placeholder="team name" maxlength="60" spellcheck="false" required><span class="st">"</span>;
+<span class="ty">string</span> key  = <span class="st">"</span><input id="pw" type="password" aria-label="Password" placeholder="password" maxlength="100" required><span class="st">"</span>;<button type="button" class="peek" id="peek" aria-label="Show password"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+
+<span class="kw">if</span> (<span class="fn">open</span>(team, key))
+    <span class="fn">enter</span>(mansion);   <span class="co">// she is waiting</span><span id="err">
+<span class="bad" id="errT"></span></span></pre>
+        <div class="caps" id="caps" hidden>CAPS LOCK IS ON</div>
+        <div class="note">Fill in the two blanks, then open the door.</div>
+        <div class="keys"><button class="key red" id="go"><kbd>⏎</kbd><span id="goT">Open the door</span></button></div>
+      </form>
+      <div class="back"><div class="in"><div class="seal">DFF</div></div></div>
+    </div></div></div>
+  </div></main>
+
+  <footer class="credits" aria-label="Organisers">
+    <div><span>DEPUTY</span><b>Ayesha Nehal</b></div>
+    <div><span>CO-HEAD</span><b>Muhammad Abbas</b></div>
+    <i></i>
+    <div class="head"><span>HEAD</span><b>Ali Asghar</b></div>
+    <i></i>
+    <div><span>CO-HEAD</span><b>Muhammad Umar</b></div>
+    <div><span>DEPUTY</span><b>Hamza Zaidi</b></div>
+  </footer>
 </div>
-<div class="black">THE DOOR OPENS…</div>
 
-<script src="/web/fear.js"></script>
+<script src="/web/dff.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-// keep everything on one screen
-const inner = $("inner"), fit = () => { inner.style.transform = "none"; const avail = inner.parentElement.clientHeight - 8, h = inner.scrollHeight, k = Math.min(1, avail / h); inner.style.transform = k < 1 ? `scale(${k})` : "none"; inner.style.marginBottom = k < 1 ? `${-(1 - k) * h}px` : ""; };
-addEventListener("resize", fit); document.fonts.ready.then(fit); fit();
+if (innerWidth > 900) fitTo($("fit"));
+// the card is dealt face down, then turns over
+setTimeout(() => { $("card").classList.remove("down"); setTimeout(() => $("name").focus(), 700); }, 1500);
 
-$("eye").onclick = () => { const p = $("pw"); p.type = p.type === "password" ? "text" : "password"; p.focus(); };
-addEventListener("keyup", e => { if (e.getModifierState) $("caps").style.visibility = e.getModifierState("CapsLock") ? "visible" : "hidden"; });
-if (new URLSearchParams(location.search).get("why") === "other") { $("err").textContent = "Your team logged in on another device, so this one was logged out."; $("denied").classList.add("on"); }
+$("peek").onclick = () => { const p = $("pw"); p.type = p.type === "password" ? "text" : "password"; p.focus(); };
+addEventListener("keyup", e => { if (e.getModifierState) $("caps").hidden = !e.getModifierState("CapsLock"); });
+const showErr = msg => { $("errT").textContent = "// " + msg; $("err").classList.add("on"); const f = $("f"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); };
+if (new URLSearchParams(location.search).get("why") === "other") showErr("your team logged in on another PC, so this one was logged out");
 
-$("f").addEventListener("submit", async e => { e.preventDefault(); const go = $("go"); go.disabled = true; $("denied").classList.remove("on");
-  $("goT").innerHTML = '<span style="display:flex;gap:10px;align-items:center"><i class="spin"></i>Opening the door…</span>';
+$("f").addEventListener("submit", async e => { e.preventDefault(); const go = $("go"); go.disabled = true; $("goT").textContent = "Opening…"; $("err").classList.remove("on");
   try { await api("/api/login", { name: $("name").value, password: $("pw").value });
-    strike(true); document.body.classList.add("leaving"); setTimeout(() => location.href = "/lobby", 1100); }
-  catch (x) { $("err").textContent = x.message; void $("denied").offsetWidth; $("denied").classList.add("on"); go.disabled = false; $("goT").textContent = "Enter the mansion"; $("pw").select(); } });
+    strike(true); burnCard($("f"), () => { document.body.classList.add("leaving"); setTimeout(() => location.href = "/lobby", 700); }); }
+  catch (x) { showErr(x.status === 401 ? "wrong team name or password" : x.message); go.disabled = false; $("goT").textContent = "Open the door"; $("pw").select(); } });
 </script>
 </body>
 </html>

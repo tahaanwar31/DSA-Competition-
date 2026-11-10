@@ -1,191 +1,138 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Depth First Fear · Lobby</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
-<link rel="stylesheet" href="/web/fear.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Cinzel:wght@800&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="/web/dff.css">
 <style>
-  html, body { overflow: hidden auto; }
-  .page { height: auto; min-height: 100%; }
-  .osd { position: sticky; top: 0; }
-  .stage { justify-content: flex-start; padding: 2.4vh 16px 3vh; }
-  .wrap { width: min(1180px, 100%); }
-  header.top { display: flex; flex-direction: column; align-items: center; }
-  [data-emblem] { --es: 78px; }
-  .title { margin-top: .6vh; } .title .t1 { font-size: clamp(14px, 1.8vw, 22px); } .title .t2 { font-size: clamp(50px, 6.4vw, 92px); }
-  .tagline { margin-bottom: 1.4vh; }
-  .double { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,42,53,.7), transparent); }
-  .double + .double { margin: 2px 0 3vh; opacity: .3; }
+  body { --shade: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(7,8,11,.5), rgba(7,8,11,.2) 70%, rgba(7,8,11,.45)), linear-gradient(0deg, rgba(0,0,0,.85), transparent 28%); }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 2vh 0; }
+  .sign.mini { --s1: clamp(11px, 1.6vh, 15px); --s2: clamp(30px, 5vh, 46px); }
+  .sign.mini .w1 { margin-top: .7vh; letter-spacing: .32em; } .sign.mini .w2 { margin-bottom: .6vh; -webkit-text-stroke-width: 2px; }
+  .sign.mini .bar { height: 3px; }
+  .team { display: flex; align-items: center; gap: 16px; font: 700 12px var(--f-code); letter-spacing: .25em; color: var(--dim); text-transform: uppercase; }
+  .team b { color: #fff; letter-spacing: .12em; font-size: 15px; }
+  .team .key { padding: 7px 12px; font-size: 11px; box-shadow: 0 3px 0 var(--ink); }
 
-  .rounds { display: grid; grid-template-columns: 1fr 1fr; }
-  .mission { position: relative; display: flex; flex-direction: column; padding: 26px 30px 26px; min-height: 470px; opacity: 0; animation: fadeUp .6s forwards; }
-  .mission + .mission { border-left: 0; animation-delay: .15s; }
-  .mission .num { position: absolute; top: -10px; right: 18px; font: 800 150px/1 "JetBrains Mono", monospace; letter-spacing: -.06em; color: rgba(255,42,53,.05); pointer-events: none; }
-  .mission.dim .num { color: rgba(255,255,255,.025); }
-  .mission .mh { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-  .mission .who { display: flex; gap: 14px; align-items: center; }
-  .mission .ic { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(255,42,53,.45); background: rgba(255,42,53,.08); color: var(--blood); }
-  .mission.dim .ic { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.03); color: rgba(255,255,255,.25); }
-  .mission .k { font: 700 10px "JetBrains Mono", monospace; letter-spacing: .42em; color: rgba(255,42,53,.6); }
-  .mission h2 { margin: 2px 0 0; font: 700 clamp(20px, 2vw, 26px) "Libre Baskerville", serif; letter-spacing: .12em; color: #fff; }
-  .mission.dim h2 { color: rgba(255,255,255,.35); } .mission.dim .k { color: rgba(255,255,255,.25); }
-  .badge { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; font: 800 10px "JetBrains Mono", monospace; letter-spacing: .22em; border: 1px solid; white-space: nowrap; }
-  .badge i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
-  .b-open { color: var(--toxic); border-color: rgba(125,255,154,.6); background: rgba(125,255,154,.08); animation: pulse 1.6s infinite; }
-  .b-wait { color: var(--amber); border-color: rgba(232,184,74,.5); background: rgba(232,184,74,.07); }
-  .b-lock, .b-end { color: rgba(255,255,255,.4); border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.03); }
-  .b-con { color: var(--amber); border-color: rgba(232,184,74,.6); background: rgba(232,184,74,.08); }
-  .b-done { color: var(--ice); border-color: rgba(159,214,255,.5); background: rgba(159,214,255,.07); }
-  @keyframes pulse { 50% { box-shadow: 0 0 22px rgba(125,255,154,.35); } }
-  .line { height: 1px; margin: 18px 0; background: rgba(255,42,53,.2); } .mission.dim .line { background: rgba(255,255,255,.06); }
-  .count { position: relative; z-index: 1; padding: 14px 16px; border: 1px solid; margin-bottom: 18px; }
-  .count .lbl { display: flex; align-items: center; gap: 8px; font: 800 10px "JetBrains Mono", monospace; letter-spacing: .3em; }
-  .count .big { font: 800 clamp(30px, 3vw, 40px) "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: .06em; margin: 4px 0 2px; }
-  .count .sub { font: 600 10px "JetBrains Mono", monospace; letter-spacing: .2em; opacity: .55; }
-  .c-wait { border-color: rgba(232,184,74,.3); background: rgba(232,184,74,.05); color: var(--amber); } .c-wait .big { text-shadow: 0 0 22px rgba(232,184,74,.35); }
-  .c-open { border-color: rgba(125,255,154,.3); background: rgba(125,255,154,.05); color: var(--toxic); } .c-open .big { text-shadow: 0 0 22px rgba(125,255,154,.35); }
-  .c-lock { border-color: rgba(255,42,53,.3); background: rgba(255,42,53,.06); color: #ff8a90; }
-  .c-end { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.03); color: rgba(233,223,207,.7); }
-  .c-done { border-color: rgba(159,214,255,.3); background: rgba(159,214,255,.05); color: var(--ice); }
-  .rules { position: relative; z-index: 1; flex: 1; margin-bottom: 22px; }
-  .rules .h { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font: 800 9.5px "JetBrains Mono", monospace; letter-spacing: .45em; color: rgba(255,42,53,.55); }
-  .rules .h::after { content: ""; flex: 1; height: 1px; background: rgba(255,42,53,.12); }
-  .rules ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
-  .rules li { display: flex; gap: 12px; font-size: 13.5px; line-height: 1.5; color: rgba(233,223,207,.8); }
-  .rules li b.n { flex: none; font: 800 11px/1.9 "JetBrains Mono", monospace; color: rgba(255,42,53,.75); }
-  .rules em { font-style: normal; font-weight: 600; color: #fff; } .rules .g { color: var(--toxic); } .rules .y { color: var(--amber); } .rules .r { color: #ff5a62; }
-  .rules kbd { font: 700 11px "JetBrains Mono", monospace; padding: 1px 6px; border: 1px solid rgba(255,255,255,.3); border-bottom-width: 2px; color: #fff; }
-  .mission.dim .rules li { color: rgba(233,223,207,.3); } .mission.dim .rules li b.n { color: rgba(255,255,255,.2); } .mission.dim .rules .h { color: rgba(255,255,255,.2); }
-  .tape { position: absolute; z-index: 3; left: -20px; right: -20px; top: 44%; transform: rotate(-5deg); padding: 10px 0; text-align: center; background: repeating-linear-gradient(-45deg, #e8b84a 0 24px, #120e06 24px 48px); box-shadow: 0 10px 30px rgba(0,0,0,.8); }
-  .tape span { display: inline-block; padding: 6px 18px; background: #120e06; color: var(--amber); font: 800 16px "JetBrains Mono", monospace; letter-spacing: .32em; }
-  .tape + .tape { top: 56%; transform: rotate(4deg); opacity: .85; } .tape + .tape span { font-size: 12px; }
+  main { flex: 1; min-height: 0; display: grid; place-items: center; }
+  .fit { display: grid; justify-items: center; gap: 2.2vh; padding-block: 1.5vh; }
+  .ask { font: 700 12px var(--f-code); letter-spacing: .45em; color: var(--mist); text-transform: uppercase; }
+  .ask b { color: var(--neon); font-weight: 700; }
+  .table { display: flex; gap: clamp(24px, 4vw, 70px); align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+  .slot { display: grid; gap: 14px; justify-items: center; }
+  .slot .cap { font: 700 11px var(--f-code); letter-spacing: .3em; color: var(--dim); text-transform: uppercase; }
+  .stack { width: min(440px, calc(100vw - 32px)); }
+  #s1 .stack { animation: deal .8s .2s cubic-bezier(.2,.8,.2,1) both; }
+  #s2 .stack { animation: deal2 .8s .4s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes deal { from { opacity: 0; transform: translateY(-60px) rotate(-10deg); } to { opacity: 1; transform: rotate(-1.5deg); } }
+  @keyframes deal2 { from { opacity: 0; transform: translateY(-60px) rotate(12deg); } to { opacity: 1; transform: rotate(2deg); } }
+  .face { min-height: 480px; align-content: start; }
+  .count { font: 800 clamp(40px, 6.4vh, 56px)/1 var(--f-code); font-variant-numeric: tabular-nums; letter-spacing: .02em; text-align: center; color: var(--ink); }
+  .count small { display: block; margin-top: 6px; font: 700 11px var(--f-code); letter-spacing: .25em; color: #5b645e; }
+  .rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font: 500 12.5px/1.5 var(--f-code); color: #5b645e; }
+  .rules li::before { content: "// "; color: #a9aea9; }
+  .rules b { color: var(--ink); font-weight: 700; } .rules .g { color: var(--open); font-weight: 700; } .rules .y { color: var(--soon); font-weight: 700; } .rules .r { color: var(--suit); font-weight: 700; }
+  .keys .key { width: 100%; justify-content: center; }
 
-  .house { margin-top: 26px; padding: 22px 28px; opacity: 0; animation: fadeUp .6s .35s forwards; }
-  .house .h { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; font: 800 12px "JetBrains Mono", monospace; letter-spacing: .38em; color: rgba(233,223,207,.75); }
-  .house .h span { color: rgba(255,42,53,.6); } .house .h::after { content: ""; flex: 1; height: 1px; background: rgba(255,42,53,.12); }
-  .house ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 9px 36px; }
-  .house li { display: flex; gap: 12px; font-size: 13px; color: rgba(233,223,207,.62); line-height: 1.55; }
-  .house li b { flex: none; font: 800 11px/1.9 "JetBrains Mono", monospace; color: rgba(255,42,53,.5); }
-  .foot { display: flex; flex-direction: column; align-items: center; gap: 2vh; margin-top: 26px; }
-  .out { display: inline-flex; align-items: center; gap: 10px; padding: 9px 22px; border: 1px solid rgba(255,42,53,.4); background: none; color: rgba(255,42,53,.7); cursor: pointer; font: 800 10.5px "JetBrains Mono", monospace; letter-spacing: .3em; transition: all .15s; }
-  .out:hover { border-color: var(--blood); color: #ff6a70; background: rgba(255,42,53,.08); }
-  .credits { margin-top: 0; }
-  @media (max-width: 860px) { .rounds { grid-template-columns: 1fr; } .mission + .mission { border-left: 1px solid rgba(255,42,53,.22); border-top: 0; } .house ol { grid-template-columns: 1fr; } }
+  /* the sealed card */
+  .sealed { position: relative; height: 480px; }
+  .sealed .back { position: absolute; inset: 0; transform: none; }
+  .tape { position: absolute; left: -26px; right: -26px; top: 40%; transform: rotate(-8deg); padding: 9px 0; text-align: center; background: repeating-linear-gradient(-45deg, #e8b84a 0 22px, #15110a 22px 44px); box-shadow: 0 10px 26px rgba(0,0,0,.7); }
+  .tape span { display: inline-block; padding: 5px 16px; background: #15110a; color: #e8b84a; font: 800 15px var(--f-code); letter-spacing: .3em; }
+  .tape + .tape { top: 54%; transform: rotate(6deg); } .tape + .tape span { font-size: 11px; }
+
+  .notes { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 26px; max-width: 900px; font: 500 12.5px var(--f-text); color: #b2a999; text-align: center; }
+  .notes span::before { content: "◆ "; color: var(--neon); font-size: 9px; vertical-align: 2px; }
+  @media (max-width: 960px) { body { overflow: auto; } .page { height: auto; min-height: 100%; } .face, .sealed { min-height: 0; } .sealed { height: 360px; } }
 </style>
 </head>
-<body>
+<body data-scene="statue">
 <div class="page">
-  <div class="osd">
-    <span class="rec"><i></i>REC</span><span class="sep"></span><span class="hide-s">CAM 01 · GRAND HALL</span><span class="sep hide-s"></span>
-    <span class="boot" id="boot">› connecting…</span><span class="grow"></span>
-    <span class="who hide-s">TEAM <b id="team">…</b></span><span class="sep hide-s"></span><span class="time" data-time></span>
-  </div>
+  <header class="top">
+    <h1 class="sign mini" aria-label="Depth First Fear"><i class="bar"></i><span class="w1">DEPTH FIRST</span><span class="w2">FEAR</span><i class="bar"></i></h1>
+    <div class="team"><span>Team <b id="team">…</b></span><button class="key" id="out">Log out</button></div>
+  </header>
 
-  <div class="stage"><div class="wrap">
-    <header class="top">
-      <div data-emblem></div>
-      <h1 class="title" aria-label="Depth First Fear"><span class="t1">DEPTH FIRST</span><span class="t2" data-t="FEAR">FEAR</span></h1>
-      <div class="tagline"><i></i><span>// CHOOSE YOUR NIGHTMARE //</span><i></i></div>
-    </header>
-    <div class="double"></div><div class="double"></div>
+  <main><div class="fit" id="fit">
+    <div class="ask">Pick a card · <b>tonight there is only one</b></div>
+    <div class="table">
+      <div class="slot" id="s1">
+        <div class="stack"><div class="tilt"><div class="card3d">
+          <div class="face" id="c1">
+            <div class="head"><span>♦ ROUND 01<i class="lv" id="lv">…</i></span><span id="x"></span></div>
+            <h2>The Mansion</h2>
+            <pre id="code"><span class="co">// asking the house…</span></pre>
+            <div class="count" id="count">--:--:--<small>&nbsp;</small></div>
+            <ul class="rules">
+              <li><b>E</b> takes a card and x changes. <b>Q</b> drops it. It burns either way.</li>
+              <li><span class="g">easy 1:00</span> · <span class="y">medium 2:00</span> · <span class="r">hard 4:00</span> to decide</li>
+              <li>hard cards hide upstairs and outside</li>
+              <li>her eyes: <span class="r">x − 3</span> · highest x after 60:00 wins</li>
+            </ul>
+            <div class="keys" id="act"></div>
+          </div>
+        </div></div></div>
+        <div class="cap">Round 01 · The Mansion</div>
+      </div>
 
-    <div class="rounds">
-      <section class="mission box" id="m1">
-        <i class="hud a"></i><i class="hud b"></i><i class="hud c"></i><i class="hud d"></i><div class="num">01</div>
-        <div class="mh"><div class="who"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M10 21v-6h4v6M9 11h.01M15 11h.01"/></svg></div>
-          <div><div class="k">// NIGHTMARE 01</div><h2>THE MANSION</h2></div></div><span id="b1" class="badge b-lock">…</span></div>
-        <div class="line"></div>
-        <div id="c1"></div>
-        <div class="rules"><div class="h">RULES OF THE HOUSE</div><ol>
-          <li><b class="n">01.</b><span>Search <em>drawers, cupboards, chests and coffins</em> for code cards.</span></li>
-          <li><b class="n">02.</b><span><kbd>E</kbd> takes a card and <em>x</em> changes by its code. <kbd>Q</kbd> drops it. Either way, it <em>burns</em>.</span></li>
-          <li><b class="n">03.</b><span><span class="g">Easy 1 min</span> · <span class="y">Medium 2 min</span> · <span class="r">Hard 4 min</span> to decide. Time out = dropped.</span></li>
-          <li><b class="n">04.</b><span>Hard cards hide <em>upstairs and outside</em>.</span></li>
-          <li><b class="n">05.</b><span>Never look into <span class="r">her eyes</span>: busted <span class="r">−3</span>. Highest <em>x</em> after <em>60 minutes</em> wins.</span></li>
-        </ol></div>
-        <div id="a1"></div>
-      </section>
-
-      <section class="mission box dim" id="m2">
-        <i class="hud a"></i><i class="hud b"></i><i class="hud c"></i><i class="hud d"></i><div class="num">02</div>
-        <div class="mh"><div class="who"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 6 11h3l-4 6h5v5h4v-5h5l-4-6h3z"/></svg></div>
-          <div><div class="k">// NIGHTMARE 02</div><h2>THE FOREST</h2></div></div><span class="badge b-con">⚠ CONSTRUCTION</span></div>
-        <div class="line"></div>
-        <div class="rules"><div class="h">WHAT WE KNOW</div><ol>
-          <li><b class="n">01.</b><span>The teams that survive the mansion walk into the forest.</span></li>
-          <li><b class="n">02.</b><span>Something is waiting between the trees.</span></li>
-          <li><b class="n">03.</b><span>Round 2 points are added to your Round 1 x for the final ranking.</span></li>
-          <li><b class="n">04.</b><span>More will be revealed after Round 1.</span></li>
-        </ol></div>
-        <button class="btn ghost" disabled><span>🔒 COMING SOON</span></button>
-        <div class="tape"><span>UNDER CONSTRUCTION</span></div><div class="tape"><span>THE FOREST IS STILL GROWING</span></div>
-      </section>
-    </div>
-
-    <div class="house box"><i class="hud a"></i><i class="hud b"></i><i class="hud c"></i><i class="hud d"></i>
-      <div class="h"><span>//</span>BEFORE YOU ENTER</div>
-      <ol>
-        <li><b>01.</b><span>One team, one PC. If your team logs in somewhere else, this PC is logged out.</span></li>
-        <li><b>02.</b><span>Rounds open by themselves at the start time, for every team at the same moment. Stay on this page.</span></li>
-        <li><b>03.</b><span>If the organisers pause a round, everyone comes back here. Your progress is saved.</span></li>
-        <li><b>04.</b><span>A card's timer keeps running even if you close it. Decide before it burns.</span></li>
-        <li><b>05.</b><span>Final ranking = Round 1 x + Round 2 points.</span></li>
-        <li><b>06.</b><span>Wear headphones. She is very quiet.</span></li>
-      </ol>
-    </div>
-
-    <div class="foot">
-      <button class="out" id="out"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>ABANDON SESSION</button>
-      <div class="credits box">
-        <div class="top"></div>
-        <div class="bar"><span class="dots"><i></i><i></i><i></i></span>credits@the-mansion:~/organisers</div>
-        <div class="body">
-          <div><div class="role h">━━ HEAD ━━</div><div class="head-name">ALI ASGHAR</div></div>
-          <div class="rule"></div>
-          <div class="row"><div><span class="role">▸ CO-HEAD</span><b>MUHAMMAD ABBAS</b></div><div><span class="role">▸ CO-HEAD</span><b>MUHAMMAD UMAR</b></div></div>
-          <div class="row dep"><div><span class="role">▸ DEPUTY</span><b>AYESHA NEHAL</b></div><div><span class="role">▸ DEPUTY</span><b>HAMZA ZAIDI</b></div></div>
-        </div>
+      <div class="slot" id="s2">
+        <div class="stack"><div class="tilt"><div class="sealed"><div class="back"><div class="in"><div class="seal">DFF</div></div></div>
+          <div class="tape"><span>UNDER CONSTRUCTION</span></div><div class="tape"><span>THE FOREST IS STILL GROWING</span></div></div></div></div>
+        <div class="cap">Round 02 · The Forest · sealed</div>
       </div>
     </div>
-  </div></div>
+    <div class="notes"><span>One team, one PC. Logging in elsewhere logs this PC out.</span><span>Rounds open on their own, for every team at once. Stay here.</span><span>If the round is paused, you come back here with your progress saved.</span><span>Final ranking = Round 1 x + Round 2 points.</span></div>
+  </div></main>
 
-  <div class="strip"><span>CAM 01</span><span>│</span><span>LOBBY</span><span>│</span><span id="sx">ROUND 01 · —</span><span>│</span><span><i class="dot"></i>SIGNAL</span><span class="cur">█</span></div>
+  <footer class="credits" aria-label="Organisers">
+    <div><span>DEPUTY</span><b>Ayesha Nehal</b></div>
+    <div><span>CO-HEAD</span><b>Muhammad Abbas</b></div>
+    <i></i>
+    <div class="head"><span>HEAD</span><b>Ali Asghar</b></div>
+    <i></i>
+    <div><span>CO-HEAD</span><b>Muhammad Umar</b></div>
+    <div><span>DEPUTY</span><b>Hamza Zaidi</b></div>
+  </footer>
 </div>
 
-<script src="/web/fear.js"></script>
+<script src="/web/dff.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-let st = null; window.clockSkew = 0;
+if (innerWidth > 960) fitTo($("fit"));
+let st = null, skew = 0, leaving = false;
 const pad = n => String(n).padStart(2, "0");
 const span = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${pad(s / 3600 | 0)}:${pad((s % 3600) / 60 | 0)}:${pad(s % 60)}`; };
-const at = iso => new Date(iso).toLocaleString([], { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).toUpperCase();
+const hm = iso => { const d = new Date(iso); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const day = iso => new Date(iso).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" }).toUpperCase();
 const set = (el, html) => { if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; } };
-const timer = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>';
+const C = s => `<span class="co">${s}</span>`, K = s => `<span class="kw">${s}</span>`, F = s => `<span class="fn">${s}</span>`, N = s => `<span class="nu">${s}</span>`;
 
 function draw() {
-  if (!st) return; const now = Date.now() + clockSkew, r = st.rounds[0], s = Date.parse(r.starts_at), e = Date.parse(r.ends_at);
-  const done = st.r1 && st.r1.finished, live = !r.locked && r.starts_at && r.ends_at && now >= s && now < e;
-  let badge, count, act;
-  if (r.locked) { badge = ["b-lock", "🔒 LOCKED"]; count = `<div class="count c-lock"><div class="lbl">${timer}THE DOORS ARE LOCKED</div><div class="big">— — : — —</div><div class="sub">WAIT HERE · THE ORGANISERS WILL OPEN THEM</div></div>`; }
-  else if (!r.starts_at || !r.ends_at) { badge = ["b-lock", "NOT SCHEDULED"]; count = `<div class="count c-end"><div class="lbl">${timer}NO TIME SET YET</div><div class="big">--:--:--</div><div class="sub">WAIT FOR THE ORGANISERS</div></div>`; }
-  else if (now < s) { badge = ["b-wait", "⏳ OPENS SOON"]; count = `<div class="count c-wait"><div class="lbl">${timer}THE DOORS OPEN IN</div><div class="big">${span(s - now)}</div><div class="sub">OPENS ${at(r.starts_at)}</div></div>`; }
-  else if (now >= e) { badge = ["b-end", "ENDED"]; count = `<div class="count c-end"><div class="lbl">${timer}THE NIGHT IS OVER</div><div class="big">${st.r1 ? "x = " + st.r1.x : "—"}</div><div class="sub">ROUND 01 HAS ENDED</div></div>`; }
-  else if (done) { badge = ["b-done", "✓ COMPLETED"]; count = `<div class="count c-done"><div class="lbl">${timer}EVERY CARD HAS BURNED</div><div class="big">x = ${st.r1.x}</div><div class="sub">YOU SURVIVED THE MANSION</div></div>`; }
-  else { badge = ["b-open", "<i></i>DOORS OPEN"]; count = `<div class="count c-open"><div class="lbl">${timer}TIME REMAINING</div><div class="big">${span(e - now)}</div><div class="sub">CLOSES ${at(r.ends_at)}${st.r1 ? " · YOUR x = " + st.r1.x : ""}</div></div>`; }
-  act = live && !done ? `<a class="btn" href="/round1"><span class="mono">&gt;</span><span>${st.r1 ? "Back into the mansion" : "Enter the mansion"}</span><span class="arrow">→</span></a>`
-                      : `<button class="btn ghost" disabled><span>${done ? "✓ YOU MADE IT OUT" : "🔒 " + (now >= e && r.starts_at ? "THE DOORS ARE CLOSED" : "NOT YET")}</span></button>`;
-  $("m1").classList.toggle("dim", !live || done);
-  set($("b1"), badge[1]); $("b1").className = "badge " + badge[0]; set($("c1"), count); set($("a1"), act);
-  $("sx").textContent = "ROUND 01 · " + (live && !done ? "OPEN" : badge[1].replace(/<[^>]+>/g, "").replace(/[^A-Z ]/g, "").trim());
+  if (!st) return; const now = Date.now() + skew, r = st.rounds[0], s = Date.parse(r.starts_at), e = Date.parse(r.ends_at), mine = st.r1;
+  let lv, code, count, sub, act = "";
+  if (r.locked) { lv = ["", "LOCKED"]; code = `${C("// the doors are locked")}\n${K("while")} (doors.${F("locked")}())\n    ${F("wait")}();   ${C("// stay on this page")}`; count = "--:--:--"; sub = "THE ORGANISERS WILL OPEN IT"; }
+  else if (!r.starts_at || !r.ends_at) { lv = ["", "NOT SET"]; code = `${C("// no start time yet")}\n${F("wait")}();`; count = "--:--:--"; sub = "NO START TIME YET"; }
+  else if (now < s) { lv = ["soon", "SOON"]; code = `${K("while")} (now < ${N(hm(r.starts_at))})\n    ${F("wait")}();   ${C("// every team starts together")}`; count = span(s - now); sub = `OPENS ${day(r.starts_at)} · ${hm(r.starts_at)}`; }
+  else if (now >= e) { lv = ["gone", "ENDED"]; code = `${C("// the night is over")}\n${K("return")} x;   ${C(mine ? "// x = " + mine.x : "")}`; count = mine ? "x = " + mine.x : "00:00:00"; sub = "ROUND 01 HAS ENDED"; }
+  else if (mine && mine.finished) { lv = ["done", "DONE"]; code = `${C("// every card has burned")}\n${K("return")} x;   ${C("// you made it out")}`; count = "x = " + mine.x; sub = "YOU SURVIVED THE MANSION"; }
+  else { lv = ["open", "OPEN"]; code = `${K("if")} (doors.${F("open")}())\n    ${F("enter")}(mansion);   ${C("// " + (mine ? "back in" : "go"))}`; count = span(e - now); sub = `CLOSES AT ${hm(r.ends_at)}`;
+    act = `<button class="key red" id="enter"><kbd>⏎</kbd>${mine ? "Back into the mansion" : "Enter the mansion"}</button>`; }
+  if (!act) act = `<button class="key" disabled>${lv[1] === "DONE" ? "You made it out" : lv[1] === "ENDED" ? "The doors are closed" : "Not yet"}</button>`;
+  $("lv").className = "lv " + lv[0]; $("lv").textContent = lv[1]; $("x").textContent = mine ? "x = " + mine.x : "";
+  set($("code"), code); set($("count"), `${count}<small>${sub}</small>`); set($("act"), act);
+  const b = $("enter"); if (b && !b.onclick) b.onclick = go;
 }
+function go() { if (leaving) return; leaving = true; strike(true); burnCard($("c1"), () => { document.body.classList.add("leaving"); setTimeout(() => location.href = "/round1", 600); }); }
+addEventListener("keydown", e => { if (e.key === "Enter" && $("enter")) go(); });
 async function poll() {
-  try { const t0 = Date.now(); st = await api("/api/state"); clockSkew = Date.parse(st.now) - (t0 + Date.now()) / 2;
-    $("team").textContent = st.team.toUpperCase(); const b = $("boot"); b.textContent = `[✓] TEAM ${st.team.toUpperCase()} · CONNECTED`; b.classList.add("ok"); draw(); }
-  catch (e) { if (e.status === 401) location.href = "/?why=other"; else { $("boot").textContent = "[!] SIGNAL LOST · RETRYING…"; $("boot").classList.remove("ok"); } }
+  try { const t0 = Date.now(); st = await api("/api/state"); skew = Date.parse(st.now) - (t0 + Date.now()) / 2; $("team").textContent = st.team; draw(); }
+  catch (e) { if (e.status === 401) location.href = "/?why=other"; }
 }
 poll(); setInterval(poll, 2500); setInterval(draw, 250);
-$("out").onclick = async () => { if (!confirm("Log out of this PC?")) return; await api("/api/logout", {}).catch(() => {}); location.href = "/"; };
+// log out asks once on the button itself
+$("out").onclick = async () => { const b = $("out"); if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = "Sure? Click again"; setTimeout(() => { delete b.dataset.sure; b.textContent = "Log out"; }, 3000); return; }
+  await api("/api/logout", {}).catch(() => {}); location.href = "/"; };
 </script>
 </body>
 </html>
