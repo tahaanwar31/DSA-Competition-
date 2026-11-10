@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Depth First Fear</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Rock+Salt&family=JetBrains+Mono:wght@400;600;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Libre+Baskerville:wght@700&family=Rock+Salt&family=JetBrains+Mono:wght@400;600;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <style>
   :root { --gold: #f3d48a; --red: #d8443a; --ghost: #9cc4ff; --ink: #1d2320; --card: #fbf8f1; --code-bg: #f2ede1; }
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: "IBM Plex Sans", Arial, sans-serif; color: #eae3d6; user-select: none; }
@@ -82,13 +82,15 @@
   #start .kr i { font-style: normal; color: #6f6458; }
   #start .keys2 kbd { min-width: 26px; height: clamp(22px, 2.9vh, 28px); padding: 0 7px; display: inline-grid; place-items: center; box-sizing: border-box; font: 700 11px "JetBrains Mono", monospace; color: #f1e8da;
     background: linear-gradient(#2d2729, #151113); border: 1px solid rgba(255,255,255,.22); border-bottom: 3px solid rgba(0,0,0,.85); border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,.6); }
-  #start .ttl { line-height: .9; opacity: 0; }
-  #start .t1 { display: block; font: 800 clamp(24px, min(3.6vw, 5.4vh), 54px) Cinzel, serif; letter-spacing: .22em; color: #e9dfcf; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
-  #start .t2 { position: relative; display: block; font: 800 clamp(64px, min(10.5vw, 16vh), 168px) Cinzel, serif; letter-spacing: .06em; margin-left: -.04em; color: transparent;
-    background: linear-gradient(180deg, #d01822 0%, #9a0d15 55%, #4e0408 100%); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 22px rgba(190,10,22,.45)) drop-shadow(0 6px 24px rgba(0,0,0,.9)); }
+  /* title: style A, neon outline between two red bars (80s horror poster) */
+  #start .ttl { line-height: 1; opacity: 0; width: fit-content; }
+  #start .ttl .bar { display: block; height: 4px; background: #e0121d; box-shadow: 0 0 14px #ff1e2a, 0 0 30px #b00010; }
+  #start .t1 { display: block; margin: 1.4vh 0 0; font: 700 clamp(22px, min(3.2vw, 4.8vh), 46px) "Libre Baskerville", serif; letter-spacing: .3em; color: transparent; -webkit-text-stroke: 1.6px #ff2a35; text-shadow: 0 0 12px rgba(255,30,40,.7), 0 0 30px rgba(200,0,15,.6); }
+  #start .t2 { position: relative; display: block; margin: 0 0 1.2vh -.03em; font: 700 clamp(70px, min(10.5vw, 16vh), 160px)/1 "Libre Baskerville", serif; letter-spacing: .08em; color: transparent; -webkit-text-stroke: 3px #ff2a35; text-shadow: 0 0 16px rgba(255,30,40,.8), 0 0 46px rgba(200,0,15,.7); animation: m-neon 7s infinite; }
+  @keyframes m-neon { 0%, 61%, 63.5%, 66%, 100% { opacity: 1; } 62%, 65% { opacity: .35; } }
   #start .t2::before, #start .t2::after { content: attr(data-t); position: absolute; inset: 0; opacity: 0; }
-  #start .t2::before { color: rgba(0,190,255,.5); }
-  #start .t2::after { color: rgba(255,30,30,.6); }
+  #start .t2::before { -webkit-text-stroke: 3px rgba(0,190,255,.55); text-shadow: none; }
+  #start .t2::after { -webkit-text-stroke: 3px rgba(255,60,60,.6); text-shadow: none; }
   #start.lit .ttl { animation: m-flicker 1.4s steps(1) forwards; }
   #start.lit .t2::before { animation: m-glitchA 4.6s steps(1) infinite; }
   #start.lit .t2::after { animation: m-glitchB 4.6s steps(1) infinite; }
@@ -142,7 +144,7 @@
   <div class="bg"><img class="b0" src="assets/ui/intro-dark.jpg" alt=""><img class="b1" src="assets/ui/intro-flash.jpg" alt=""></div>
   <canvas class="rain"></canvas><div class="fog"></div><div class="grain"></div><div class="vig"></div><div class="white"></div>
   <div class="menu">
-    <div class="ttl"><span class="t1">DEPTH FIRST</span><span class="t2" data-t="FEAR">FEAR</span></div>
+    <div class="ttl"><i class="bar"></i><span class="t1">ROUND</span><span class="t2" data-t="01">01</span><i class="bar"></i></div>
     <div class="sub"><i></i>THE MANSION</div>
     <div class="panels">
     <div class="file">
