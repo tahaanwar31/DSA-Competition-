@@ -1,7 +1,7 @@
 // Loads db/cards-data.js into Supabase.
 //   node scripts/seed-cards.js            adds the cards only if the cards table is empty
 //   node scripts/seed-cards.js --update   rewrites the existing cards in place (same ids, so
-//                                         nothing that points at them breaks). Refuses if any
+//                                         nothing that points at them breaks) and adds new ones. Refuses if any
 //                                         team has already opened a card, unless --force.
 //   node scripts/seed-cards.js --add      adds them again even if there are cards already
 // The "code" column holds the three versions as one JSON text: {"cpp": "...", "java": "...", "py": "..."}
@@ -12,11 +12,14 @@ const has = f => process.argv.includes(f);
 (async () => {
   const have = await sb("cards?select=id&order=id");
   if (has("--update")) {
-    if (have.length !== cards.length) throw new Error(`the database has ${have.length} cards and the file has ${cards.length}; they must match for --update`);
+    // rewrite the cards that are already there (same ids), add any new ones at the end
+    if (have.length > cards.length) throw new Error(`the database has ${have.length} cards and the file only ${cards.length}; switch extra cards off in /admin instead`);
     const plays = await sb("plays?select=id&limit=1");
     if (plays.length && !has("--force")) throw new Error("teams have already opened cards. Use --force only if you really mean to change cards during the event.");
-    for (let i = 0; i < cards.length; i++) await sb(`cards?id=eq.${have[i].id}`, { method: "PATCH", body: { ...row(cards[i]), active: true } });
-    console.log(`Updated ${cards.length} cards in place.`); return;
+    for (let i = 0; i < have.length; i++) await sb(`cards?id=eq.${have[i].id}`, { method: "PATCH", body: { ...row(cards[i]), active: true } });
+    const extra = cards.slice(have.length);
+    if (extra.length) await sb("cards", { method: "POST", body: extra.map(row) });
+    console.log(`Updated ${have.length} cards in place, added ${extra.length} new.`); return;
   }
   if (have.length && !has("--add")) { console.log(`There are already ${have.length} cards. Nothing added (use --update to rewrite them, --add to add anyway).`); return; }
   await sb("cards", { method: "POST", body: cards.map(row) });

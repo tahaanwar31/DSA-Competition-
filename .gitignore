@@ -11,3 +11,4 @@ Thumbs.db
 db/cards-data.js
 # internal documents (proposal for the head)
 docs/proposal/
+db/cards-more.js

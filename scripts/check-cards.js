@@ -6,7 +6,7 @@
 // It also checks the style rules: one statement per line, no vector,
 // no lambdas or ?:, no tabs, lines short enough for the card.
 //
-// Run:  node scripts/check-cards.js
+// Run:  node scripts/check-cards.js        (or add a card number to start from there)
 // Needs g++, javac/java and python. Set JAVA_HOME if java is not on the PATH
 // (the JetBrains runtime that comes with PyCharm / IntelliJ works).
 const fs = require("fs"), path = require("path"), os = require("os"), { execFileSync } = require("child_process");
@@ -100,8 +100,11 @@ function tryRun(lang, c, n) {
   return run(PY, ["-I", driver, src, ...XS.map(String)]).trim().split(/\s+/).map(Number);
 }
 
+// optional: node scripts/check-cards.js 66   checks only card 66 and after (all cards are still counted)
+const FROM = Math.max(1, +process.argv[2] || 1);
 cards.forEach((c, n) => {
   count[c.level]++;
+  if (n + 1 < FROM) return;
   const problems = [];
   for (const lang of ["cpp", "java", "py"]) {
     if (!c[lang]) { problems.push(`${lang}: missing`); continue; }

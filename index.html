@@ -985,7 +985,9 @@ let duck = null; loadModel("rubber_duck_toy").then(src => { duck = src.clone(tru
 
 /* ================= the cards: hidden in random drawers =================
    Every load deals the deck again at random: hard cards go upstairs or outside,
-   easy and medium cards go downstairs inside. Each team gets its own layout. */
+   easy and medium cards fill downstairs first (a few spill upstairs when it is full).
+   177 cards in 186 spots: about 95% of drawers, cupboards, chests and coffins hold one.
+   Each team gets its own layout. */
 const cardBack = canvasTex(256, 360, g => {
   g.fillStyle = "#fbf8f1"; g.beginPath(); g.roundRect(0, 0, 256, 360, 22); g.fill(); g.fillStyle = "#8f1a20"; g.beginPath(); g.roundRect(14, 14, 228, 332, 14); g.fill();
   g.strokeStyle = "rgba(243,212,138,.6)"; g.lineWidth = 2; for (let i = -360; i < 360; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 360, 360); g.stroke(); }
@@ -1003,7 +1005,7 @@ function dealCards() {
   const put = (o, card, mat) => { if (!o) return 0; const mesh = new THREE.Mesh(CARD_GEO, mat); mesh.rotation.set(-PI / 2, 0, (Math.random() - .5) * 1.2); mesh.position.copy(o.slot[1]); o.slot[0].add(mesh); o.card = { card, mesh }; return 1; };
   let n = GOLDEN ? put(take(() => true), GOLD_CARD, GOLD_MAT) : 0;
   for (const c of deck.filter(c => c.lvl === "hard")) n += put(take(scaryPlace) || take(() => true), c, CARD_MAT);
-  for (const c of deck.filter(c => c.lvl !== "hard")) n += put(take(o => !scaryPlace(o)) || take(() => true), c, CARD_MAT);   // easy + medium stay downstairs, inside
+  for (const c of deck.filter(c => c.lvl !== "hard")) n += put(take(o => !scaryPlace(o)) || take(() => true), c, CARD_MAT);   // easy + medium: downstairs first
   S.left = n;
 }
 function animateOpen(o) {

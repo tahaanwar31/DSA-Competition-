@@ -173,12 +173,12 @@ Manage them in **/admin → Cards** (add, edit, remove, test an effect).
 | Code | the snippet players read, in **C++, Java and Python** (same logic; players switch with keys 1 · 2 · 3). Stored as one JSON text `{"cpp", "java", "py"}` |
 | Effect | what **taking** the card does to `x`, e.g. `x + 7`, `x * 2`, `0`. Only `x`, numbers and `+ - * / % ( )`. Integer maths like C++ (7 / 2 = 3) |
 
-The organisers keep the full deck in `db/cards-data.js`, which is **not** on GitHub (it holds the answers).
+The organisers keep the full deck (177 cards: 54 easy, 82 medium, 41 hard) in `db/cards-data.js` and `db/cards-more.js`, which are **not** on GitHub (they hold the answers). `db/cards-more.js` makes its cards from small patterns and works out each answer itself.
 
 - `node scripts/check-cards.js` runs every card in all three languages (g++, javac/java, python) for many values of `x` and checks that each one matches its effect. It also checks the style: one statement per line, 4-space indents, no `vector`, no lambdas or `?:`, short lines. Java can come from `JAVA_HOME` or the runtime inside a JetBrains IDE.
 - `node scripts/seed-cards.js` loads the deck into an empty database. `--update` rewrites the existing cards in place (same ids) and refuses once teams have opened cards.
 
-Cards are dealt again on every load: hard cards go upstairs or outside, easy and medium cards stay downstairs inside. On the card, long snippets split into two columns and the text grows or shrinks to fit the screen.
+Cards are dealt again on every load: the 177 cards fill about 95% of the 186 hiding spots; hard cards go upstairs or outside, easy and medium cards fill downstairs first and the last few spill upstairs. On the card, long snippets split into two columns and the text grows or shrinks to fit the screen.
 
 ---
 
