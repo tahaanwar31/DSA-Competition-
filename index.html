@@ -63,10 +63,29 @@
   #inspect { position: fixed; inset: 0; display: none; place-items: center; background: rgba(0,0,0,.55); }
   #inspect.on { display: flex; align-items: center; justify-content: center; gap: 22px; padding: 16px; box-sizing: border-box; }
   #inspect .side { display: flex; flex-direction: column; align-items: center; gap: 18px; flex: none; }
-  .timer { position: relative; width: 96px; height: 96px; }
-  .timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-  .timer span { position: absolute; inset: 0; display: grid; place-items: center; font: 800 44px "JetBrains Mono", monospace; color: #fff; text-shadow: 0 0 16px var(--red); }
-  .pcard { box-sizing: border-box; min-width: min(560px, calc(100vw - 200px)); max-width: calc(100vw - 190px); max-height: calc(100vh - 32px); background: var(--card); color: var(--ink); border-radius: 18px; border: 8px solid var(--suit, #b3262d); padding: 20px 24px; box-shadow: 0 30px 80px rgba(0,0,0,.8), 0 0 60px rgba(243,212,138,.25); display: flex; flex-direction: column; gap: 10px; overflow: hidden; animation: pop .35s ease-out; }
+  /* the timer: the card border is a line of blood that drains away round the edge, big red seconds in the corner */
+  .pcard .edge { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; overflow: visible; }
+  .pcard .edge rect { fill: none; stroke: #c0101c; stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 5px rgba(220,10,25,.75)); }
+  .pcard .secs { display: inline-block; font: 900 34px Cinzel, serif; line-height: 1; min-width: 1.6em; text-align: right; color: #ff3340; text-shadow: 0 0 12px rgba(255,20,30,.7), 0 2px 0 #000; }
+  .pcard.low .secs { animation: beat .5s ease-in-out infinite alternate; }
+  .pcard.low .edge rect { animation: bleed .5s ease-in-out infinite alternate; }
+  @keyframes beat { to { transform: scale(1.15); } }
+  @keyframes bleed { to { stroke: #ff2a35; stroke-width: 7; } }
+  /* a black card with old blood on it; the code inside uses the VS Code "Dark+" colours */
+  .pcard { position: relative; box-sizing: border-box; min-width: min(560px, calc(100vw - 200px)); max-width: calc(100vw - 190px); max-height: calc(100vh - 16px); color: #e8dcdc; border-radius: 14px; border: 2px solid #5c0b10; padding: 16px 20px 14px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; animation: pop .35s ease-out;
+    background:
+      radial-gradient(ellipse 120px 80px at 92% 8%, rgba(120,8,14,.55), rgba(120,8,14,0) 70%),
+      radial-gradient(circle 46px at 96% 14%, rgba(90,4,8,.7), rgba(90,4,8,0) 72%),
+      radial-gradient(ellipse 160px 110px at 4% 96%, rgba(110,6,12,.5), rgba(110,6,12,0) 70%),
+      radial-gradient(circle 18px at 10% 86%, rgba(140,10,16,.55), rgba(140,10,16,0) 75%),
+      radial-gradient(circle 9px at 16% 92%, rgba(140,10,16,.6), rgba(140,10,16,0) 80%),
+      radial-gradient(ellipse 90px 60px at 70% 100%, rgba(80,4,8,.45), rgba(80,4,8,0) 70%),
+      linear-gradient(160deg, #141012, #0b090a 55%, #120c0d);
+    box-shadow: 0 30px 80px rgba(0,0,0,.85), 0 0 0 1px rgba(0,0,0,.6), 0 0 50px rgba(150,10,18,.35), inset 0 0 60px rgba(0,0,0,.7); }
+  /* blood running down from the top edge */
+  .pcard::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 46px; pointer-events: none; z-index: 0; opacity: .9;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 46' preserveAspectRatio='none'%3E%3Cpath fill='%237a0a10' d='M0 0h400v6c-6 0-8 3-9 9s-3 9-5 0-2-9-8-9-7 2-8 6-2 20-5 20-3-16-4-20-4-6-10-6-9 3-10 8-2 5-4 0-5-8-12-8-10 0-11 4-2 28-6 28-4-24-5-28-6-4-14-4-13 2-14 6-3 7-5 0-8-6-14-6-9 1-10 5-2 14-5 14-3-10-4-14-7-5-15-5-11 2-12 7-2 30-6 30-4-26-5-30-8-7-16-7-10 3-11 7-3 6-5 0-8-7-15-7-6 2-7 6-2 16-5 16-3-12-4-16-5-6-12-6-8 3-9 8-2 4-4 0-6-8-13-8-12 1-13 5-3 22-6 22-4-18-5-22-6-5-13-5-8 2-9 6-2 8-4 0-5-6-12-6z'/%3E%3C/svg%3E") top / 100% 100% no-repeat; }
+  .pcard > * { position: relative; z-index: 1; }
   .pcard > * { flex-shrink: 0; }
   .tr #clock { display: block; font: 800 30px "JetBrains Mono", monospace; letter-spacing: 2px; color: var(--gold); margin-bottom: 10px; }
   .tr #clock.low { color: var(--red); animation: blink 1s steps(2) infinite; }
@@ -79,21 +98,28 @@
   .burn canvas.glow { filter: blur(3px) brightness(1.5); mix-blend-mode: screen; }
   .burn canvas.char { filter: blur(2px); }
   @keyframes pop { from { transform: scale(.2) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
-  .pcard .head { display: flex; justify-content: space-between; font: 800 18px Cinzel, serif; letter-spacing: 2px; color: var(--suit, #b3262d); }
-  .pcard h2 { margin: 0; font: 800 30px Cinzel, serif; }
-  .pcard .code { flex: 0 1 auto !important; display: flex; gap: 12px; min-height: 0; overflow: hidden; font-size: 15px; position: relative; }
-  .pcard .code.scroll { overflow-y: auto; scrollbar-width: thin; }
-  .pcard pre { margin: 0; font: 500 1em/1.45 "JetBrains Mono", monospace; font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; background: var(--code-bg); border-radius: 10px; padding: .8em 1em; flex: none; align-self: flex-start; }
-  .pcard .trow { display: flex; align-items: center; justify-content: space-between; gap: 8px 18px; flex-wrap: wrap; }
+  /* one header row: topic · level · title on the left, languages and x on the right */
+  .pcard .top { display: flex; align-items: center; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; }
+  .pcard .name { display: flex; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; min-width: 0; }
+  .pcard .cat { font: 800 13px Cinzel, serif; letter-spacing: 2px; color: #b8868a; white-space: nowrap; }
+  .pcard .cat .lv { margin-left: 8px; }
+  .pcard h2 { margin: 0; font: 800 26px Cinzel, serif; color: #f1e4e4; text-shadow: 0 0 14px rgba(200,20,30,.45), 0 2px 0 #000; }
+  .pcard .right { display: flex; align-items: center; gap: 12px; }
+  .pcard .xval { font: 800 18px "JetBrains Mono", monospace; color: var(--gold); white-space: nowrap; }
+  .pcard .code { flex: 0 1 auto !important; display: flex; min-height: 0; overflow: hidden; font-size: 15px; position: relative; }
+  .pcard .code.scroll { overflow-y: auto; scrollbar-width: thin; scrollbar-color: #5c0b10 #1e1e1e; }
+  .pcard pre { margin: 0; flex: 1 1 auto; font: 400 1em/1.32 "JetBrains Mono", Consolas, monospace; font-variant-ligatures: none; font-feature-settings: "calt" 0, "liga" 0; color: #d4d4d4; background: #1e1e1e; border: 1px solid #2d2d2d; border-left: 3px solid #6e0f15; border-radius: 8px; padding: .55em 1em; box-shadow: inset 0 0 30px rgba(0,0,0,.5); }
   .pcard .langs { display: flex; gap: 6px; }
-  .pcard .langs b { font: 700 13px "JetBrains Mono", monospace; letter-spacing: 1px; padding: 5px 12px; border-radius: 6px; border: 1.5px solid #cfc6b4; color: #6d665a; }
-  .pcard .langs b i { font-style: normal; display: inline-block; min-width: 18px; margin-right: 6px; padding: 0 4px; border-radius: 3px; background: #e6dfd0; color: #3a352d; text-align: center; }
-  .pcard .langs b.on { background: var(--suit, #b3262d); border-color: var(--suit, #b3262d); color: #fff; }
-  .pcard .langs b.on i { background: rgba(255,255,255,.25); color: #fff; }
-  .pcard .more { position: sticky; bottom: 0; align-self: flex-end; margin-left: auto; font: 700 12px "JetBrains Mono", monospace; background: var(--suit, #b3262d); color: #fff; padding: 4px 10px; border-radius: 6px; }
-  .kw { color: #8a2a7a; font-weight: 600; } .ty { color: #1f5f8b; } .nu { color: #b3501b; } .st { color: #2f7a36; } .co { color: #858c87; font-style: italic; }
-  .pcard .note { font-size: 13px; color: #5b645e; text-align: center; }
-  @media (max-width: 900px) { #inspect.on { flex-direction: column-reverse; gap: 10px; } #inspect .side { flex-direction: row; } .keys { flex-direction: row; } .pcard { max-width: calc(100vw - 24px); min-width: 0; max-height: calc(100vh - 140px); } .timer { width: 72px; height: 72px; } }
+  .pcard .langs b { font: 700 12px "JetBrains Mono", monospace; letter-spacing: 1px; padding: 4px 10px; border-radius: 6px; border: 1px solid #4a3336; color: #a89092; background: rgba(0,0,0,.35); }
+  .pcard .langs b i { font-style: normal; display: inline-block; min-width: 16px; margin-right: 6px; padding: 0 3px; border-radius: 3px; background: #2c2022; color: #d9c8c9; text-align: center; }
+  .pcard .langs b.on { background: #8e0f17; border-color: #c21d27; color: #fff; box-shadow: 0 0 12px rgba(200,20,30,.5); }
+  .pcard .langs b.on i { background: rgba(255,255,255,.22); color: #fff; }
+  .pcard .more { position: sticky; bottom: 0; align-self: flex-end; margin-left: auto; font: 700 12px "JetBrains Mono", monospace; background: #8e0f17; color: #fff; padding: 4px 10px; border-radius: 6px; }
+  /* VS Code Dark+ */
+  .pcard .kw { color: #569cd6; } .pcard .ct { color: #c586c0; } .pcard .ty { color: #4ec9b0; } .pcard .fn { color: #dcdcaa; } .pcard .va { color: #9cdcfe; }
+  .pcard .nu { color: #b5cea8; } .pcard .st { color: #ce9178; } .pcard .co { color: #6a9955; font-style: italic; }
+  .pcard .note { font-size: 12px; color: #8d7a7c; text-align: center; }
+  @media (max-width: 900px) { #inspect.on { flex-direction: column-reverse; gap: 10px; } #inspect .side { flex-direction: row; } .keys { flex-direction: row; } .pcard { max-width: calc(100vw - 24px); min-width: 0; max-height: calc(100vh - 90px); } }
   .gans { font: 800 24px "JetBrains Mono", monospace; text-align: center; color: #8a6d0b; }
   .gans b { display: inline-block; min-width: 90px; border-bottom: 3px solid currentColor; padding: 0 14px; }
   .keys { display: flex; flex-direction: column; gap: 12px; font: 800 18px "JetBrains Mono", monospace; letter-spacing: 2px; }
@@ -217,7 +243,7 @@
 </div></div>
 <div id="inspect">
   <div class="pcard" id="pcard"></div>
-  <div class="side"><div class="timer" id="timer"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="rgba(0,0,0,.5)" stroke="rgba(255,255,255,.15)" stroke-width="8"/><circle id="ring" cx="50" cy="50" r="44" fill="none" stroke="#d8443a" stroke-width="8" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><span id="secs">10</span></div>
+  <div class="side">
   <div class="keys" id="keys"><span>E · TAKE</span><span>Q · DROP</span></div></div>
 </div>
 <div class="screen" id="start">
@@ -783,11 +809,11 @@ for (const s of [-1, 1]) { outerBox(s * 1.85 - .35, s * 1.85 + .35, 0, 3.3, 43.6
 anchor(0, 3.2, 43.4, 0xff9a4a, 5, 8, 2);
 // lamp posts along the path
 for (const [x, z, fl, lit] of [[-2.7, 19, 0, 1], [2.7, 19, 2, 1], [-2.7, 36, 2, 1], [2.7, 36, 0, 0]]) { add(new THREE.CylinderGeometry(.05, .07, 2.6, 8), DARKWOOD, x, 1.3, z); add(new THREE.BoxGeometry(.5, .04, .04), DARKWOOD, x - Math.sign(x) * .22, 2.55, z, 0, false); coll(x - .12, x + .12, z - .12, z + .12, 0);
-  if (lit) lamp(x - Math.sign(x) * .42, 2.25, z, 1.1, 5, 2); }
+  if (lit) lamp(x - Math.sign(x) * .42, 2.36, z, 1.1, 5, 2); }
 // fountain with the statue on top
 { const fz = 26; add(tiled(new THREE.CylinderGeometry(3.1, 3.25, .7, 40), 8, 1), MOSSY, 0, .35, fz); add(new THREE.TorusGeometry(3.0, .17, 8, 48), MOSSY, 0, .72, fz).rotation.x = PI / 2;
   const w = add(new THREE.CircleGeometry(2.86, 40), new THREE.MeshStandardMaterial({ color: 0x040606, roughness: .05, metalness: .3 }), 0, .71, fz, 0, false); w.rotation.x = -PI / 2;
-  add(tiled(new THREE.CylinderGeometry(.42, .55, 1.6, 20), 1, 2), MOSSY, 0, .8, fz); add(new THREE.CylinderGeometry(.95, .4, .3, 24), MOSSY, 0, 1.5, fz); coll(-3.2, 3.2, fz - 3.2, fz + 3.2, 0, .8); }
+  add(tiled(new THREE.CylinderGeometry(.42, .55, 1.6, 20), 1, 2), MOSSY, 0, .8, fz); add(new THREE.CylinderGeometry(1.18, .45, .3, 24), MOSSY, 0, 1.5, fz); coll(-3.2, 3.2, fz - 3.2, fz + 3.2, 0, .8); }
 // the cemetery: an iron fence, graves, and a crypt with two coffins
 { const IRON = new THREE.MeshStandardMaterial({ color: 0x141414, metalness: .7, roughness: .45 }), posts = [], seg = (x0, z0, x1, z1) => { const l = Math.hypot(x1 - x0, z1 - z0); for (let u = 0; u <= l; u += .22) posts.push([x0 + (x1 - x0) * u / l, z0 + (z1 - z0) * u / l]);
     const alongX = z0 === z1; for (const y of [.25, 1.15]) add(new THREE.BoxGeometry(alongX ? l : .04, .04, alongX ? .04 : l), IRON, (x0 + x1) / 2, y, (z0 + z1) / 2, 0, false);
@@ -904,7 +930,7 @@ const PROPS = [
   ["GothicCabinet_01", -10.6, 2.4, -PI / 2], ...[-24.3, -21.5, -14.6, -12].map(x => ["wooden_bookshelf_worn", x, .4, 0]), ["vintage_oil_lamp", -18.4, 11, 0, libDesk.top, { light: 1, i: 5 }],
   // study
   ...[-22.5, -19.7].map(x => ["wooden_bookshelf_worn", x, -13.6, 0]),
-  ["ArmChair_01", -17.1, -5.2, PI], ["ArmChair_01", -23.4, -5.4, -PI / 2 - .5], ["ArmChair_01", -23.4, -8.6, -PI / 2 + .5], ["GothicCabinet_01", -10.6, -3, -PI / 2], ["wine_bottles_01", -16.5, -6.6, 0, .77], ["wine_bottles_01", -16.35, -6.75, 0, .77], ["mantel_clock_01", -25.62, -7, PI / 2, 1.43], ["horse_head", -25.62, -7.85, PI / 2 + .3, 1.43],
+  ["ArmChair_01", -17.1, -5.2, PI], ["ArmChair_01", -23.4, -5.4, -PI / 2 - .5], ["ArmChair_01", -23.4, -8.6, -PI / 2 + .5], ["GothicCabinet_01", -10.6, -3, -PI / 2], ["wine_bottles_01", -17.75, -6.35, 0, .77], ["mantel_clock_01", -25.62, -7, PI / 2, 1.43], ["horse_head", -25.62, -7.85, PI / 2 + .3, 1.43],
   ["fancy_picture_frame_01", -25.8, -7, PI / 2, null, { y: 2.8, scale: 1.5 }], ["wine_barrel_01", -11.2, -12.7, .4], ["wine_barrel_01", -11.4, -11.4, 1.2],
   ["GothicCommode_01", -13, -.65, PI, null, { key: "sc" }], ["brass_candleholders", -13, -.65, PI, "sc", { light: 1, i: 5, fl: 2 }],
   // dining room
@@ -914,7 +940,7 @@ const PROPS = [
   ["GothicCommode_01", 14, .6, 0, null, { key: "dc" }], ["vintage_oil_lamp", 14, .6, 0, "dc", { light: 1 }], ["fancy_picture_frame_01", 15, 13.82, PI, null, { y: 2.2, scale: 1.4 }],
   // kitchen
   ["electric_stove", 14.75, -13.52, 0], ["WoodenTable_01", 17.5, -6.5, 0, null, { key: "isl", scale: 1.45 }],
-  ["brass_pot_01", 16.9, -6.5, 0, "isl"], ["brass_pan_01", 18.1, -6.35, .5, "isl"], ["wine_bottles_01", 18.7, -6.7, 0, "isl"], ["vintage_oil_lamp", 12.8, -13.5, 0, .9, { light: 1.2, i: 7 }], ["dining_chair_02", 16.6, -5.4, PI], ["dining_chair_02", 18.4, -5.4, PI], ["dining_chair_02", 16.6, -7.6, 0], ["dining_chair_02", 18.4, -7.6, 0], ["wine_barrel_01", 11.2, -1, .3], ["wine_barrel_01", 12.2, -.9, 1.1],
+  ["brass_pot_01", 17.35, -6.45, 0, "isl"], ["brass_pan_01", 18.1, -6.35, .5, "isl"], ["wine_bottles_01", 16.3, -6.85, 0, "isl"], ["vintage_oil_lamp", 12.8, -13.5, 0, .9, { light: 1.2, i: 7 }], ["dining_chair_02", 16.6, -5.4, PI], ["dining_chair_02", 18.4, -5.4, PI], ["dining_chair_02", 16.6, -7.6, 0], ["dining_chair_02", 18.4, -7.6, 0], ["wine_barrel_01", 11.2, -1, .3], ["wine_barrel_01", 12.2, -.9, 1.1],
   // gallery
   ["ClassicConsole_01", -5, -13.6, 0, null, { L: 1, key: "g1" }], ["marble_bust_01", -5, -13.6, 0, "g1", S1],
   ["ClassicConsole_01", 5, -13.6, 0, null, { L: 1, key: "g2" }], ["brass_candleholders", 5, -13.6, 0, "g2", { L: 1, light: 1.2, i: 6 }],
@@ -934,12 +960,12 @@ const PROPS = [
   ["gothic_statue", 0, 26, PI, 1.65, { nocoll: 1 }], ["large_iron_gate", 0, 44, 0, null, { nocoll: 1 }], ["treasure_chest", 0, 60.6, PI],
   ["dead_tree_trunk", 24.6, 34.6, .3, null, { solid: 1 }], ["dead_tree_trunk_02", -6, 54, 1.2, null, { solid: 1 }], ["dead_tree_trunk", 5.5, 61, 2.2, null, { solid: 1 }], ["dead_tree_trunk_02", -20, 17.5, .1, null, { solid: 1 }],
   ["tree_stump_01", 14.5, 36.5, .5], ["tree_stump_01", -7.5, 61, 2], ["tree_stump_01", 8, 50, 4], ["wheelchair_01", 6.5, 21, 2.4],
-  ...[[-2.28, 19], [2.28, 19], [-2.28, 36]].map(([x, z]) => ["Lantern_01", x, z, 0, 1.98, { nocoll: 1 }]),
+  ...[[-2.28, 19], [2.28, 19], [-2.28, 36]].map(([x, z]) => ["Lantern_01", x, z, 0, 2.236, { nocoll: 1, hang: 2.53 }]),
 ];
 // lamps that are not models
 lamp(-13.9, nurDresser.top + .02, -13.5, .9, 4, 2);
 { const t = sideboard.top; lamp(25.5, t + .1, 6.2, .8, 0); }
-lamp(16.2, .84, -6.7, .9, 4);   // candle on the kitchen island
+lamp(18.65, .84, -6.8, .9, 4);   // candle on the kitchen island
 
 const TOPS = {}, modelCache = {}, ROCK = [];
 function loadModel(id) { return modelCache[id] ||= new Promise(res => gltf.load(`assets/models/${id}/${id}.gltf`, g => { g.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); res(g.scene); })); }
@@ -953,13 +979,32 @@ function modelOpen(m, id, L) {
       d.traverse(c => { if (c.isMesh) { c.userData.o = o; HIT.push(c); o.hit ||= c; } }); o.panels.push([pv, sd * 1.4]); }
     o.coll = { x0: -1.5, x1: 1.5, z0: 43.75, z1: 44.3, l: 0 }; COLL.push(o.coll); OPEN.push(o); }
 }
+// broken glass around the fallen chandelier (one instanced mesh, lying flat on the floor)
+function glassShards(cx, cz, y0) { const N = 40, im = new THREE.InstancedMesh(new THREE.TetrahedronGeometry(.05), new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: .15, metalness: .3, transparent: true, opacity: .75 }), N), m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+  for (let i = 0; i < N; i++) { const a = Math.random() * 6.28, r = .3 + Math.random() * 1.6, s = .4 + Math.random() * 1.2;
+    m4.compose(new THREE.Vector3(cx + Math.cos(a) * r, y0 + .012, cz + Math.sin(a) * r), q.setFromEuler(new THREE.Euler(0, Math.random() * 6, 0)), new THREE.Vector3(s, s * .25, s)); im.setMatrixAt(i, m4); }
+  im.receiveShadow = true; scene.add(im); }
+// drop a model that stands on furniture until its lowest points touch what is under them
+const SETTLE_RC = new THREE.Raycaster(), SV = new THREE.Vector3(), DOWN = new THREE.Vector3(0, -1, 0);
+function settle(m) {
+  scene.updateMatrixWorld(true); let lo = 1e9; const pts = [];   // update first: furniture placed a moment ago must be where it really is
+  m.traverse(o => { if (!o.isMesh) return; const p = o.geometry.attributes.position; for (let i = 0; i < p.count; i++) { SV.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld); if (SV.y < lo - 1e-4) { lo = SV.y; pts.length = 0; } if (SV.y < lo + .004) pts.push(SV.clone()); } });
+  const mine = new Set(); m.traverse(o => mine.add(o)); SETTLE_RC.camera = camera; SETTLE_RC.far = .35;
+  const targets = []; scene.traverse(o => { if (o.isMesh && !mine.has(o)) targets.push(o); });
+  let gap = 1e9; const step = Math.max(1, (pts.length / 16) | 0);
+  for (let i = 0; i < pts.length; i += step) { SETTLE_RC.set(SV.copy(pts[i]).setY(pts[i].y + .01), DOWN); const h = SETTLE_RC.intersectObjects(targets, false)[0]; if (h) gap = Math.min(gap, h.distance - .01); }
+  if (gap > .002 && gap < .3) m.position.y -= gap;
+}
 function waitTop(k) { return new Promise(r => { const t = () => TOPS[k] !== undefined ? r(TOPS[k]) : setTimeout(t, 30); t(); }); }
 const placed = PROPS.map(async ([id, x, z, ry, on, opt = {}]) => {
-  const L = opt.L || 0, base = L * FH, src = await loadModel(id), m = src.clone(true); if (opt.scale) m.scale.setScalar(opt.scale); m.rotation.order = "YXZ"; m.rotation.y = ry; if (id === "dining_chair_02" && Math.random() < .3) m.rotation.x = -PI / 2; if (opt.fallen) m.rotation.x = 1.15; scene.add(m);
-  let box = new THREE.Box3().setFromObject(m); let y = base - box.min.y;
+  const L = opt.L || 0, base = L * FH, src = await loadModel(id), m = src.clone(true); if (opt.scale) m.scale.setScalar(opt.scale); m.rotation.order = "YXZ"; m.rotation.y = ry; if (id === "dining_chair_02" && Math.random() < .3) m.rotation.x = -PI / 2; if (opt.fallen) { m.rotation.x = 1.5; m.rotation.z = .3; } scene.add(m);
+  // precise box: the quick box of a tipped-over model is too big and leaves it hovering above the floor
+  let box = new THREE.Box3().setFromObject(m, m.rotation.x !== 0); let y = base - box.min.y;
+  if (opt.fallen) glassShards(x, z, base);
   if (typeof on === "string") y += await waitTop(on) - base; else if (typeof on === "number") y += on;
   if (opt.hang) y = opt.hang - box.max.y; if (opt.y) y = base + opt.y - (box.min.y + box.max.y) / 2;
-  m.position.set(x, y, z); box = new THREE.Box3().setFromObject(m);
+  m.position.set(x, y, z); if (on != null && !opt.hang && !opt.y) settle(m);
+  box = new THREE.Box3().setFromObject(m);
   if (opt.key) TOPS[opt.key] = box.max.y;
   if (on == null && !opt.hang && !opt.y && !opt.nocoll && (box.max.y - base > .3 || opt.solid)) coll(box.min.x - .1, box.max.x + .1, box.min.z - .1, box.max.z + .1, L, box.max.y - base);
   if (opt.chand) anchor(x, box.min.y + .2, z, 0xffb070, 40 * opt.chand, 12, opt.fl || 0);
@@ -1228,47 +1273,48 @@ function end(cleared) { S.mode = "over"; controls.unlock(); $("inspect").classLi
 /* the card close-up */
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const LANGS = [["cpp", "C++"], ["java", "JAVA"], ["py", "PYTHON"]];
+// syntax colours like VS Code Dark+: kw = blue words, ct = control flow (purple), ty = types, fn = calls, va = names
 const HL = {
-  cpp: { kw: "struct class return if else for while do void new int char bool nullptr true false const continue break", ty: "string stack queue deque Node Tree", co: "//" },
-  java: { kw: "class return if else for while do void new int char boolean null true false continue break", ty: "String Stack Queue LinkedList Deque ArrayDeque Integer Character Node Tree", co: "//" },
-  py: { kw: "def class return if elif else for while in not and or is None True False continue break global pass", ty: "range len deque ord int Node Tree", co: "#" } };
-for (const k in HL) { HL[k].kw = new Set(HL[k].kw.split(" ")); HL[k].ty = new Set(HL[k].ty.split(" ")); }
+  cpp: { kw: "struct class void new int char bool nullptr true false const", ct: "return if else for while do continue break", ty: "string stack queue Node Tree", co: "//" },
+  java: { kw: "class void new int char boolean null true false", ct: "return if else for while do continue break", ty: "String Stack Queue LinkedList Integer Node Tree", co: "//" },
+  py: { kw: "def class None True False self", ct: "return if elif else for while in not and or is continue break pass", ty: "range len int Node Tree", co: "#" } };
+for (const k in HL) for (const f of ["kw", "ct", "ty"]) HL[k][f] = new Set(HL[k][f].split(" "));
 let LANG = "cpp"; try { const v = localStorage.getItem("dff_lang"); if (HL[v]) LANG = v; } catch (e) {}
 // the server sends the three versions as one JSON text; an old plain card is C++ only
 function langsOf(code) { try { const o = JSON.parse(code); if (o && typeof o.cpp === "string") return o; } catch (e) {} return { cpp: String(code || "") }; }
-function hl(code, lang = "cpp") { const L = HL[lang] || HL.cpp, KW = L.kw, TY = L.ty;
-  const re = lang === "py" ? /(#[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(\d+)\b|\b([A-Za-z_]\w*)\b/g : /(\/\/[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(\d+)\b|\b([A-Za-z_]\w*)\b/g; let o = "", l = 0, m;
-  while ((m = re.exec(code))) { o += esc(code.slice(l, m.index)); o += m[1] ? `<span class="co">${esc(m[1])}</span>` : m[2] ? `<span class="st">${esc(m[2])}</span>` : m[3] ? `<span class="nu">${m[3]}</span>` : KW.has(m[4]) ? `<span class="kw">${m[4]}</span>` : TY.has(m[4]) ? `<span class="ty">${m[4]}</span>` : m[4]; l = re.lastIndex; }
+function hl(code, lang = "cpp") { const L = HL[lang] || HL.cpp, sp = (c, t) => `<span class="${c}">${t}</span>`;
+  const re = lang === "py" ? /(#[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(\d+)\b|\b([A-Za-z_]\w*)\b(?=(\s*\()?)/g : /(\/\/[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(\d+)\b|\b([A-Za-z_]\w*)\b(?=(\s*\()?)/g; let o = "", l = 0, m;
+  while ((m = re.exec(code))) { o += esc(code.slice(l, m.index)); const w = m[4];
+    o += m[1] ? sp("co", esc(m[1])) : m[2] ? sp("st", esc(m[2])) : m[3] ? sp("nu", m[3]) : L.ct.has(w) ? sp("ct", w) : L.kw.has(w) ? sp("kw", w) : L.ty.has(w) ? sp("ty", w) : m[5] ? sp("fn", w) : sp("va", w); l = re.lastIndex; }
   return o + esc(code.slice(l)); }
 function openCard(o) { const c = { id: o.card.card.id, lvl: o.card.card.lvl, cat: "", t: "Opening…", code: "", loading: true };
   if (GH.on) hideGhost(false, 6 + Math.random() * 8); o.card.mesh.parent.remove(o.card.mesh); o.card = null;
   S.mode = "inspect"; S.card = c; S.t = S.tmax = CARD_TIME[c.lvl] || 10; S.ans = false; S.buf = ""; showCard(c);
   call("/api/r1/open", { card: c.id }).then(d => { if (S.card !== c) return; Object.assign(c, d, { loading: false }); S.t = Math.min(S.tmax, d.secs); showCard(c); })
     .catch(e => { if (S.card !== c) return; if (e.message === "card_used") { c.done = true; toast("THAT CARD IS ALREADY GONE", "#c9bfae"); closeCard(); hud(); checkOut(); } else netErr(e); }); }
-function showCard(c) { const red = /♥|♦/.test(c.cat);
-  $("pcard").style.setProperty("--suit", c.gold ? "#b8860b" : red ? "#b3262d" : "#1d2320");
-  $("timer").style.visibility = "visible"; $("keys").innerHTML = `<span>E · ${c.gold ? "PLAY" : "TAKE"}</span><span>Q · DROP</span>`;
+function showCard(c) {
+  $("keys").innerHTML = `<span>E · ${c.gold ? "PLAY" : "TAKE"}</span><span>Q · DROP</span>`;
   const L = langsOf(c.code), have = LANGS.filter(([k]) => L[k]), lang = L[LANG] ? LANG : "cpp";
-  $("pcard").innerHTML = `<div class="head"><span>${esc(c.cat)}${c.lvl ? `<i class="lv lv-${c.lvl}">${c.lvl.toUpperCase()}</i>` : ""}</span><span>x = ${S.x}</span></div><div class="trow"><h2>${esc(c.t)}</h2>`
-    + `<div class="langs">${c.loading ? "" : have.map(([k, n], i) => `<b class="${k === lang ? "on" : ""}"><i>${LANGS.findIndex(l => l[0] === k) + 1}</i>${n}</b>`).join("")}</div></div>`
-    + `<div class="code" id="code"></div><div class="note" id="note">${c.gold ? `Play it and you cannot skip. Right answer +${GOLD}, wrong answer −${GOLD}.` : "x is your team's value. Same logic in every language."}</div>`;
+  $("pcard").innerHTML = `<div class="top"><div class="name"><span class="cat">${esc(c.cat)}${c.lvl ? `<i class="lv lv-${c.lvl}">${c.lvl.toUpperCase()}</i>` : ""}</span><h2>${esc(c.t)}</h2></div>`
+    + `<div class="right"><div class="langs">${c.loading ? "" : have.map(([k, n]) => `<b class="${k === lang ? "on" : ""}"><i>${LANGS.findIndex(l => l[0] === k) + 1}</i>${n}</b>`).join("")}</div><span class="xval">x = ${S.x}</span><span class="secs" id="secs"></span></div></div>`
+    + `<div class="code" id="code"></div>${c.gold ? `<div class="note" id="note">Play it and you cannot skip. Right answer +${GOLD}, wrong answer −${GOLD}.</div>` : ""}`;
   if (!$("inspect").classList.contains("on")) { $("inspect").classList.add("on"); audio.flip(); }
-  layoutCode(L[lang] || "", lang); }
-// put the code on the card as big as it fits: one column, or helpers | main in two columns
-function splitCols(code) { const ls = code.split("\n"), cuts = []; ls.forEach((l, i) => { if (l === "" && i > 0) cuts.push(i); });
-  let best = null; for (const i of cuts) { const h = Math.max(i, ls.length - i - 1); if (!best || h < best.h) best = { h, a: ls.slice(0, i).join("\n"), b: ls.slice(i + 1).join("\n") }; }
-  return best; }
+  layoutCode(L[lang] || "", lang);
+  // the blood edge, drawn to the real size of the card (pathLength 100 = the whole way round)
+  const pc = $("pcard"), w = pc.clientWidth, h = pc.clientHeight;
+  pc.insertAdjacentHTML("beforeend", `<svg class="edge" id="timer" viewBox="0 0 ${w} ${h}"><rect id="ring" x="1.5" y="1.5" width="${w - 3}" height="${h - 3}" rx="12" pathLength="100" stroke-dasharray="100 100"/></svg>`);
+  timerDraw(); }
+function timerDraw() { if (!$("ring") || !S.card) return; const f = Math.max(0, S.t) / S.tmax, s = Math.max(0, Math.ceil(S.t));
+  $("ring").setAttribute("stroke-dasharray", `${(f * 100).toFixed(2)} 100`);
+  $("secs").textContent = s >= 60 ? (s / 60 | 0) + ":" + String(s % 60).padStart(2, "0") : String(s);
+  $("pcard").classList.toggle("low", s <= 10 && !S.card.loading); }
+// put the code on the card in ONE column, as big as it fits (10 to 20px); only a very small screen scrolls
 function layoutCode(code, lang) { const box = $("code"); if (!box) return;
-  const one = [code], two = code.split("\n").length > 18 ? splitCols(code) : null;
-  const put = cols => { box.innerHTML = cols.map(t => `<pre>${hl(t, lang)}</pre>`).join(""); };
+  box.innerHTML = `<pre>${hl(code, lang)}</pre>`; box.classList.remove("scroll");
   const fits = () => box.scrollHeight <= box.clientHeight + 1 && box.scrollWidth <= box.clientWidth + 1;
-  const biggest = cols => { put(cols); box.classList.remove("scroll"); let lo = 10, hi = 20;
-    box.style.fontSize = hi + "px"; if (fits()) return hi;
-    while (hi - lo > .25) { const mid = (lo + hi) / 2; box.style.fontSize = mid + "px"; if (fits()) lo = mid; else hi = mid; }
-    box.style.fontSize = lo + "px"; return fits() ? lo : 0; };
-  const f1 = biggest(one), f2 = two ? biggest([two.a, two.b]) : 0;
-  const cols = two && f2 > f1 + 1 ? [two.a, two.b] : one;   // two columns only when the text gets clearly bigger
-  if (biggest(cols) < 11) { put(cols); box.style.fontSize = "11px"; box.classList.add("scroll"); box.insertAdjacentHTML("beforeend", '<span class="more">↑ ↓ SCROLL</span>'); }
+  let lo = 10, hi = 20, size = hi; box.style.fontSize = hi + "px";
+  if (!fits()) { while (hi - lo > .25) { const mid = (lo + hi) / 2; box.style.fontSize = mid + "px"; if (fits()) lo = mid; else hi = mid; } size = lo; box.style.fontSize = lo + "px"; }
+  if (!fits() || size < 11) { box.style.fontSize = "11px"; box.classList.add("scroll"); box.insertAdjacentHTML("beforeend", '<span class="more">↑ ↓ SCROLL</span>'); }
   box.scrollTop = 0; }
 function setLang(k) { if (!S.card || S.card.loading) return; const L = langsOf(S.card.code); if (!L[k] || k === LANG) return;
   LANG = k; try { localStorage.setItem("dff_lang", k); } catch (e) {} audio.click(); showCard(S.card); }
@@ -1305,7 +1351,7 @@ function burnCard() {
     const fall = Math.max(0, k - .45); wrap.style.transform = `translateY(${fall * fall * 520}px) rotate(${(ox ? 1 : -1) * fall * 14}deg)`; wrap.style.opacity = String(Math.min(1, (1.05 - k) * 4));
     if (k < 1) requestAnimationFrame(step); else wrap.remove(); };
   requestAnimationFrame(step); }
-function goldStart() { S.ans = true; S.buf = ""; audio.take(); $("timer").style.visibility = "hidden";
+function goldStart() { S.ans = true; S.buf = ""; audio.take(); if ($("timer")) $("timer").style.visibility = "hidden"; if ($("secs")) $("secs").style.visibility = "hidden";
   $("keys").innerHTML = "<span>0-9 · TYPE</span><span>ENTER · SUBMIT</span>"; $("note").outerHTML = '<div class="gans" id="gans">ANSWER <b id="gbuf">_</b></div>'; }
 function goldKey(code) { const d = code.match(/^(?:Digit|Numpad)(\d)$/);
   if (d && S.buf.length < 6) S.buf += d[1];
@@ -1462,7 +1508,7 @@ function update(dt, t) {
     const rm = roomAt(P.x, P.z, P.L); if (rm && rm[0] !== S.room) { S.room = rm[0]; roomName(rm[0]); }
   }
   if (S.mode === "play" || S.mode === "inspect") { const before = Math.ceil(S.clock); S.clock -= dt; if (Math.ceil(S.clock) !== before) clockText(); if (S.clock <= 0) { if (S.mode === "inspect") closeCard(); end(false); return; } }
-  if (S.mode === "inspect" && !S.ans && S.card && !S.card.loading) { S.t -= dt; const s = Math.max(0, Math.ceil(S.t)); $("secs").style.fontSize = s >= 60 ? "30px" : ""; $("secs").textContent = s >= 60 ? (s / 60 | 0) + ":" + String(s % 60).padStart(2, "0") : String(s).padStart(2, "0"); $("ring").style.strokeDashoffset = 276.5 * (1 - Math.max(0, S.t) / S.tmax);
+  if (S.mode === "inspect" && !S.ans && S.card && !S.card.loading) { S.t -= dt; const s = Math.max(0, Math.ceil(S.t)); timerDraw();
     if (s !== lastTick) { lastTick = s; if (s <= 10) audio.tick(1 - S.t / 10); /* tick only in the last 10 s */ } if (S.t <= 0) decide("timeout"); /* timeout = drop, no penalty */ }
   jumpStep(dt); camera.position.set(P.x, P.y + P.jy + 1.65 + Math.sin(P.bob) * .035, P.z);
   camera.getWorldDirection(V); torch.position.copy(camera.position).addScaledVector(V2.set(-V.z, 0, V.x), .25).y -= .2; torch.target.position.copy(camera.position).addScaledVector(V, 6);
