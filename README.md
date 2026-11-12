@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🕯️ DEPTH FIRST FEAR
+# DEPTH FIRST FEAR
 
 ### A haunted first-person card game for the **PROCOM DSA Competition**
 
@@ -12,7 +12,7 @@
 
 ---
 
-## 👻 What is it?
+## What is it?
 
 **Depth First Fear** turns a Data Structures quiz into a horror game set in a haunted mansion.
 
@@ -37,7 +37,7 @@ But you are not alone in the house. She appears without warning. **Don't look in
 
 ---
 
-## 🚀 Quick start
+## Quick start
 
 You need **[Node.js](https://nodejs.org)** 18 or newer. No `npm install` is needed.
 
@@ -83,7 +83,7 @@ node scripts/add-admin.js taha
 
 ---
 
-## 🛡️ Running the competition
+## Running the competition
 
 The admin page is a control room with four tabs: **Live**, **Teams**, **Cards** and **Leaderboard**. The game follows every order from it, for every team at the same moment, using the server's clock (a PC's own clock doesn't matter).
 
@@ -103,7 +103,7 @@ Round 2 shows as **sealed** in the lobby for now.
 
 ---
 
-## 🎮 Controls
+## Controls
 
 | Key | Action |
 | :---: | --- |
@@ -119,7 +119,7 @@ Round 2 shows as **sealed** in the lobby for now.
 
 ---
 
-## 📜 Rules
+## Rules
 
 1. Every team starts at **`x = 0`** and has **60 minutes**.
 2. Open drawers, cupboards, chests and coffins to find cards. Each card shows code that changes `x`.
@@ -128,13 +128,13 @@ Round 2 shows as **sealed** in the lobby for now.
 5. Cards can **raise or lower** `x` (+, −, ×2, ×0 …), so read the code before you take it.
 6. **Highest `x` when time runs out wins.** There is no upper limit.
 
-### 🟢🟡🔴 Card levels
+### Card levels
 
 | Level | What it does to `x` | Time to decide | Where it hides |
 | --- | --- | :---: | --- |
-| 🟢 **Easy** (54) | small, ±1 to ±14 | **2 min** | the ground floor |
-| 🟡 **Medium** (42) | ±2 to ±20 | **3 min** | the first floor |
-| 🔴 **Hard** (11) | big or tricky: up to +70, ×2, ×0 | **5 min** | outside (garden, cemetery, crypt) |
+| **Easy** (54) | small, ±1 to ±14 | **2 min** | the ground floor |
+| **Medium** (42) | ±2 to ±20 | **3 min** | the first floor |
+| **Hard** (11) | big or tricky: up to +70, ×2, ×0 | **5 min** | outside (garden, cemetery, crypt) |
 
 Every card is sized so a team that knows the topic can finish it with **at least 5% of its time left** (estimated as 10 s to start, 3 s per line read and 1 s per step traced).
 
@@ -142,7 +142,7 @@ Every card is sized so a team that knows the topic can finish it with **at least
 
 Easy cards are a few plain steps read top to bottom (no loops to count). Medium and hard get harder:
 
-| Topic | 🟢 Easy | 🟡 Medium | 🔴 Hard |
+| Topic |  Easy |  Medium |  Hard |
 | --- | --- | --- | --- |
 | **Stack** | push / pop, read the top or the size | reverse a word, postfix, min stack, two stacks | postfix with all four operators, queue from 2 stacks |
 | **Queue** | push / pop, read the front or the size | rotate, interleave, ring buffer, hot potato | sliding window maximum, round robin |
@@ -156,19 +156,19 @@ Easy cards are a few plain steps read top to bottom (no loops to count). Medium 
 
 Every team gets **the same 107 cards**, but each team's deal is **random**: the cards sit in different drawers and cupboards on every load (always on their own floor), so teams can't tell each other where a card is.
 
-### 👁️ The ghost
+### The ghost
 
 - She appears suddenly: right in front of you, far away down a corridor, or upside down on the ceiling.
 - **Look into her eyes for a full second** and you are **busted: `x − 3`**.
 - If a card's time runs out, it counts as a **drop**: no penalty, x stays the same, and the card burns.
 
-### 🏆 Ties
+### Ties
 
 In Round 1, if two teams have the same `x`, the team that **reached that `x` first** is ranked higher. "Reached" is the last moment the team's `x` changed (taking a card that changed it, or being caught by her), taken from the database clock to the microsecond. The leaderboards are worked out by the server (`boardsNow()` in `server.js`); the admin boards show this "Reached at" time to the millisecond.
 
 ---
 
-## 🃏 The cards
+## The cards
 
 The deck is **107 cards: 54 easy, 42 medium, 11 hard**, across every topic. Cards live in the **Supabase database**, not in the game files, so teams can't read them in the browser. The server only sends a card's code when a team opens it, and the **server** works out the new `x`.
 
@@ -191,14 +191,14 @@ Cards are dealt again on every load: easy cards on the ground floor (54 cards in
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Co-heads: **don't push to `main`.** Make a branch, push it, and open a Pull Request. It gets merged after review.
 The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ---
 
-## 🗂️ Project structure
+## Project structure
 
 ```
 ├── index.html          the whole game (Three.js, WebAudio, shaders)
@@ -218,22 +218,22 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ---
 
-## ✨ Features
+## Features
 
-- 🏚️ A full two-floor mansion: grand hall, library, study, kitchen, dining room, nursery, master bedroom, gallery and an abandoned indoor pool
-- 🌲 Haunted grounds: courtyard, dead forest, cemetery and crypt, with rain, fog and lightning
-- 🔐 Team login ("Come in. Everyone else did."), a lobby with two film-poster round cards, an admin control room, 3 live leaderboards (Supabase)
-- ⏱️ 60-minute rounds, with easy / medium / hard cards that each appear once
-- 🔥 Cards burn away after you take or drop them
-- 🗄️ Working drawers, cupboards, chests, coffins, doors and gates (the iron gate to the forest clangs like real steel)
-- 👻 A ghost with an eye-contact mechanic and jumpscares
-- 🪟 Lit windows where shadows move when you are outside
-- 🔊 Sound made live in the browser: wood creaks, thunder, heartbeat, whispers
-- 💻 Runs on normal laptops: power saving when paused, one active tab at a time, auto resolution
+- A full two-floor mansion: grand hall, library, study, kitchen, dining room, nursery, master bedroom, gallery and an abandoned indoor pool
+- Haunted grounds: courtyard, dead forest, cemetery and crypt, with rain, fog and lightning
+- Team login ("Come in. Everyone else did."), a lobby with two film-poster round cards, an admin control room, 3 live leaderboards (Supabase)
+- 60-minute rounds, with easy / medium / hard cards that each appear once
+- Cards burn away after you take or drop them
+- Working drawers, cupboards, chests, coffins, doors and gates (the iron gate to the forest clangs like real steel)
+- A ghost with an eye-contact mechanic and jumpscares
+- Lit windows where shadows move when you are outside
+- Sound made live in the browser: wood creaks, thunder, heartbeat, whispers
+- Runs on normal laptops: power saving when paused, one active tab at a time, auto resolution
 
 ---
 
-## 🙏 Credits
+## Credits
 
 - **3D models and textures:** [Poly Haven](https://polyhaven.com) (CC0)
 - **Engine:** [Three.js](https://threejs.org) r170
