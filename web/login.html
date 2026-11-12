@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Depth First Fear</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@800&family=Anton&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Anton&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <link rel="stylesheet" href="/web/dff.css">
 <style>
   body { --shade: linear-gradient(90deg, rgba(7,8,11,.35) 0%, rgba(7,8,11,.1) 45%, transparent 60%), linear-gradient(0deg, rgba(0,0,0,.75), transparent 24%); }
@@ -23,18 +23,34 @@
     -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.05' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 7 -2.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   .tt .slash { position: absolute; left: -4%; right: -4%; top: 62%; height: 10px; background: #d21a24; transform: rotate(-4deg); box-shadow: 0 0 22px rgba(210,26,36,.6); }
 
-  .stack { width: min(500px, calc(100vw - 32px)); opacity: 0; animation: deal .9s .5s cubic-bezier(.2,.8,.2,1) forwards; }
-  @keyframes deal { from { opacity: 0; transform: translate(80px, -40px) rotate(14deg); } to { opacity: 1; transform: rotate(-2deg); } }
-  .face pre { font-size: 15px; }
-  .face pre input { width: 12.5ch; padding: 0 2px; border: 0; border-bottom: 2px dashed rgba(29,35,32,.38); background: transparent; color: #2f7a36; font: inherit; outline: none; caret-color: var(--suit); }
-  .face pre input:focus { border-bottom: 2px solid var(--suit); background: rgba(179,38,45,.06); }
-  .face pre input::placeholder { color: rgba(47,122,54,.35); }
-  .peek { border: 0; background: none; padding: 0 0 0 6px; cursor: pointer; color: #858c87; vertical-align: -2px; }
-  .peek:hover { color: var(--ink); }
-  #err { display: none; } #err.on { display: inline; } #errT { white-space: pre-wrap; }
-  .face.shake { animation: no .45s; }
+  /* ---- the way in: "Come in. Everyone else did." and two thin lines, no card ---- */
+  .come { position: relative; width: min(440px, calc(100vw - 40px)); padding: 34px 38px 30px; border-radius: 4px;
+    background: radial-gradient(ellipse 85% 75% at 45% 50%, rgba(5,4,6,.82), rgba(5,4,6,.55) 60%, rgba(5,4,6,0) 100%); }
+  .come > * { opacity: 0; animation: rise 1.6s cubic-bezier(.2,.7,.2,1) forwards; }
+  .come .k { animation-delay: .3s; } .come h2 { animation-delay: .7s; } .come .ed { animation-delay: 1.9s; } .come .lines { animation-delay: 2.7s; } .come .go { animation-delay: 3.1s; } .come .err, .come .caps { animation-delay: 0s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(7px); } to { opacity: 1; transform: none; filter: none; } }
+  .come .k { font: 700 11px var(--f-code); letter-spacing: .5em; color: #8a7d70; margin-bottom: 18px; }
+  .come h2 { margin: 0; font: 500 clamp(64px, min(7vw, 11vh), 96px)/.92 "Cormorant Garamond", Georgia, serif; color: #efe6d8; letter-spacing: -.01em; text-shadow: 0 0 40px rgba(0,0,0,.9); }
+  .come .ed { margin: 6px 0 0; font: italic 500 clamp(28px, min(3.2vw, 5vh), 42px)/1.1 "Cormorant Garamond", Georgia, serif; color: #c0141f; text-shadow: 0 0 26px rgba(192,20,31,.45), 0 2px 10px rgba(0,0,0,.8); }
+  .come .lines { display: grid; gap: 22px; margin-top: 34px; }
+  .come label { display: grid; gap: 6px; font: 700 11px var(--f-code); letter-spacing: .45em; color: #8d8075; }
+  .come .field { display: flex; align-items: center; border-bottom: 1px solid rgba(239,230,216,.3); transition: border-color .4s; }
+  .come .field:focus-within { border-color: #c0141f; box-shadow: 0 1px 0 #c0141f; }
+  .come input { flex: 1; min-width: 0; background: transparent; border: 0; padding: 8px 0 9px; color: #efe6d8; font: 600 22px "Cormorant Garamond", Georgia, serif; letter-spacing: .04em; outline: none; caret-color: #c0141f; }
+  .come input::placeholder { color: rgba(239,230,216,.22); font-style: italic; font-weight: 500; }
+  .come .peek { border: 0; background: none; padding: 0 0 0 10px; cursor: pointer; color: #6f645b; transition: color .2s; }
+  .come .peek:hover { color: #efe6d8; }
+  .come .go { margin-top: 32px; position: relative; overflow: hidden; isolation: isolate; padding: 15px 52px; background: transparent; border: 1px solid rgba(239,230,216,.42); color: #efe6d8; font: 700 13px Cinzel, serif; letter-spacing: .6em; cursor: pointer; transition: border-color .4s, color .4s; }
+  .come .go::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #b3121e, #6e0a10); transform: translateY(101%); transition: transform .55s cubic-bezier(.7,0,.2,1); }
+  .come .go:hover:not(:disabled), .come .go:focus-visible { border-color: #c0141f; } .come .go:hover:not(:disabled)::before, .come .go:focus-visible::before { transform: none; }
+  .come .go:disabled { cursor: wait; opacity: .6; }
+  .come .err { display: none; margin: 20px 0 0; font: italic 500 18px/1.35 "Cormorant Garamond", Georgia, serif; color: #ff5a63; text-shadow: 0 0 14px rgba(255,40,50,.35); }
+  .come .err.on { display: block; }
+  .come .caps { margin: 14px 0 0; font: 700 11px var(--f-code); letter-spacing: .3em; color: var(--soon); }
+  .come.shake { animation: no .45s; }
   @keyframes no { 20% { transform: translateX(-9px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
-  .caps { font: 700 11px var(--f-code); letter-spacing: .1em; color: var(--soon); text-align: center; margin-top: -6px; }
+  .burn > .come { position: absolute; inset: 0; margin: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+  .burn > .come > * { opacity: 1; animation: none; }
 
   @media (max-width: 900px) {
     body { overflow: auto; } .page { height: auto; min-height: 100%; }
@@ -51,22 +67,18 @@
       <div class="tag"><i></i>A Software Engineering Category Competition<i></i></div>
     </div>
 
-    <div class="stack"><div class="tilt"><div class="card3d" id="card">
-      <form class="face" id="f" autocomplete="off">
-        <div class="head"><span>♥ ONE WAY IN</span><span>NO WAY OUT ♠</span></div>
-        <h2>The Front Door</h2>
-<pre><span class="co">// your team is standing at the door</span>
-<span class="ty">string</span> team = <span class="st">"</span><input id="name" aria-label="Team name" placeholder="team name" maxlength="60" spellcheck="false" required><span class="st">"</span>;
-<span class="ty">string</span> key  = <span class="st">"</span><input id="pw" type="password" aria-label="Password" placeholder="password" maxlength="100" required><span class="st">"</span>;<button type="button" class="peek" id="peek" aria-label="Show password"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
-
-<span class="kw">if</span> (<span class="fn">open</span>(team, key))
-    <span class="fn">enter</span>(mansion);   <span class="co">// she is waiting</span><span id="err">
-<span class="bad" id="errT"></span></span></pre>
-        <div class="caps" id="caps" hidden>CAPS LOCK IS ON</div>
-        <div class="note">Fill in the two blanks, then open the door.</div>
-        <div class="keys"><button class="key red" id="go"><kbd>⏎</kbd><span id="goT">Open the door</span></button></div>
-      </form>
-    </div></div></div>
+    <form class="come" id="f" autocomplete="off">
+      <div class="k">DEPTH FIRST FEAR · ROUND 01</div>
+      <h2>Come in.</h2>
+      <p class="ed">Everyone else did.</p>
+      <div class="lines">
+        <label>TEAM<span class="field"><input id="name" aria-label="Team name" maxlength="60" spellcheck="false" required></span></label>
+        <label>PASSWORD<span class="field"><input id="pw" type="password" aria-label="Password" maxlength="100" required><button type="button" class="peek" id="peek" aria-label="Show password"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3.2"/></svg></button></span></label>
+      </div>
+      <p class="caps" id="caps" hidden>CAPS LOCK IS ON</p>
+      <p class="err" id="err"><span id="errT"></span></p>
+      <button class="go" id="go"><span id="goT">ENTER</span></button>
+    </form>
   </div></main>
 
   <footer class="credits" aria-label="Organisers">
@@ -86,18 +98,17 @@
 <script>
 const $ = id => document.getElementById(id);
 if (innerWidth > 900) fitTo($("fit"));
-// the card is dealt face down, then turns over
-setTimeout(() => $("name").focus(), 1100);   // the card is dealt face up, ready to fill in
+setTimeout(() => $("name").focus(), 3000);   // after "Come in. Everyone else did." has faded in
 
 $("peek").onclick = () => { const p = $("pw"); p.type = p.type === "password" ? "text" : "password"; p.focus(); };
 addEventListener("keyup", e => { if (e.getModifierState) $("caps").hidden = !e.getModifierState("CapsLock"); });
-const showErr = msg => { $("errT").textContent = "// " + msg; $("err").classList.add("on"); const f = $("f"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); };
+const showErr = msg => { $("errT").textContent = msg[0].toUpperCase() + msg.slice(1) + "."; $("err").classList.add("on"); const f = $("f"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); };
 if (new URLSearchParams(location.search).get("why") === "other") showErr("your team logged in on another PC, so this one was logged out");
 
-$("f").addEventListener("submit", async e => { e.preventDefault(); const go = $("go"); go.disabled = true; $("goT").textContent = "Opening…"; $("err").classList.remove("on");
+$("f").addEventListener("submit", async e => { e.preventDefault(); const go = $("go"); go.disabled = true; $("goT").textContent = "OPENING…"; $("err").classList.remove("on");
   try { await api("/api/login", { name: $("name").value, password: $("pw").value });
     strike(true); burnCard($("f"), () => { document.body.classList.add("leaving"); setTimeout(() => location.href = "/lobby", 700); }); }
-  catch (x) { showErr(x.status === 401 ? "wrong team name or password" : x.message); go.disabled = false; $("goT").textContent = "Open the door"; $("pw").select(); } });
+  catch (x) { showErr(x.status === 401 ? "wrong team name or password" : x.message); go.disabled = false; $("goT").textContent = "ENTER"; $("pw").select(); } });
 </script>
 </body>
 </html>
