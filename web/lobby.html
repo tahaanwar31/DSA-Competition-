@@ -36,6 +36,7 @@
   .poster .bg { position: absolute; inset: 0; z-index: 0; background: url(/assets/ui/house-lit.webp) 46% 100% / auto 92% no-repeat, radial-gradient(circle at 30% 18%, rgba(220,215,200,.35), transparent 22%), linear-gradient(180deg, #1c2029, #0b0c10 70%); filter: brightness(1.6) contrast(1.1) saturate(.6); transform: scale(1.12); animation: drift 30s ease-in-out infinite alternate; }
   @keyframes drift { to { transform: scale(1.22) translate(-3%, 1%); } }
   .poster .veil { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(4,3,4,.6) 0%, rgba(4,3,4,.2) 26%, rgba(4,3,4,.86) 54%, #050405 100%); }
+  .poster { transform-style: flat; } .poster .bg, .poster .veil { pointer-events: none; }
   .poster > :not(.bg):not(.veil):not(.fog) { position: relative; z-index: 2; }
   .poster .rn { display: flex; justify-content: space-between; align-items: center; gap: 10px; font: 700 11px var(--f-code); letter-spacing: .45em; color: #b9aca2; }
   .poster .rn b { color: #f3d48a; letter-spacing: .15em; font-weight: 700; }
