@@ -157,7 +157,7 @@ Every team gets **the same cards**. Only the hiding places change from laptop to
 
 ### 🏆 Ties
 
-The tie rule is **not decided yet**. For now, teams with the same `x` share the same rank.
+In Round 1, if two teams have the same `x`, the team that **reached that `x` first** is ranked higher. "Reached" is the last moment the team's `x` changed (taking a card that changed it, or being caught by her), taken from the database clock to the microsecond. The leaderboards are worked out by the server (`boardsNow()` in `server.js`); the admin boards show this "Reached at" time to the millisecond.
 
 ---
 

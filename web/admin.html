@@ -399,14 +399,18 @@ $("cardForm").onsubmit = async e => { e.preventDefault(); const f = e.target, co
   try { await api(editing ? `/api/admin/cards/${editing}` : "/api/admin/cards", body, editing ? "PATCH" : "POST"); $("cardDlg").close(); toast("Card saved"); load(); } catch (x) { $("cardErr").textContent = x.message; } };
 
 // ---------- leaderboard ----------
-const BOARDS = { round1: ["ROUND 01", "THE MANSION", [["rank", "#"], ["team", "TEAM"], ["x", "X"], ["busts", "CAUGHT"]]],
+// Round 1 tie rule: same x -> the team that reached that x first is ranked higher (the server sorts; "Reached at" shows why)
+const BOARDS = { round1: ["ROUND 01", "THE MANSION", [["rank", "#"], ["team", "TEAM"], ["x", "X"], ["reached_at", "REACHED AT"]]],
                  round2: ["ROUND 02", "THE FOREST", [["rank", "#"], ["team", "TEAM"], ["points", "POINTS"]]],
                  final: ["FINAL", "ROUND 1 + ROUND 2", [["rank", "#"], ["team", "TEAM"], ["round1", "ROUND 1"], ["round2", "ROUND 2"], ["total", "TOTAL"]]] };
+// 9:31:07.284 PM: the time a team reached its x, to the millisecond
+const reachedAt = iso => { if (!iso) return "—"; const d = new Date(iso), p = (n, w = 2) => String(n).padStart(w, "0");
+  return `${d.getHours() % 12 || 12}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)} ${d.getHours() < 12 ? "AM" : "PM"}`; };
 const boardTable = k => { const [, , cols] = BOARDS[k], rows = D.boards[k];
-  return `<table><tr>${cols.map(c => `<th>${c[1]}</th>`).join("")}</tr>${rows.length ? rows.map(r => `<tr>${cols.map(c => `<td class="${c[0] === "team" ? "" : "mono"}">${c[0] === "team" ? `<b>${esc(r[c[0]])}</b>` : esc(r[c[0]])}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${cols.length}" class="muted">No scores yet.</td></tr>`}</table>`; };
+  return `<table><tr>${cols.map(c => `<th>${c[1]}</th>`).join("")}</tr>${rows.length ? rows.map(r => `<tr>${cols.map(c => `<td class="${c[0] === "team" ? "" : "mono"}">${c[0] === "team" ? `<b>${esc(r[c[0]])}</b>` : c[0] === "reached_at" ? reachedAt(r.reached_at) : esc(r[c[0]])}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${cols.length}" class="muted">No scores yet.</td></tr>`}</table>`; };
 function drawBoards() {
   put($("boards"), Object.keys(BOARDS).map(k => `<div class="box"><div class="between"><h3>${BOARDS[k][0]} · ${BOARDS[k][1]}</h3><button class="sbtn" data-screen="${k}">Show full screen</button></div><div class="tablewrap" style="margin-top:10px">${boardTable(k)}</div></div>`).join("")
-    + `<p class="muted" style="grid-column:1/-1">Same score = same rank (tie rule not decided yet).</p>`);
+    + `<p class="muted" style="grid-column:1/-1">Same x in Round 1: the team that reached that x first is ranked higher. "Reached at" is the moment its x last changed (a card or being caught), to the millisecond.</p>`);
   if (screenBoard) $("screenIn").innerHTML = `<div class="neon"><i class="bar"></i><span class="w1">${BOARDS[screenBoard][1]}</span><span class="w2">${BOARDS[screenBoard][0]}</span><i class="bar"></i></div>${boardTable(screenBoard)}`;
 }
 $("boards").onclick = e => { const b = e.target.closest("[data-screen]"); if (!b) return; screenBoard = b.dataset.screen; drawBoards(); $("screen").classList.add("on"); document.documentElement.requestFullscreen?.().catch(() => {}); };

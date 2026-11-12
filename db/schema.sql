@@ -97,7 +97,9 @@ alter table plays  enable row level security;
 
 -- ============================================================
 --  THE THREE LEADERBOARDS (live views)
---  Tie rule NOT decided yet: equal scores share the same rank for now.
+--  NOTE: the server now ranks Round 1 and the final itself (boardsNow() in server.js):
+--  same x -> the team that reached that x first is ranked higher. These views are kept
+--  for reference and are no longer used by the pages.
 -- ============================================================
 create or replace view leaderboard_round1 with (security_invoker = true) as
 select rank() over (order by r.x desc) as rank,

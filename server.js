@@ -17,6 +17,8 @@ const SB_URL = (process.env.SUPABASE_URL || "").replace(/\/$/, ""), SB_KEY = pro
 const port = +process.argv[2] || +process.env.PORT || 8780;
 
 // ---------- Supabase (REST, with the secret key) ----------
+// every row of a GET, page by page (Supabase returns at most 1000 rows per request)
+async function sbAll(p) { const out = []; for (let off = 0; ; off += 1000) { const page = await sb(`${p}${p.includes("?") ? "&" : "?"}limit=1000&offset=${off}`); out.push(...page); if (page.length < 1000) return out; } }
 async function sb(p, { method = "GET", body, prefer } = {}) {
   const headers = { apikey: SB_KEY, "Content-Type": "application/json" };
   if (!SB_KEY.startsWith("sb_")) headers.Authorization = "Bearer " + SB_KEY;   // old-style service_role JWT
@@ -79,6 +81,34 @@ async function roundsNow() {
     let status = r.locked ? "locked" : !s || !e ? "unset" : t < s ? "waiting" : t < e ? "open" : "ended";
     if (r.id === 2 && !ROUND2_READY) status = "construction";
     return { id: r.id, name: r.name, starts_at: r.starts_at, ends_at: r.ends_at, locked: r.locked, status, open: status === "open" }; }) };
+}
+
+// ---------- leaderboards ----------
+// Round 1: highest x wins. Same x: the team that reached that x first is ranked higher.
+// "Reached" = the last moment x changed: a card that changed x, or being caught by her (x - 3);
+// if x never changed, the moment the team started. Times come from the database clock (to the microsecond).
+async function boardsNow() {
+  const [teams, runs] = await Promise.all([sb("teams?select=id,name,active"), sb("runs?voided=is.false&select=id,team_id,round_id,x,points,busts,started_at,finished_at,last_bust_at")]);
+  const active = new Map(teams.filter(t => t.active).map(t => [t.id, t.name]));
+  const r1 = runs.filter(r => r.round_id === 1 && active.has(r.team_id)), r2 = runs.filter(r => r.round_id === 2 && active.has(r.team_id));
+  const plays = r1.length ? await sbAll(`plays?run_id=in.(${r1.map(r => r.id).join(",")})&action=eq.take&select=run_id,decided_at,x_before,x_after`) : [];
+  const t = iso => iso ? Date.parse(iso) * 1000 + Number((String(iso).match(/\.\d{3}(\d{0,3})/) || [, ""])[1].padEnd(3, "0")) : 0;   // microseconds
+  const reached = new Map(r1.map(r => { let at = r.started_at;
+    for (const p of plays) if (p.run_id === r.id && p.x_after !== p.x_before && t(p.decided_at) > t(at)) at = p.decided_at;
+    if (r.last_bust_at && t(r.last_bust_at) > t(at)) at = r.last_bust_at;
+    return [r.id, at]; }));
+  const ranked = (rows, score, when) => { rows.sort((a, b) => score(b) - score(a) || t(when(a)) - t(when(b)));
+    return rows.map((row, i) => ({ row, rank: i && score(rows[i - 1]) === score(row) && t(when(rows[i - 1])) === t(when(row)) ? null : i + 1 }))
+      .map((o, i, all) => { if (o.rank === null) o.rank = all[i - 1].rank; return o; }); };
+  const round1 = ranked(r1.slice(), r => r.x, r => reached.get(r.id)).map(({ row, rank }) => ({ rank, team: active.get(row.team_id), x: row.x, reached_at: reached.get(row.id), finished: !!row.finished_at }));
+  const round2 = ranked(r2.slice(), r => r.points, r => r.finished_at || r.started_at).map(({ row, rank }) => ({ rank, team: active.get(row.team_id), points: row.points, finished: !!row.finished_at }));
+  // final: Round 1 x + Round 2 points; a tie goes to the team that reached its Round 1 x first (Round 2 rule to be added with Round 2)
+  const byTeam = new Map(); for (const [id, name] of active) byTeam.set(id, { team: name, round1: 0, round2: 0, at: null });
+  for (const r of r1) Object.assign(byTeam.get(r.team_id), { round1: r.x, at: reached.get(r.id) });
+  for (const r of r2) byTeam.get(r.team_id).round2 = r.points;
+  const fin = [...byTeam.values()].map(v => ({ ...v, total: v.round1 + v.round2 }));
+  const final = ranked(fin, v => v.total, v => v.at || "9999-12-31T00:00:00Z").map(({ row, rank }) => ({ rank, team: row.team, round1: row.round1, round2: row.round2, total: row.total }));
+  return { round1, round2, final };
 }
 
 // errors from the database functions -> short codes the pages understand
@@ -155,17 +185,17 @@ async function handle(req, res) {
     const num = v => { const n = Number(v); if (!Number.isInteger(n) || n <= 0) throw fail(400, "bad id"); return n; };
     if (M === "POST" && seg[0] === "logout") { adminSessions.delete(cookies(req).dff_admin); return send(res, 200, { ok: true }, { "Set-Cookie": cookie("dff_admin", "", 0) }); }
     if (M === "GET" && seg[0] === "boards") {   // just the three leaderboards, for the big screen
-      const [st, b1, b2, bf] = await Promise.all([roundsNow(), sb("leaderboard_round1?select=*&order=rank"), sb("leaderboard_round2?select=*&order=rank"), sb("leaderboard_final?select=*&order=rank")]);
-      return send(res, 200, { ...st, boards: { round1: b1, round2: b2, final: bf } });
+      const [st, boards] = await Promise.all([roundsNow(), boardsNow()]);
+      return send(res, 200, { ...st, boards });
     }
     if (M === "GET" && seg[0] === "overview") {
-      const [st, teams, cards, runs, b1, b2, bf] = await Promise.all([roundsNow(),
+      const [st, teams, cards, runs, boards] = await Promise.all([roundsNow(),
         sb("teams?select=id,name,members,active,session_token,created_at&order=name"), sb("cards?select=*&order=id"),
         sb("runs?voided=is.false&select=id,team_id,round_id,x,points,busts,started_at,finished_at"),
-        sb("leaderboard_round1?select=*&order=rank"), sb("leaderboard_round2?select=*&order=rank"), sb("leaderboard_final?select=*&order=rank")]);
-      const plays = runs.length ? await sb(`plays?run_id=in.(${runs.map(r => r.id).join(",")})&select=run_id,action`) : [];
+        boardsNow()]);
+      const plays = runs.length ? await sbAll(`plays?run_id=in.(${runs.map(r => r.id).join(",")})&select=run_id,action`) : [];
       for (const r of runs) { const mine = plays.filter(q => q.run_id === r.id); r.taken = mine.filter(q => q.action === "take").length; r.dropped = mine.filter(q => q.action && q.action !== "take").length; }
-      return send(res, 200, { admin: admin.name, ...st, teams: teams.map(({ session_token, ...t }) => ({ ...t, online: !!session_token })), cards, runs, boards: { round1: b1, round2: b2, final: bf } });
+      return send(res, 200, { admin: admin.name, ...st, teams: teams.map(({ session_token, ...t }) => ({ ...t, online: !!session_token })), cards, runs, boards });
     }
     // teams
     if (seg[0] === "teams") {
@@ -226,7 +256,7 @@ async function handle(req, res) {
   throw fail(404, "not found");
 }
 
-module.exports = { hashPw, sb, rpc };
+module.exports = { hashPw, sb, sbAll, rpc, boardsNow };
 if (require.main === module) {
   if (!SB_URL || !SB_KEY || SB_KEY.startsWith("PASTE")) { console.error("\n  The Supabase secret key is missing. Put it in the .env file (see README).\n"); process.exit(1); }
   http.createServer((req, res) => handle(req, res).catch(e => {

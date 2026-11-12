@@ -68,7 +68,7 @@
     <div class="clock" id="clock">--:--:--<small>ROUND 01</small></div>
   </header>
   <main>
-    <div class="title"><h2 id="bt">THE MANSION</h2><span id="bs">HIGHEST X WINS</span></div>
+    <div class="title"><h2 id="bt">THE MANSION</h2><span id="bs">HIGHEST X WINS · SAME X: FIRST TO REACH IT</span></div>
     <div class="board">
       <div class="cols"><span>RANK</span><span>TEAM</span><span id="sh">X</span></div>
       <div class="list" id="list"></div>
@@ -80,7 +80,7 @@
 <script>
 const $ = id => document.getElementById(id), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const BOARDS = {
-  round1: { t: "THE MANSION", s: "ROUND 01 · HIGHEST X WINS", head: "X", key: "x", empty: ["NO TEAM HAS ENTERED YET", "THE NIGHT HAS NOT BEGUN"] },
+  round1: { t: "THE MANSION", s: "HIGHEST X WINS · SAME X: FIRST TO REACH IT", head: "X", key: "x", empty: ["NO TEAM HAS ENTERED YET", "THE NIGHT HAS NOT BEGUN"] },
   round2: { t: "THE FOREST", s: "ROUND 02", head: "POINTS", key: "points", empty: ["UNDER CONSTRUCTION", "THE FOREST IS STILL GROWING"] },
   final:  { t: "FINAL RANKING", s: "ROUND 01 + ROUND 02", head: "TOTAL", key: "total", empty: ["NO SCORES YET", "THE NIGHT HAS NOT BEGUN"] },
 };
