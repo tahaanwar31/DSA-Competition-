@@ -16,7 +16,7 @@
 
 **Depth First Fear** turns a Data Structures quiz into a horror game set in a haunted mansion.
 
-Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Drawers, cupboards, chests and coffins hide cards with a short piece of code on them. Read the code, work out what it does to your team's value `x`, and decide in time (1, 2 or 4 minutes, depending on the card): take it or drop it. Some cards raise `x`, some lower it.
+Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Drawers, cupboards, chests and coffins hide cards with a short piece of code on them. Read the code, work out what it does to your team's value `x`, and decide in time (2, 3 or 5 minutes, depending on the card): take it or drop it. Some cards raise `x`, some lower it.
 
 The goal: have the **highest `x`** when the **60-minute** timer runs out.
 
@@ -60,15 +60,17 @@ PORT=8780
 **2. Start the server**
 
 ```bash
-node server.js
+npm start
 ```
+
+It runs on the `PORT` in `.env` (8780 by default), so open **http://localhost:8780**. `node server.js` does the same.
 
 | Page | Who | What |
 | --- | --- | --- |
 | **http://localhost:8780** | teams | login (team name + password) |
-| **/lobby** | teams | Round 01 and Round 02. A round opens by itself at its start time |
+| **/lobby** | teams | two film-poster cards: Round 01 (countdown, rules, enter button) and Round 02 (sealed). A round opens by itself at its start time |
 | **/round1** | teams | the mansion (only while Round 1 is open) |
-| **/admin** | organisers | teams, cards, round times, lock / unlock, leaderboards |
+| **/admin** | organisers | the control room: live rounds, teams, cards, leaderboard |
 
 **3. Make your admin login** (once):
 
@@ -83,16 +85,21 @@ node scripts/add-admin.js taha
 
 ## 🛡️ Running the competition
 
-1. **/admin → Teams:** add every team with a password (or paste many at once: `name, password, members` per line).
-2. **/admin → Rounds:** set Round 1's **start** and **end** time and click **Unlock**. Teams wait in the lobby with a countdown; the round opens for everyone at the same moment, using the server's clock (a PC's own clock doesn't matter).
-3. **Power cut or problem?** Click **Lock now**. Every team is sent back to the lobby at once and their progress is saved. When you unlock, choose:
-   - **Continue**: same x, same used cards.
-   - **Start fresh**: everyone back to x = 0 with every card.
-   - One PC crashed? **Reset team** for just that team.
-4. **One device per team:** if a team logs in on another PC, the first PC is logged out.
-5. **Leaderboards:** Round 1, Round 2 and Final (Round 1 + Round 2). Click **Big screen** for the projector.
+The admin page is a control room with four tabs: **Live**, **Teams**, **Cards** and **Leaderboard**. The game follows every order from it, for every team at the same moment, using the server's clock (a PC's own clock doesn't matter).
 
-Round 2 shows **UNDER CONSTRUCTION** in the lobby for now.
+1. **Teams:** add every team with a password (or paste many at once: `name, password, members` per line). Teams can be edited, switched off, kicked or deleted.
+2. **Live:** each round has a **Start** box and an **End** box (date and time). Save the times and the round opens by itself. Teams wait in the lobby with a countdown.
+3. **Round buttons** (they change with the round's state):
+   - **Open now**: start before the set time.
+   - **Pause**: every team goes back to the lobby at once and progress is saved. Then choose **Resume** (same x, same used cards) or **Start fresh** (everyone back to x = 0 with every card).
+   - **+5 min**: five more minutes.
+   - **End now**: closes the round for everyone.
+   - **Reopen**: run an ended round again.
+   - One PC crashed? **Reset** just that team.
+4. **One device per team:** if a team logs in on another PC, the first PC is logged out. A team that is switched off sees a clear message at login.
+5. **Leaderboard:** Round 1, Round 2 and Final (Round 1 + Round 2), with the time each team reached its x. **Big screen** is for the projector.
+
+Round 2 shows as **sealed** in the lobby for now.
 
 ---
 
@@ -147,7 +154,7 @@ Easy cards are a few plain steps read top to bottom (no loops to count). Medium 
 | **BFS** | – | visit order, distance, level on 4 rooms | shortest path in a 3 × 3 maze |
 | **DFS** | – | visit order, how many you can reach on 4 rooms | cycle detection |
 
-Every team gets **the same cards**. Only the hiding places change from laptop to laptop, so no team gets an easier deck and teams can't tell each other where a card is.
+Every team gets **the same 107 cards**, but each team's deal is **random**: the cards sit in different drawers and cupboards on every load (always on their own floor), so teams can't tell each other where a card is.
 
 ### 👁️ The ghost
 
@@ -196,11 +203,12 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 ```
 ├── index.html          the whole game (Three.js, WebAudio, shaders)
 ├── server.js           web server + game rules API (Node.js, no packages)
-├── web/                login, lobby and admin pages
+├── web/                login, lobby, leaderboard and admin pages
 ├── db/
 │   ├── schema.sql      tables and the 3 leaderboards (run in Supabase SQL Editor)
 │   └── functions.sql   take / drop / bust / timers, all checked on the server
 ├── scripts/            add-admin, seed-cards, check-cards
+├── .env                secret settings (you make it; never on GitHub)
 ├── assets/
 │   ├── models/         3D furniture, statues, trees, gates (glTF)
 │   ├── tex/            wall, floor and stone textures
@@ -214,10 +222,10 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 - 🏚️ A full two-floor mansion: grand hall, library, study, kitchen, dining room, nursery, master bedroom, gallery and an abandoned indoor pool
 - 🌲 Haunted grounds: courtyard, dead forest, cemetery and crypt, with rain, fog and lightning
-- 🔐 Team login, lobby with timed rounds, admin panel, 3 live leaderboards (Supabase)
+- 🔐 Team login ("Come in. Everyone else did."), a lobby with two film-poster round cards, an admin control room, 3 live leaderboards (Supabase)
 - ⏱️ 60-minute rounds, with easy / medium / hard cards that each appear once
 - 🔥 Cards burn away after you take or drop them
-- 🗄️ Working drawers, cupboards, chests, coffins, doors and gates
+- 🗄️ Working drawers, cupboards, chests, coffins, doors and gates (the iron gate to the forest clangs like real steel)
 - 👻 A ghost with an eye-contact mechanic and jumpscares
 - 🪟 Lit windows where shadows move when you are outside
 - 🔊 Sound made live in the browser: wood creaks, thunder, heartbeat, whispers
