@@ -92,9 +92,11 @@
 // a card face catches fire from one corner, chars and falls away (the same burn as in the game)
 window.burnCard = (src, done) => {
   const r = src.getBoundingClientRect(); if (!r.width) return done && done();
-  const wrap = document.createElement("div"); wrap.className = "burn"; Object.assign(wrap.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+  // the copy is laid out at the card's own size, then shrunk to its size on screen (the page may be scaled to fit), so it never grows
+  const w0 = src.offsetWidth || r.width, h0 = src.offsetHeight || r.height, sc = Math.min(r.width / w0, r.height / h0), base = `scale(${sc})`;
+  const wrap = document.createElement("div"); wrap.className = "burn"; Object.assign(wrap.style, { left: r.left + (r.width - w0 * sc) / 2 + "px", top: r.top + (r.height - h0 * sc) / 2 + "px", width: w0 + "px", height: h0 + "px", transformOrigin: "0 0", transform: base });
   const card = src.cloneNode(true); card.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); card.removeAttribute("id");
-  const W = 220, H = Math.max(60, Math.round(W * r.height / r.width)), mk = c => { const e = document.createElement("canvas"); e.width = W; e.height = H; if (c) e.className = c; return e; };
+  const W = 220, H = Math.max(60, Math.round(W * h0 / w0)), mk = c => { const e = document.createElement("canvas"); e.width = W; e.height = H; if (c) e.className = c; return e; };
   const mc = mk(), glow = mk("glow"), char = mk("char"), mx = mc.getContext("2d"), gx = glow.getContext("2d"), cx = char.getContext("2d");
   wrap.append(card, char, glow); document.body.append(wrap); src.style.visibility = "hidden";
   const ox = Math.random() < .5 ? 0 : W, oy = H, G = 7, gr = Array.from({ length: (G + 1) * (G + 1) }, Math.random), N = new Float32Array(W * H), md = Math.hypot(W, H);
@@ -109,7 +111,7 @@ window.burnCard = (src, done) => {
       const ch = v >= 0 && v < .13 ? 1 - v / .13 : 0; ci.data[q] = 22; ci.data[q + 1] = 10; ci.data[q + 2] = 4; ci.data[q + 3] = ch * 235; }
     mx.putImageData(mi, 0, 0); gx.putImageData(gi, 0, 0); cx.putImageData(ci, 0, 0);
     const url = `url(${mc.toDataURL()})`; card.style.webkitMaskImage = card.style.maskImage = url; char.style.webkitMaskImage = char.style.maskImage = url; char.style.webkitMaskSize = char.style.maskSize = "100% 100%";
-    const fall = Math.max(0, k - .45); wrap.style.transform = `translateY(${fall * fall * 520}px) rotate(${(ox ? 1 : -1) * fall * 14}deg)`; wrap.style.opacity = String(Math.min(1, (1.05 - k) * 4));
+    const fall = Math.max(0, k - .45); wrap.style.transform = `${base} translateY(${fall * fall * 520}px) rotate(${(ox ? 1 : -1) * fall * 14}deg)`; wrap.style.opacity = String(Math.min(1, (1.05 - k) * 4));
     if (k < 1) requestAnimationFrame(step); else { wrap.remove(); done && done(); } };
   requestAnimationFrame(step);
 };
