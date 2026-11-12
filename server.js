@@ -111,7 +111,8 @@ async function handle(req, res) {
     const { name = "", password = "" } = await readBody(req); slowDown("t:" + req.socket.remoteAddress);
     const want = String(name).trim().toLowerCase(), rows = await sb(`teams?select=id,name,active,password_hash`);
     const t = rows.find(r => r.name.toLowerCase() === want);
-    if (!t || !t.active || !checkPw(String(password), t.password_hash)) throw fail(401, "Wrong team name or password.");
+    if (!t || !checkPw(String(password), t.password_hash)) throw fail(401, "Wrong team name or password.");
+    if (!t.active) throw fail(403, "Your team is switched off. Please ask the organisers.");
     const token = crypto.randomUUID();
     await sb(`teams?id=eq.${t.id}`, { method: "PATCH", body: { session_token: token } });
     teamCache.clear();

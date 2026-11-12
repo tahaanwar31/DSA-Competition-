@@ -92,7 +92,7 @@
   dialog::backdrop { background: rgba(0,0,0,.7); }
   dialog .acts { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
   /* big screen leaderboard */
-  #screen { position: fixed; inset: 0; z-index: 100; display: none; background: radial-gradient(ellipse at 50% 0%, rgba(90,8,14,.5), #050405 70%); padding: 4vh 6vw; overflow: auto; }
+  #screen { position: fixed; inset: 0; z-index: 100; display: none; background: radial-gradient(ellipse at 50% 0%, rgba(90,8,14,.5), #050405 70%), #050405; padding: 4vh 6vw; overflow: auto; }
   #screen.on { display: block; }
   #screen .neon { margin: 0 auto 3vh; text-align: center; }
   #screen .neon .w2 { font-size: clamp(40px, 6vw, 90px); }
@@ -366,9 +366,11 @@ $("teams").onclick = e => { const b = e.target.closest("button[data-a]"); if (!b
 $("addTeam").onsubmit = async e => { e.preventDefault(); const f = e.target, body = Object.fromEntries(new FormData(f));
   await act(() => api("/api/admin/teams", body), "Team added"); f.reset(); f.name.focus(); };
 $("bulk").onsubmit = async e => { e.preventDefault(); const lines = e.target.lines.value.split("\n").map(l => l.trim()).filter(Boolean); let ok = 0, bad = [];
+  const failed = [];
   for (const l of lines) { const [name, password, ...m] = l.split(",").map(s => s.trim());
-    try { await api("/api/admin/teams", { name, password, members: m.join(", ") }); ok++; } catch (x) { bad.push(`${name || l}: ${x.message}`); } }
-  toast(`${ok} added` + (bad.length ? ` · ${bad.length} not added` : "")); if (bad.length) alert("Not added:\n" + bad.join("\n")); else e.target.reset(); load(); };
+    try { await api("/api/admin/teams", { name, password, members: m.join(", ") }); ok++; } catch (x) { bad.push(`${name || l}: ${x.message}`); failed.push(l); } }
+  e.target.lines.value = failed.join("\n");   // only the lines that were not added stay in the box
+  toast(`${ok} added` + (bad.length ? ` · ${bad.length} not added` : "")); if (bad.length) alert("Not added (still in the box, fix and press again):\n" + bad.join("\n")); load(); };
 
 // ---------- cards ----------
 function langsOf(code) { try { const o = JSON.parse(code); if (o && typeof o.cpp === "string") return o; } catch (e) {} return { cpp: String(code || "") }; }
