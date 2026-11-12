@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Depth First Fear · Lobby</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cinzel:wght@800&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Cinzel:wght@700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <link rel="stylesheet" href="/web/dff.css">
 <style>
   body { --shade: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(7,8,11,.5), rgba(7,8,11,.2) 70%, rgba(7,8,11,.45)), linear-gradient(0deg, rgba(0,0,0,.85), transparent 28%); }
@@ -29,27 +29,56 @@
   #s2 .stack { animation: deal2 .8s .4s cubic-bezier(.2,.8,.2,1) both; }
   @keyframes deal { from { opacity: 0; transform: translateY(-60px) rotate(-10deg); } to { opacity: 1; transform: rotate(-1.5deg); } }
   @keyframes deal2 { from { opacity: 0; transform: translateY(-60px) rotate(12deg); } to { opacity: 1; transform: rotate(2deg); } }
-  .face { min-height: 480px; align-content: start; }
-  .count { font: 800 clamp(40px, 6.4vh, 56px)/1 var(--f-code); font-variant-numeric: tabular-nums; letter-spacing: .02em; text-align: center; color: var(--ink); }
-  .count small { display: block; margin-top: 6px; font: 700 11px var(--f-code); letter-spacing: .25em; color: #5b645e; }
-  .rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font: 500 12.5px/1.5 var(--f-code); color: #5b645e; }
-  .rules li::before { content: "// "; color: #a9aea9; }
-  .rules b { color: var(--ink); font-weight: 700; } .rules .g { color: var(--open); font-weight: 700; } .rules .y { color: var(--soon); font-weight: 700; } .rules .r { color: var(--suit); font-weight: 700; }
-  .keys .key { width: 100%; justify-content: center; }
+  /* the two cards are film posters (same look as the login) */
+  .table { align-items: stretch; } .slot { grid-template-rows: 1fr auto; } .stack, .tilt { height: 100%; }
+  .poster { position: relative; min-height: 560px; height: 100%; overflow: hidden; display: flex; flex-direction: column; padding: 30px 32px 28px; border-radius: 4px; color: #efe6d8;
+    background: #050405; border: 1px solid rgba(239,230,216,.16); box-shadow: 0 30px 80px rgba(0,0,0,.85), 0 0 0 1px rgba(0,0,0,.6); }
+  .poster .bg { position: absolute; inset: 0; z-index: 0; background: url(/assets/ui/house-lit.webp) 46% 100% / auto 92% no-repeat, radial-gradient(circle at 30% 18%, rgba(220,215,200,.35), transparent 22%), linear-gradient(180deg, #1c2029, #0b0c10 70%); filter: brightness(1.6) contrast(1.1) saturate(.6); transform: scale(1.12); animation: drift 30s ease-in-out infinite alternate; }
+  @keyframes drift { to { transform: scale(1.22) translate(-3%, 1%); } }
+  .poster .veil { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(4,3,4,.6) 0%, rgba(4,3,4,.2) 26%, rgba(4,3,4,.86) 54%, #050405 100%); }
+  .poster > :not(.bg):not(.veil):not(.fog) { position: relative; z-index: 2; }
+  .poster .rn { display: flex; justify-content: space-between; align-items: center; gap: 10px; font: 700 11px var(--f-code); letter-spacing: .45em; color: #b9aca2; }
+  .poster .rn b { color: #f3d48a; letter-spacing: .15em; font-weight: 700; }
+  .poster .live { display: inline-flex; align-items: center; gap: 8px; letter-spacing: .3em; color: var(--st, #8d8075); }
+  .poster .live i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; }
+  .poster .live.open { --st: #6fe08f; } .poster .live.open i { animation: pulse 1.6s infinite; }
+  .poster .live.soon { --st: #f0c050; } .poster .live.lock { --st: #ff4b55; } .poster .live.done { --st: #7fb6e0; } .poster .live.gone { --st: #8d8075; }
+  @keyframes pulse { 50% { opacity: .3; } }
+  .poster h2 { margin: 8px 0 0; font: 500 62px/1 "Cormorant Garamond", Georgia, serif; color: #efe6d8; text-shadow: 0 0 30px rgba(0,0,0,.9); }
+  .poster .tag { margin-top: 4px; font: italic 500 23px "Cormorant Garamond", Georgia, serif; color: #c0141f; text-shadow: 0 0 18px rgba(192,20,31,.4); }
+  .poster .clock { margin-top: auto; padding-top: 70px; font: 500 68px/1 "Cormorant Garamond", Georgia, serif; color: #efe6d8; font-variant-numeric: lining-nums tabular-nums; }
+  .poster .clock small { display: block; margin-top: 6px; font: 700 10.5px var(--f-code); letter-spacing: .45em; color: #8d8075; }
+  .rules { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; font: 400 13px/1.4 var(--f-text); color: #b8aca4; }
+  .rules li { position: relative; padding-left: 18px; }
+  .rules li::before { content: ""; position: absolute; left: 0; top: 9px; width: 9px; height: 1px; background: #c0141f; }
+  .rules b { color: #efe6d8; font-weight: 600; } .rules .g { color: #6fe08f; } .rules .y { color: #f0c050; } .rules .r { color: #ff4b55; }
+  .poster .go { margin-top: 22px; align-self: flex-start; position: relative; overflow: hidden; isolation: isolate; padding: 13px 34px; border: 1px solid rgba(239,230,216,.45); background: transparent;
+    color: #efe6d8; font: 700 13px Cinzel, serif; letter-spacing: .45em; text-transform: uppercase; cursor: pointer; transition: border-color .3s, box-shadow .3s; }
+  .poster .go::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #b3121e, #6e0a10); transform: translateY(101%); transition: transform .5s cubic-bezier(.7,0,.2,1); }
+  .poster .go:hover:not(:disabled)::before, .poster .go:focus-visible::before { transform: none; }
+  .poster .go:hover:not(:disabled) { border-color: #c0141f; box-shadow: 0 0 30px rgba(192,20,31,.5); }
+  .poster .go:disabled { cursor: not-allowed; color: rgba(239,230,216,.35); border-style: dashed; border-color: rgba(239,230,216,.2); }
+  .burn > .poster { position: absolute; inset: 0; margin: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
 
-  /* the sealed card */
-  .sealed { position: relative; height: 480px; }
-  .sealed .back { position: absolute; inset: 0; transform: none; }
-  .tape { position: absolute; left: -26px; right: -26px; top: 40%; transform: rotate(-8deg); padding: 9px 0; text-align: center; background: repeating-linear-gradient(-45deg, #e8b84a 0 22px, #15110a 22px 44px); box-shadow: 0 10px 26px rgba(0,0,0,.7); }
-  .tape span { display: inline-block; padding: 5px 16px; background: #15110a; color: #e8b84a; font: 800 15px var(--f-code); letter-spacing: .3em; }
-  .tape + .tape { top: 54%; transform: rotate(6deg); } .tape + .tape span { font-size: 11px; }
+  /* round 2: the same poster, cold and sealed */
+  .poster.sealed .bg { filter: brightness(.75) contrast(1.1) saturate(0) blur(3px); background-position: 20% 60%; }
+  .poster.sealed .veil { background: linear-gradient(180deg, rgba(4,3,4,.72), rgba(4,3,4,.55) 40%, #050405); }
+  .poster .fog { position: absolute; inset: -20% -40%; z-index: 1; pointer-events: none; background: radial-gradient(ellipse 40% 18% at 40% 60%, rgba(160,170,185,.2), transparent 70%), radial-gradient(ellipse 30% 14% at 70% 76%, rgba(160,170,185,.15), transparent 70%); animation: fog 22s linear infinite alternate; }
+  @keyframes fog { to { transform: translateX(16%); } }
+  .poster.sealed h2 { color: rgba(239,230,216,.42); }
+  .poster .seal { margin: auto 0; text-align: center; }
+  .poster .seal b { display: inline-block; position: relative; font: 500 70px/1 "Cormorant Garamond", Georgia, serif; color: #efe6d8; letter-spacing: .08em; }
+  .poster .seal b::after { content: ""; position: absolute; left: -6%; right: -6%; top: 54%; height: 5px; background: #c0141f; transform: rotate(-4deg); box-shadow: 0 0 18px rgba(192,20,31,.6); }
+  .poster .seal i { display: block; margin-top: 18px; font: italic 500 24px "Cormorant Garamond", Georgia, serif; color: #c0141f; }
+  .poster .seal small { display: block; margin-top: 16px; font: 700 10.5px var(--f-code); letter-spacing: .45em; color: #6f655d; }
+  @media (prefers-reduced-motion: reduce) { .poster .bg, .poster .fog, .poster .live i { animation: none; } }
 
   .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(1000px, 100%); }
   .notes div { position: relative; padding: 12px 16px 12px 20px; background: linear-gradient(90deg, rgba(40,6,9,.85), rgba(10,6,7,.7)); border-left: 3px solid #d21a24; box-shadow: 0 10px 26px rgba(0,0,0,.5); }
   .notes b { display: block; margin-bottom: 4px; font: 400 15px/1 "Anton", Impact, sans-serif; letter-spacing: .16em; color: #ff3a44; text-transform: uppercase; }
   .notes span { font: 500 14px/1.45 var(--f-text); color: #e9e2d6; }
   @media (max-width: 860px) { .notes { grid-template-columns: 1fr; } }
-  @media (max-width: 960px) { body { overflow: auto; } .page { height: auto; min-height: 100%; } .face, .sealed { min-height: 0; } .sealed { height: 360px; } }
+  @media (max-width: 960px) { body { overflow: auto; } .page { height: auto; min-height: 100%; } .poster { min-height: 0; } .poster.sealed { min-height: 360px; } }
 </style>
 </head>
 <body data-scene="statue">
@@ -63,30 +92,35 @@
     <div class="ask">Pick a card · <b>tonight there is only one</b></div>
     <div class="table">
       <div class="slot" id="s1">
-        <div class="stack"><div class="tilt"><div class="card3d">
-          <div class="face" id="c1">
-            <div class="head"><span>♦ ROUND 01<i class="lv" id="lv">…</i></span><span id="x"></span></div>
+        <div class="stack"><div class="tilt">
+          <div class="poster" id="c1"><div class="bg"></div><div class="veil"></div>
+            <div class="rn"><span>ROUND 01 <b id="x"></b></span><span class="live" id="lv"><i></i><span>…</span></span></div>
             <h2>The Mansion</h2>
-            <pre id="code"><span class="co">// asking the house…</span></pre>
-            <div class="count" id="count">--:--:--<small>&nbsp;</small></div>
+            <div class="tag" id="tag">Asking the house…</div>
+            <div class="clock" id="count">--:--:--<small>&nbsp;</small></div>
             <ul class="rules">
               <li><b>E</b> accepts the card: its code runs on your <b>x</b> and <b>x</b> is updated</li>
               <li><b>Q</b> rejects it: <b>x</b> stays the same. Either way the card burns</li>
-              <li>time to decide: <span class="g">easy 2 min</span> · <span class="y">medium 3 min</span> · <span class="r">hard 5 min</span>. Time out = rejected</li>
-              <li>cards in <b>C++</b>, <b>Java</b> or <b>Python</b>: keys <b>1</b> <b>2</b> <b>3</b></li>
-              <li><span class="g">easy</span> cards hide on the ground floor of the mansion · <span class="y">medium</span> on the first floor · <span class="r">hard</span> outside the mansion</li>
-              <li>caught by her eyes: <span class="r">x − 3</span> · highest <b>x</b> after 60 min wins</li>
-              <li>same <b>x</b>? the team that reached it <b>first</b> ranks higher</li>
+              <li>Time to decide: <span class="g">easy 2 min</span> · <span class="y">medium 3 min</span> · <span class="r">hard 5 min</span>. Time out = rejected</li>
+              <li>Cards in <b>C++</b>, <b>Java</b> or <b>Python</b>: keys <b>1</b> <b>2</b> <b>3</b></li>
+              <li><span class="g">Easy</span> cards hide on the ground floor of the mansion · <span class="y">medium</span> on the first floor · <span class="r">hard</span> outside the mansion</li>
+              <li>Caught by her eyes: <span class="r">x − 3</span> · highest <b>x</b> after 60 min wins</li>
+              <li>Same <b>x</b>? The team that reached it <b>first</b> ranks higher</li>
             </ul>
-            <div class="keys" id="act"></div>
+            <div id="act"></div>
           </div>
-        </div></div></div>
+        </div></div>
         <div class="cap">Round 01 · The Mansion</div>
       </div>
 
       <div class="slot" id="s2">
-        <div class="stack"><div class="tilt"><div class="sealed"><div class="back"><div class="in"><div class="seal">DFF</div></div></div>
-          <div class="tape"><span>UNDER CONSTRUCTION</span></div><div class="tape"><span>THE FOREST IS STILL GROWING</span></div></div></div></div>
+        <div class="stack"><div class="tilt">
+          <div class="poster sealed"><div class="bg"></div><div class="veil"></div><div class="fog"></div>
+            <div class="rn"><span>ROUND 02</span><span class="live gone"><i></i><span>SEALED</span></span></div>
+            <h2>The Forest</h2>
+            <div class="seal"><b>Sealed</b><i>The forest is still growing.</i><small>OPENS AFTER ROUND 01</small></div>
+          </div>
+        </div></div>
         <div class="cap">Round 02 · The Forest · sealed</div>
       </div>
     </div>
@@ -120,21 +154,20 @@ const span = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${pad(
 const hm = iso => { const d = new Date(iso); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const day = iso => new Date(iso).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" }).toUpperCase();
 const set = (el, html) => { if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; } };
-const C = s => `<span class="co">${s}</span>`, K = s => `<span class="kw">${s}</span>`, F = s => `<span class="fn">${s}</span>`, N = s => `<span class="nu">${s}</span>`;
 
 function draw() {
   if (!st) return; const now = Date.now() + skew, r = st.rounds[0], s = Date.parse(r.starts_at), e = Date.parse(r.ends_at), mine = st.r1;
-  let lv, code, count, sub, act = "";
-  if (r.locked) { lv = ["", "LOCKED"]; code = `${C("// the doors are locked")}\n${K("while")} (doors.${F("locked")}())\n    ${F("wait")}();   ${C("// stay on this page")}`; count = "--:--:--"; sub = "THE ORGANISERS WILL OPEN IT"; }
-  else if (!r.starts_at || !r.ends_at) { lv = ["", "NOT SET"]; code = `${C("// no start time yet")}\n${F("wait")}();`; count = "--:--:--"; sub = "NO START TIME YET"; }
-  else if (now < s) { lv = ["soon", "SOON"]; code = `${K("while")} (now < ${N(hm(r.starts_at))})\n    ${F("wait")}();   ${C("// every team starts together")}`; count = span(s - now); sub = `OPENS ${day(r.starts_at)} · ${hm(r.starts_at)}`; }
-  else if (now >= e) { lv = ["gone", "ENDED"]; code = `${C("// the night is over")}\n${K("return")} x;   ${C(mine ? "// x = " + mine.x : "")}`; count = mine ? "x = " + mine.x : "00:00:00"; sub = "ROUND 01 HAS ENDED"; }
-  else if (mine && mine.finished) { lv = ["done", "DONE"]; code = `${C("// every card has burned")}\n${K("return")} x;   ${C("// you made it out")}`; count = "x = " + mine.x; sub = "YOU SURVIVED THE MANSION"; }
-  else { lv = ["open", "OPEN"]; code = `${K("if")} (doors.${F("open")}())\n    ${F("enter")}(mansion);   ${C("// " + (mine ? "back in" : "go"))}`; count = span(e - now); sub = `CLOSES AT ${hm(r.ends_at)}`;
-    act = `<button class="key red" id="enter"><kbd>⏎</kbd>${mine ? "Back into the mansion" : "Enter the mansion"}</button>`; }
-  if (!act) act = `<button class="key" disabled>${lv[1] === "DONE" ? "You made it out" : lv[1] === "ENDED" ? "The doors are closed" : "Not yet"}</button>`;
-  $("lv").className = "lv " + lv[0]; $("lv").textContent = lv[1]; $("x").textContent = mine ? "x = " + mine.x : "";
-  set($("code"), code); set($("count"), `${count}<small>${sub}</small>`); set($("act"), act);
+  let lv, tag, count, sub, act = "";
+  if (r.locked) { lv = ["lock", "LOCKED"]; tag = "The doors are locked."; count = "--:--:--"; sub = "THE ORGANISERS WILL OPEN IT"; }
+  else if (!r.starts_at || !r.ends_at) { lv = ["gone", "NOT SET"]; tag = "No start time yet."; count = "--:--:--"; sub = "NO START TIME YET"; }
+  else if (now < s) { lv = ["soon", "SOON"]; tag = "Every team starts together."; count = span(s - now); sub = `OPENS ${day(r.starts_at)} · ${hm(r.starts_at)}`; }
+  else if (now >= e) { lv = ["gone", "ENDED"]; tag = "The night is over."; count = mine ? "x = " + mine.x : "00:00:00"; sub = "ROUND 01 HAS ENDED"; }
+  else if (mine && mine.finished) { lv = ["done", "DONE"]; tag = "Every card has burned."; count = "x = " + mine.x; sub = "YOU SURVIVED THE MANSION"; }
+  else { lv = ["open", "OPEN"]; tag = mine ? "It kept your place." : "The doors are open."; count = span(e - now); sub = `CLOSES AT ${hm(r.ends_at)}`;
+    act = `<button class="go" id="enter">${mine ? "Back into the mansion" : "Enter the mansion"}</button>`; }
+  if (!act) act = `<button class="go" disabled>${lv[1] === "DONE" ? "You made it out" : lv[1] === "ENDED" ? "The doors are closed" : "Not yet"}</button>`;
+  $("lv").className = "live " + lv[0]; set($("lv"), `<i></i><span>${lv[1]}</span>`); $("x").textContent = mine ? "· x = " + mine.x : "";
+  set($("tag"), tag); set($("count"), `${count}<small>${sub}</small>`); set($("act"), act);
   const b = $("enter"); if (b && !b.onclick) b.onclick = go;
 }
 function go() { if (leaving) return; leaving = true; strike(true); burnCard($("c1"), () => { document.body.classList.add("leaving"); setTimeout(() => location.href = "/round1", 600); }); }
