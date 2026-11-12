@@ -219,8 +219,8 @@
       <li>Code cards are hidden in <b>drawers, cupboards, chests and coffins</b>. Look at one, press <kbd>E</kbd> to open it, then <kbd>C</kbd> to pick up the card.</li>
       <li>Read the code on the card in <b>C++</b>, <b>Java</b> or <b>Python</b> (press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>). Same logic in all three. Work out what it will do to <b>x</b>.</li>
       <li>Press <kbd>E</kbd> to <b>accept</b>: the code runs on <b>x</b> and <b>x</b> is updated. Press <kbd>Q</kbd> to <b>reject</b>: <b>x</b> stays the same. Either way the card burns and is gone.</li>
-      <li>Time to decide: <span class="g">easy 1 min</span>, <span class="y">medium 2 min</span>, <span class="r">hard 4 min</span>. If time runs out, the card is rejected.</li>
-      <li>Hard cards hide <b>upstairs and outside</b>.</li>
+      <li>Time to decide: <span class="g">easy 2 min</span>, <span class="y">medium 3 min</span>, <span class="r">hard 5 min</span>. If time runs out, the card is rejected.</li>
+      <li><span class="g">Easy</span> cards hide on the <b>ground floor</b> of the mansion, <span class="y">medium</span> cards on the <b>first floor</b> of the mansion, <span class="r">hard</span> cards <b>outside</b> the mansion.</li>
       <li>Don't look into <span class="r">her eyes</span>. If she catches you, <span class="r">x − 3</span>.</li>
       <li>When the <b>60 minutes</b> end, the team with the <b>highest x</b> wins. Same x: the team that <b>reached it first</b> ranks higher.</li>
     </ol></div>
@@ -258,7 +258,7 @@
       <ol>
         <li><b>01</b><span>Search the mansion. <em>Drawers, cupboards, chests and coffins</em> hide cards.</span></li>
         <li><b>02</b><span>Read the code. <kbd>E</kbd> take it and x changes, <kbd>Q</kbd> drop it. Either way, it <em>burns</em>.</span></li>
-        <li><b>03</b><span><em class="g">Easy 1 min</em> · <em class="y">Medium 2 min</em> · <em class="r">Hard 4 min</em>. Hard cards hide <em>upstairs and outside</em>.</span></li>
+        <li><b>03</b><span><em class="g">Easy 2 min</em> · <em class="y">Medium 3 min</em> · <em class="r">Hard 5 min</em>. Easy cards hide on the <em>ground floor</em> of the mansion, medium on the <em>first floor</em>, hard <em>outside</em> the mansion.</span></li>
         <li><b>04</b><span>Cards can <em>raise or lower</em> x. Highest x after <em>60 minutes</em> wins. Same x: <em>first to reach it</em> wins.</span></li>
         <li><b>05</b><span>Never look into <em class="r">her eyes</em>. Busted <em class="r">−3</em>. Card time runs out = <em>dropped</em>.</span></li>
       </ol>
@@ -654,6 +654,7 @@ function furniture({ x, z, ry = 0, L = 0, w, h, d, rows, mat = FW, top = null, l
     const rh = rh0 / total * innerH, cw = (w - 2 * t) / n;
     for (let i = 0; i < n; i++) {
       const cx = -w / 2 + t + cw * (i + .5), cy = r0 + rh / 2, o = { kind, t: 0, open: false, card: null, L, g };
+      if (kind === "plain") { cp(bgeo(cw - .006, rh - .006, .028), cx, cy, d / 2 - .014); continue; }   // solid counter front, no handle
       let front;
       if (kind === "drawer") {
         const dr = new THREE.Group(); dr.position.set(cx, cy, d / 2); g.add(dr); const dd = d - t - .05;
@@ -697,7 +698,7 @@ const wallX = (side, d) => side * (26 - .15 - d / 2);
 dresser(-9.6, .2, PI / 2, 0); dresser(9.6, .2, -PI / 2, 0);
 furniture({ x: -5.5, z: wallZ(-1, .55), L: 0, w: 1.3, h: 2, d: .55, legs: .08, shelf: true, rows: [[1, 2, "door"]] });
 // --- library
-furniture({ x: -12.8, z: wallZ(1, .5), ry: PI, w: 1.1, h: 1.35, d: .5, legs: .15, rows: [[1, 3, "drawer"], [1, 3, "drawer"], [1, 3, "drawer"], [1, 3, "drawer"]] });   // card catalogue
+furniture({ x: -12.8, z: wallZ(1, .5), ry: PI, w: 1.1, h: 1.35, d: .5, legs: .15, rows: [[1, 3, "drawer"], [1, 3, "drawer"]] });   // card catalogue
 const libDesk = furniture({ x: -18, z: 11, ry: PI, w: 1.5, h: .26, d: .75, legs: .52, rows: [[1, 2, "drawer"]] });
 // --- study
 for (const s of [-1, 1]) furniture({ x: -17 + s * .62, z: -6.5, w: .46, h: .72, d: .8, rows: [[1, 1, "drawer"], [1, 1, "drawer"], [1, 1, "drawer"]] });
@@ -707,10 +708,10 @@ furniture({ x: -13.2, z: wallZ(-1, .6), w: .55, h: 1.35, d: .6, rows: [[1, 1, "d
 const sideboard = furniture({ x: wallX(1, .55), z: 7, ry: -PI / 2, w: 2.1, h: .9, d: .55, legs: .1, top: MARBLE, rows: [[.62, 3, "door"], [.3, 3, "drawer"]] });
 // --- kitchen: counters, wall cabinets, pantry, sink
 const kz = wallZ(-1, .62), ux = [10.8, 11.8, 12.8, 13.8, 15.7, 16.7, 17.7, 18.7, 19.7, 20.7];
-for (const x of ux) { furniture({ x, z: kz, w: 1, h: .86, d: .62, mat: PAINTED, top: MARBLE, rows: [[.62, 2, "door"], [.2, 1, "drawer"]] });
-  furniture({ x, z: wallZ(-1, .34), y: 1.55, w: 1, h: .75, d: .34, mat: PAINTED, solid: false, rows: [[1, 2, "door"]] }); }
+const OPENS = new Set([12.8, 18.7]);   // only these two base units open; the rest are solid counters
+for (const x of ux) furniture({ x, z: kz, w: 1, h: .86, d: .62, mat: PAINTED, top: MARBLE, rows: OPENS.has(x) ? [[.62, 2, "door"], [.2, 1, "drawer"]] : [[.62, 1, "plain"], [.2, 1, "plain"]] });
 furniture({ x: 22.2, z: wallZ(-1, .64), w: 1.2, h: 2.2, d: .64, mat: PAINTED, shelf: true, legs: .06, rows: [[1, 2, "door"]] });   // pantry
-for (const z of [-12.4, -11.4, -10.4, -9.4, -8.4]) furniture({ x: wallX(1, .62), z, ry: -PI / 2, w: 1, h: .86, d: .62, mat: PAINTED, top: MARBLE, rows: [[.62, 2, "door"], [.2, 1, "drawer"]] });
+for (const z of [-12.4, -11.4, -10.4, -9.4, -8.4]) furniture({ x: wallX(1, .62), z, ry: -PI / 2, w: 1, h: .86, d: .62, mat: PAINTED, top: MARBLE, rows: z === -8.4 ? [[.62, 2, "door"], [.2, 1, "drawer"]] : [[.62, 1, "plain"], [.2, 1, "plain"]] });
 { const sx = wallX(1, .62) + .05; add(new THREE.BoxGeometry(.4, .03, .55), CHROME, sx, .905, -10.4); add(new THREE.BoxGeometry(.36, .02, .5), new THREE.MeshStandardMaterial({ color: 0x0a0c0c, metalness: .6, roughness: .3 }), sx, .912, -10.4);
   const tap = add(new THREE.TorusGeometry(.12, .015, 8, 16, PI), CHROME, sx + .26, 1.02, -10.4, PI / 2, false); tap.rotation.z = 0; }
 // --- gallery (upper)
@@ -927,16 +928,16 @@ const PROPS = [
   ...[2.4, 5.2, 8.0, 10.8].map(z => ["wooden_bookshelf_worn", -25.6, z, PI / 2]), ...[-22.8, -20].map(x => ["wooden_bookshelf_worn", x, 13.6, PI]),
   ["Sofa_01", -18, 5.2, 0], ["ArmChair_01", -21.4, 8, PI / 2 + .35], ["ArmChair_01", -14.6, 8, -PI / 2 - .35],
   ["GothicCommode_01", -10.6, 11.6, -PI / 2, null, { key: "lc" }], ["vintage_oil_lamp", -10.6, 11.6, -PI / 2, "lc", { light: 1.4, i: 8 }],
-  ["GothicCabinet_01", -10.6, 2.4, -PI / 2], ...[-24.3, -21.5, -14.6, -12].map(x => ["wooden_bookshelf_worn", x, .4, 0]), ["vintage_oil_lamp", -18.4, 11, 0, libDesk.top, { light: 1, i: 5 }],
+  ...[-24.3, -21.5, -14.6, -12].map(x => ["wooden_bookshelf_worn", x, .4, 0]), ["vintage_oil_lamp", -18.4, 11, 0, libDesk.top, { light: 1, i: 5 }],
   // study
   ...[-22.5, -19.7].map(x => ["wooden_bookshelf_worn", x, -13.6, 0]),
-  ["ArmChair_01", -17.1, -5.2, PI], ["ArmChair_01", -23.4, -5.4, -PI / 2 - .5], ["ArmChair_01", -23.4, -8.6, -PI / 2 + .5], ["GothicCabinet_01", -10.6, -3, -PI / 2], ["wine_bottles_01", -17.75, -6.35, 0, .77], ["mantel_clock_01", -25.62, -7, PI / 2, 1.43], ["horse_head", -25.62, -7.85, PI / 2 + .3, 1.43],
+  ["ArmChair_01", -17.1, -5.2, PI], ["ArmChair_01", -23.4, -5.4, -PI / 2 - .5], ["ArmChair_01", -23.4, -8.6, -PI / 2 + .5], ["wine_bottles_01", -17.75, -6.35, 0, .77], ["mantel_clock_01", -25.62, -7, PI / 2, 1.43], ["horse_head", -25.62, -7.85, PI / 2 + .3, 1.43],
   ["fancy_picture_frame_01", -25.8, -7, PI / 2, null, { y: 2.8, scale: 1.5 }], ["wine_barrel_01", -11.2, -12.7, .4], ["wine_barrel_01", -11.4, -11.4, 1.2],
   ["GothicCommode_01", -13, -.65, PI, null, { key: "sc" }], ["brass_candleholders", -13, -.65, PI, "sc", { light: 1, i: 5, fl: 2 }],
   // dining room
   ["dining_table", 18, 7, PI / 2, null, { key: "dt" }], ...[-1.6, 0, 1.6].flatMap(dz => [["dining_chair_02", 17, 7 + dz, PI / 2], ["dining_chair_02", 19, 7 + dz, -PI / 2]]),
   ["brass_candleholders", 18, 6.2, 0, "dt", { light: 1.5, i: 8 }], ["brass_candleholders", 18, 7.9, 0, "dt", { light: 1.2 }],
-  ["GothicCabinet_01", 21.5, 13.55, PI], ["dining_chair_02", 18, 4.7, 0], ["dining_chair_02", 18, 9.3, PI], ["GothicCommode_01", 22, .6, 0], ["ArmChair_01", 24.6, 12.6, -2.4], ["vintage_grandfather_clock_01", 11.2, 13.4, PI], ["ornate_mirror_01", 25.82, 7, -PI / 2, null, { y: 1.9 }],
+  ["GothicCabinet_01", 21.5, 13.55, PI], ["dining_chair_02", 18, 4.7, 0], ["dining_chair_02", 18, 9.3, PI], ["ArmChair_01", 24.6, 12.6, -2.4], ["vintage_grandfather_clock_01", 11.2, 13.4, PI], ["ornate_mirror_01", 25.82, 7, -PI / 2, null, { y: 1.9 }],
   ["GothicCommode_01", 14, .6, 0, null, { key: "dc" }], ["vintage_oil_lamp", 14, .6, 0, "dc", { light: 1 }], ["fancy_picture_frame_01", 15, 13.82, PI, null, { y: 2.2, scale: 1.4 }],
   // kitchen
   ["electric_stove", 14.75, -13.52, 0], ["WoodenTable_01", 17.5, -6.5, 0, null, { key: "isl", scale: 1.45 }],
@@ -1029,9 +1030,9 @@ function fillBooks(b, alongZ) { const W = alongZ ? b.max.z - b.min.z : b.max.x -
 let duck = null; loadModel("rubber_duck_toy").then(src => { duck = src.clone(true); duck.scale.setScalar(.75); duck.position.set(17.2, WL, 2.5); scene.add(duck); });
 
 /* ================= the cards: hidden in random drawers =================
-   Every load deals the deck again at random: hard cards go upstairs or outside,
-   easy and medium cards fill downstairs first (a few spill upstairs when it is full).
-   177 cards in 186 spots: about 95% of drawers, cupboards, chests and coffins hold one.
+   Every load deals the deck again at random: easy cards go on the ground floor, medium cards
+   on the first floor, hard cards outside. 107 cards in 113 spots (54 in 57 · 42 in 44 · 11 in 12):
+   about 95% of the drawers, cupboards, chests and coffins on each floor hold one.
    Each team gets its own layout. */
 const cardBack = canvasTex(256, 360, g => {
   g.fillStyle = "#fbf8f1"; g.beginPath(); g.roundRect(0, 0, 256, 360, 22); g.fill(); g.fillStyle = "#8f1a20"; g.beginPath(); g.roundRect(14, 14, 228, 332, 14); g.fill();
@@ -1042,15 +1043,16 @@ const CARD_GEO = new THREE.PlaneGeometry(.1, .14), CARD_MAT = new THREE.MeshStan
 const GOLD_MAT = new THREE.MeshStandardMaterial({ map: cardBack, color: 0xffc94d, emissive: 0xffb300, emissiveMap: cardBack, emissiveIntensity: .8, roughness: .4 });
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const WP = new THREE.Vector3();
-const scaryPlace = o => { o.slot[0].updateWorldMatrix(true, false); o.slot[0].getWorldPosition(WP); return WP.y > 3.5 || WP.z > 14.4 || Math.abs(WP.x) > 26.4; };  // upstairs or outside
+// where a hiding spot is: outside (garden, cemetery, crypt), the first floor, or the ground floor
+const zoneOf = o => { o.slot[0].updateWorldMatrix(true, false); o.slot[0].getWorldPosition(WP); return WP.z > 14.4 || Math.abs(WP.x) > 26.4 ? "outside" : WP.y > 3.5 ? "first" : "ground"; };
+const LEVEL_ZONE = { easy: "ground", medium: "first", hard: "outside" };   // easy: ground floor · medium: first floor · hard: outside
 function dealCards() {
   for (const o of OPEN) { if (o.card) o.card.mesh.parent.remove(o.card.mesh); o.card = null; o.open = false; }
   const free = shuffle(OPEN.filter(o => !o.noCard)), deck = shuffle(NET.deck.slice());   // {id, lvl} only, the code arrives when a card is opened
   const take = pred => { const i = free.findIndex(pred); return i < 0 ? null : free.splice(i, 1)[0]; };
   const put = (o, card, mat) => { if (!o) return 0; const mesh = new THREE.Mesh(CARD_GEO, mat); mesh.rotation.set(-PI / 2, 0, (Math.random() - .5) * 1.2); mesh.position.copy(o.slot[1]); o.slot[0].add(mesh); o.card = { card, mesh }; return 1; };
   let n = GOLDEN ? put(take(() => true), GOLD_CARD, GOLD_MAT) : 0;
-  for (const c of deck.filter(c => c.lvl === "hard")) n += put(take(scaryPlace) || take(() => true), c, CARD_MAT);
-  for (const c of deck.filter(c => c.lvl !== "hard")) n += put(take(o => !scaryPlace(o)) || take(() => true), c, CARD_MAT);   // easy + medium: downstairs first
+  for (const c of deck) n += put(take(o => zoneOf(o) === LEVEL_ZONE[c.lvl]) || take(() => true), c, CARD_MAT);   // a level only goes elsewhere if its floor is full
   S.left = n;
 }
 function animateOpen(o) {
@@ -1225,7 +1227,7 @@ function movePlayer(dx, dz) { if (!blockedAt(P.x + dx, P.z, P.L)) P.x += dx; if 
 /* ================= game state ================= */
 const ROUND = +Q.get("time") || 3600;   // seconds per team (60 minutes); ?time=60 for a quick test
 const GOLDEN = false;   // golden card switched off for now (set to true to bring it back)
-const CARD_TIME = { easy: 60, medium: 120, hard: 240 };   // seconds to decide on a card (golden: 10)
+const CARD_TIME = { easy: 120, medium: 180, hard: 300 };   // seconds to decide on a card (golden: 10)
 const S = { mode: "start", x: 0, busts: 0, left: 10, clock: ROUND, taken: 0, dropped: 0, card: null, ans: false, buf: "", t: 0, room: null, haunt: 12, bolt: 20, flash: 0, outK: 0 };
 /* ================= the server: x, the deck and the clock live there ================= */
 const NET = { deck: [], x: 0, busts: 0, taken: 0, dropped: 0, endsAt: Date.now() + ROUND * 1000, skew: 0, loaded: false, busy: false, gone: false };

@@ -106,7 +106,7 @@ Round 2 shows **UNDER CONSTRUCTION** in the lobby for now.
 | <kbd>Space</kbd> | Jump (over fences, graves and low furniture) |
 | <kbd>E</kbd> | Open / close a drawer, cupboard, chest or coffin |
 | <kbd>C</kbd> | Grab the card inside |
-| <kbd>E</kbd> / <kbd>Q</kbd> | **Take** / **drop** the card (1 / 2 / 4 minutes) |
+| <kbd>E</kbd> / <kbd>Q</kbd> | **Take** / **drop** the card (2 / 3 / 5 minutes) |
 | <kbd>F</kbd> | Flashlight on / off |
 | <kbd>Esc</kbd> | Pause |
 
@@ -116,7 +116,7 @@ Round 2 shows **UNDER CONSTRUCTION** in the lobby for now.
 
 1. Every team starts at **`x = 0`** and has **60 minutes**.
 2. Open drawers, cupboards, chests and coffins to find cards. Each card shows code that changes `x`.
-3. **Take** the card and `x` changes by its code. **Drop** it and `x` stays the same. Time to decide: **1 min** (easy), **2 min** (medium), **4 min** (hard).
+3. **Take** the card and `x` changes by its code. **Drop** it and `x` stays the same. Time to decide: **2 min** (easy), **3 min** (medium), **5 min** (hard).
 4. Either way, the card **burns** and is gone. **Each card is in the mansion only once.**
 5. Cards can **raise or lower** `x` (+, −, ×2, ×0 …), so read the code before you take it.
 6. **Highest `x` when time runs out wins.** There is no upper limit.
@@ -125,9 +125,9 @@ Round 2 shows **UNDER CONSTRUCTION** in the lobby for now.
 
 | Level | What it does to `x` | Time to decide | Where it hides |
 | --- | --- | :---: | --- |
-| 🟢 **Easy** | small, ±1 to ±14 | **1 min** | downstairs |
-| 🟡 **Medium** | ±2 to ±26 | **2 min** | downstairs |
-| 🔴 **Hard** | big or tricky: up to ±72, ×2, ×0 | **4 min** | the scariest places (upstairs and outside) |
+| 🟢 **Easy** (54) | small, ±1 to ±14 | **2 min** | the ground floor |
+| 🟡 **Medium** (42) | ±2 to ±20 | **3 min** | the first floor |
+| 🔴 **Hard** (11) | big or tricky: up to +70, ×2, ×0 | **5 min** | outside (garden, cemetery, crypt) |
 
 Every card is sized so a team that knows the topic can finish it with **at least 5% of its time left** (estimated as 10 s to start, 3 s per line read and 1 s per step traced).
 
@@ -163,7 +163,7 @@ In Round 1, if two teams have the same `x`, the team that **reached that `x` fir
 
 ## 🃏 The cards
 
-The deck is **177 cards: 54 easy, 82 medium, 41 hard**, across every topic. Cards live in the **Supabase database**, not in the game files, so teams can't read them in the browser. The server only sends a card's code when a team opens it, and the **server** works out the new `x`.
+The deck is **107 cards: 54 easy, 42 medium, 11 hard**, across every topic. Cards live in the **Supabase database**, not in the game files, so teams can't read them in the browser. The server only sends a card's code when a team opens it, and the **server** works out the new `x`.
 
 Manage them in **/admin → Cards** (add, edit, remove, test an effect).
 
@@ -180,7 +180,7 @@ The organisers keep the full deck in `db/cards-data.js` and `db/cards-more.js`, 
 - `node scripts/check-cards.js` runs every card in all three languages (g++, javac/java, python) for many values of `x` and checks that each one matches its effect. It also checks the style: one statement per line, 4-space indents, no `vector`, no lambdas or `?:`, short lines. Java can come from `JAVA_HOME` or the runtime inside a JetBrains IDE.
 - `node scripts/seed-cards.js` loads the deck into an empty database. `--update` rewrites the existing cards in place (same ids) and refuses once teams have opened cards.
 
-Cards are dealt again on every load: the 177 cards fill about 95% of the 186 hiding spots; hard cards go upstairs or outside, easy and medium cards fill downstairs first and the last few spill upstairs. The card is black with old blood on it, the code uses the VS Code "Dark+" colours and is always **one column** that grows or shrinks to fit the screen. The timer is the card's border: a line of blood that drains away round the edge, with big red seconds in the corner.
+Cards are dealt again on every load: easy cards on the ground floor (54 cards in 57 spots), medium cards on the first floor (42 in 44), hard cards outside (11 in 12), so about 95% of the hiding spots on each floor hold a card. The card is black with old blood on it, the code uses the VS Code "Dark+" colours and is always **one column** that grows or shrinks to fit the screen. The timer is the card's border: a line of blood that drains away round the edge, with big red seconds in the corner.
 
 ---
 

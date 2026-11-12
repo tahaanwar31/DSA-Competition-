@@ -20,7 +20,7 @@ alter table runs add column if not exists last_bust_at timestamptz;
 -- seconds a team has to decide on a card
 create or replace function card_seconds(l card_level) returns int
 language sql immutable as $$
-  select case l when 'easy' then 60 when 'medium' then 120 else 240 end
+  select case l when 'easy' then 120 when 'medium' then 180 else 300 end   -- easy 2 min, medium 3 min, hard 5 min
 $$;
 
 -- what a card's effect does to x. The effect text can only hold x, digits,

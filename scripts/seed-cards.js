@@ -7,7 +7,7 @@
 // The "code" column holds the three versions as one JSON text: {"cpp": "...", "java": "...", "py": "..."}
 const { sb } = require("../server.js");
 const cards = require("../db/cards-data.js");
-const row = c => ({ level: c.level, topic: c.topic, title: c.title, effect: c.effect, code: JSON.stringify({ cpp: c.cpp, java: c.java, py: c.py }) });
+const row = c => ({ level: c.level, topic: c.topic, title: c.title, effect: c.effect, code: JSON.stringify({ cpp: c.cpp, java: c.java, py: c.py }), active: c.active !== false });
 const has = f => process.argv.includes(f);
 (async () => {
   const have = await sb("cards?select=id&order=id");
@@ -16,7 +16,7 @@ const has = f => process.argv.includes(f);
     if (have.length > cards.length) throw new Error(`the database has ${have.length} cards and the file only ${cards.length}; switch extra cards off in /admin instead`);
     const plays = await sb("plays?select=id&limit=1");
     if (plays.length && !has("--force")) throw new Error("teams have already opened cards. Use --force only if you really mean to change cards during the event.");
-    for (let i = 0; i < have.length; i++) await sb(`cards?id=eq.${have[i].id}`, { method: "PATCH", body: { ...row(cards[i]), active: true } });
+    for (let i = 0; i < have.length; i++) await sb(`cards?id=eq.${have[i].id}`, { method: "PATCH", body: row(cards[i]) });
     const extra = cards.slice(have.length);
     if (extra.length) await sb("cards", { method: "POST", body: extra.map(row) });
     console.log(`Updated ${have.length} cards in place, added ${extra.length} new.`); return;
