@@ -83,6 +83,23 @@ async function roundsNow() {
     return { id: r.id, name: r.name, starts_at: r.starts_at, ends_at: r.ends_at, locked: r.locked, status, open: status === "open" }; }) };
 }
 
+// ---------- card spread ----------
+// The deck goes to the game in pairs: one card that raises x and one that lowers it, level by level,
+// so that neighbouring hiding places get a mix. Only the ORDER is sent, never the sign of a card.
+const SIGN = { at: 0, map: new Map() };
+async function cardSigns() {
+  if (Date.now() - SIGN.at > 60000) { const rows = await sb("cards?select=id,effect");
+    SIGN.map = new Map(rows.map(c => { const m = /^x\s*([+-])\s*(\d+)$/.exec(String(c.effect).trim()); return [c.id, m && m[1] === "-" ? -1 : 1]; })); SIGN.at = Date.now(); }
+  return SIGN.map; }
+function shuf(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function spreadDeck(deck, signs) {
+  const out = [];
+  for (const lvl of ["easy", "medium", "hard"]) {
+    const of = deck.filter(c => c.lvl === lvl), up = shuf(of.filter(c => signs.get(c.id) !== -1)), dn = shuf(of.filter(c => signs.get(c.id) === -1)), pairs = [];
+    while (up.length && dn.length) pairs.push(shuf([up.pop(), dn.pop()]));
+    out.push(...shuf(pairs).flat(), ...up, ...dn); }   // whole pairs first, a leftover card (odd count) last
+  return out; }
+
 // ---------- leaderboards ----------
 // Round 1: highest x wins. Same x: the team that reached that x first is ranked higher.
 // "Reached" = the last moment x changed: a card that changed x, or being caught by her (x - 3);
@@ -162,7 +179,7 @@ async function handle(req, res) {
     if (M !== "POST") throw fail(405, "use POST");
     const body = await readBody(req), id = v => { const n = Number(v); if (!Number.isInteger(n) || n <= 0) throw fail(400, "bad_card"); return n; };
     try {
-      if (p === "/api/r1/start") return send(res, 200, await rpc("r1_start", { p_team: team.id }));
+      if (p === "/api/r1/start") { const d = await rpc("r1_start", { p_team: team.id }); d.deck = spreadDeck(d.deck, await cardSigns()); return send(res, 200, d); }
       if (p === "/api/r1/open") return send(res, 200, await rpc("r1_open", { p_team: team.id, p_card: id(body.card) }));
       if (p === "/api/r1/decide") return send(res, 200, await rpc("r1_decide", { p_team: team.id, p_card: id(body.card), p_action: ["take", "drop"].includes(body.action) ? body.action : "timeout" }));
       if (p === "/api/r1/bust") return send(res, 200, await rpc("r1_bust", { p_team: team.id }));

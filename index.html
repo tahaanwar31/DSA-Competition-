@@ -23,6 +23,7 @@
   #room { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); font: 800 30px Cinzel, serif; letter-spacing: 8px; color: #e9dcc4; text-shadow: 0 0 24px #000, 0 0 8px #000; opacity: 0; transition: opacity 1.2s; white-space: nowrap; }
   #paused { position: absolute; left: 50%; top: 58%; transform: translateX(-50%); font: 700 14px "JetBrains Mono", monospace; letter-spacing: 4px; color: #b9b0a0; display: none; }
   /* ---------- rules & controls (H) ---------- */
+  #map { position: absolute; right: 18px; bottom: 18px; width: 190px; height: 249px; border: 1px solid rgba(233,223,207,.25); border-radius: 4px; background: rgba(8,6,7,.7); box-shadow: 0 8px 30px rgba(0,0,0,.6); pointer-events: none; }
   .helpkey { position: absolute; left: 28px; bottom: 26px; display: flex; align-items: center; gap: 10px; font: 400 14px "Anton", Impact, sans-serif; letter-spacing: .28em; color: #e9dfcf; text-shadow: 0 2px 8px #000; opacity: .85; }
   .helpkey kbd, #help kbd { display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 4px; font: 800 13px "JetBrains Mono", monospace; letter-spacing: 0; color: #fff;
     background: linear-gradient(180deg, #c4141e, #6a080d); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 3px 0 #3a0306, 0 0 14px rgba(210,26,36,.4); }
@@ -209,7 +210,8 @@
   <div class="tl">TEAM<b id="x">x = 0</b><small id="busts">BUSTS: 0</small></div>
   <div class="tr">TIME<span id="clock">60:00</span>EYE CONTACT<div class="meter"><i id="gm"></i></div>CARDS LEFT: <span id="left">10</span></div>
   <div class="cross"></div><div id="prompt"></div><div id="toast"></div><div id="room"></div><div id="paused">CLICK TO RESUME</div><button id="rulesBtn">RULES &amp; CONTROLS</button>
-  <div class="helpkey"><kbd>H</kbd>RULES<kbd style="margin-left:18px">M</kbd><span id="muteT">SOUND ON</span></div>
+  <canvas id="map" width="380" height="498"></canvas>
+  <div class="helpkey"><kbd>H</kbd>RULES<kbd style="margin-left:18px">M</kbd><span id="muteT">SOUND ON</span><kbd style="margin-left:18px">N</kbd>MAP</div>
 </div>
 <div id="help" aria-hidden="true"><div class="box">
   <div class="top"><h2><small>ROUND 01 · THE MANSION</small>HOW TO PLAY</h2><span class="close">PRESS <kbd>H</kbd> TO CLOSE</span></div>
@@ -236,6 +238,7 @@
       <div class="keyrow"><span><kbd>↑</kbd><kbd>↓</kbd></span><span>Scroll a long card</span></div>
       <div class="keyrow"><span><kbd>F</kbd></span><span>Flashlight on / off</span></div>
       <div class="keyrow"><span><kbd>M</kbd></span><span>Sound on / off</span></div>
+      <div class="keyrow"><span><kbd>N</kbd></span><span>Map on / off (a dot for every place that still holds a card)</span></div>
       <div class="keyrow"><span><kbd>H</kbd></span><span>These rules</span></div>
       <div class="keyrow"><span><kbd>ESC</kbd></span><span>Pause</span></div>
     </div>
@@ -1049,11 +1052,19 @@ const zoneOf = o => { o.slot[0].updateWorldMatrix(true, false); o.slot[0].getWor
 const LEVEL_ZONE = { easy: "ground", medium: "first", hard: "outside" };   // easy: ground floor · medium: first floor · hard: outside
 function dealCards() {
   for (const o of OPEN) { if (o.card) o.card.mesh.parent.remove(o.card.mesh); o.card = null; o.open = false; }
-  const free = shuffle(OPEN.filter(o => !o.noCard)), deck = shuffle(NET.deck.slice());   // {id, lvl} only, the code arrives when a card is opened
+  const free = shuffle(OPEN.filter(o => !o.noCard)), deck = NET.deck.slice();   // {id, lvl} only, the code arrives when a card is opened. The server sends it in pairs (one raise, one lower)
   const take = pred => { const i = free.findIndex(pred); return i < 0 ? null : free.splice(i, 1)[0]; };
   const put = (o, card, mat) => { if (!o) return 0; const mesh = new THREE.Mesh(CARD_GEO, mat); mesh.rotation.set(-PI / 2, 0, (Math.random() - .5) * 1.2); mesh.position.copy(o.slot[1]); o.slot[0].add(mesh); o.card = { card, mesh }; return 1; };
   let n = GOLDEN ? put(take(() => true), GOLD_CARD, GOLD_MAT) : 0;
-  for (const c of deck) n += put(take(o => zoneOf(o) === LEVEL_ZONE[c.lvl]) || take(() => true), c, CARD_MAT);   // a level only goes elsewhere if its floor is full
+  // each level goes on its own floor. The places that get a card are picked at random (about 80% of them), then
+  // the cards go in order from one end of the floor to the other, so each pair (one raise, one lower) sits side by side.
+  const wpos = o => o.slot[0].localToWorld(o.slot[1].clone());
+  for (const lvl of ["easy", "medium", "hard"]) {
+    const cards = deck.filter(c => c.lvl === lvl), spots = [];
+    while (spots.length < cards.length) { const o = take(o => zoneOf(o) === LEVEL_ZONE[lvl]) || take(() => true); if (!o) break; spots.push(o); }
+    spots.forEach(o => { const p = wpos(o); o.cell = [Math.floor(p.x / 3), Math.floor(p.z / 3), p.x + p.z * .01]; });
+    spots.sort((a, b) => a.cell[0] - b.cell[0] || a.cell[1] - b.cell[1] || a.cell[2] - b.cell[2]);
+    cards.forEach((c, i) => { n += put(spots[i], c, CARD_MAT); }); }
   S.left = n;
 }
 function animateOpen(o) {
@@ -1064,6 +1075,28 @@ function animateOpen(o) {
   if (o.coll) o.coll.off = o.t > .55;
 }
 
+/* ================= the map ================= */
+const MAPB = { x0: -31, x1: 31, z0: -15, z1: 67 }, mapCv = $("map"), mapCx = mapCv.getContext("2d"), LVC = { easy: "#3ddc6a", medium: "#f2c230", hard: "#ff3a44" }; let mapOn = true, mapT = 0;
+function mapDraw(t) {
+  mapCv.style.display = mapOn && S.mode === "play" ? "" : "none"; if (!mapOn || S.mode !== "play" || t - mapT < .12) return; mapT = t;
+  const W = mapCv.width, H = mapCv.height, k = W / (MAPB.x1 - MAPB.x0), X = x => (x - MAPB.x0) * k, Z = z => (z - MAPB.z0) * k, up = P.L === 1, g = mapCx;
+  g.clearRect(0, 0, W, H); g.fillStyle = "rgba(8,6,7,.85)"; g.fillRect(0, 0, W, H);
+  // the three areas: the mansion floor you are on (easy below, medium above) and the grounds outside (hard)
+  g.fillStyle = up ? "rgba(242,194,48,.16)" : "rgba(61,220,106,.14)"; g.fillRect(X(-26.4), Z(-14), (52.8) * k, (14.4 + 14) * k);
+  if (!up) { g.fillStyle = "rgba(255,58,68,.12)"; g.fillRect(0, Z(14.4), W, H - Z(14.4)); g.fillRect(0, 0, X(-26.4), Z(14.4)); g.fillRect(X(26.4), 0, W - X(26.4), Z(14.4)); }
+  g.fillStyle = "rgba(220,210,190,.38)";
+  for (const b of COLL) if (!b.off && (b.l === 2 || b.l === P.L) && b.x1 - b.x0 < 60) g.fillRect(X(b.x0), Z(b.z0), Math.max(1, (b.x1 - b.x0) * k), Math.max(1, (b.z1 - b.z0) * k));
+  // a dot for every hiding place on this floor that still holds a card; it goes when you take the card
+  for (const o of OPEN) { if (!o.slot || !o.card || !o.card.card) continue;
+    if (!o.mp) { o.slot[0].updateWorldMatrix(true, false); const p = o.slot[0].localToWorld(o.slot[1].clone()); o.mp = [p.x, p.z, zoneOf(o) === "first" ? 1 : 0]; }
+    if (o.mp[2] !== P.L) continue;
+    g.fillStyle = o.card.card.gold ? "#ffd24a" : LVC[o.card.card.lvl] || "#fff"; g.beginPath(); g.arc(X(o.mp[0]), Z(o.mp[1]), 5, 0, 6.283); g.fill(); g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 1.5; g.stroke(); }
+  // you: a white arrow that points where you look
+  camera.getWorldDirection(T3); const a = Math.atan2(T3.x, T3.z), px = X(P.x), pz = Z(P.z);
+  g.save(); g.translate(px, pz); g.rotate(-a + Math.PI); g.fillStyle = "#fff"; g.strokeStyle = "#d21a24"; g.lineWidth = 2.5; g.beginPath(); g.moveTo(0, -11); g.lineTo(7, 8); g.lineTo(0, 4); g.lineTo(-7, 8); g.closePath(); g.fill(); g.stroke(); g.restore();
+  g.fillStyle = "rgba(233,223,207,.85)"; g.font = "700 16px 'JetBrains Mono', monospace"; g.fillText(up ? "FIRST FLOOR" : "GROUND + OUTSIDE", 10, 22);
+  let lx = 10; for (const [n, c] of [["EASY", LVC.easy], ["MEDIUM", LVC.medium], ["HARD", LVC.hard]]) { g.fillStyle = c; g.beginPath(); g.arc(lx + 5, H - 14, 5, 0, 6.283); g.fill(); g.fillStyle = "rgba(233,223,207,.85)"; g.font = "700 13px 'JetBrains Mono', monospace"; g.fillText(n, lx + 14, H - 9); lx += g.measureText(n).width + 28; }
+}
 const rayG = new THREE.Raycaster();
 const dimK = t => DIM > 0 ? (hash(Math.floor(t * 30)) < .5 ? .05 : .5) : 1;
 /* ================= the ghost: she appears without warning. Don't look into her eyes. ================= */
@@ -1374,6 +1407,7 @@ $("rulesBtn").addEventListener("click", e => { e.stopPropagation(); setHelp(true
 function onKey(code) {
   if (code === "KeyH" && (S.mode === "play" || S.mode === "inspect")) { setHelp(!S.help); return; }
   if (S.help) return;
+  if (code === "KeyN") { mapOn = !mapOn; $("map").style.display = mapOn ? "" : "none"; }
   if (code === "KeyM") { const m = !audio.isMuted(); audio.mute(m); $("muteT").textContent = m ? "SOUND OFF" : "SOUND ON"; toast(m ? "SOUND OFF" : "SOUND ON", "#c9bfae"); }
   if (code === "KeyF" && S.mode !== "start") { torchOn = !torchOn; torch.visible = torchOn; audio.click(); }
   if (S.mode === "play" && code === "KeyE" && aim) {
@@ -1508,10 +1542,10 @@ function computeZones() { const b = new THREE.Box3(), c = new THREE.Vector3();
     o.userData.zone = { ext, L, wing: c.x < -10.2 ? "W" : c.x > 10.2 ? "E" : "H" }; }
   zoneKey = ""; }
 function applyZones() {
-  const out = P.L === 0 && P.z > 14.2, wing = P.x < -10 ? "W" : P.x > 10 ? "E" : "H", nearW = P.x < -2.5, nearE = P.x > 2.5, key = [out, P.L, wing, P.z > 6, P.z < 24, nearW, nearE].join();
+  const out = P.L === 0 && P.z > 14.2, wing = P.x < -10 ? "W" : P.x > 10 ? "E" : "H", nearW = P.x < 6, nearE = P.x > -6, key = [out, P.L, wing, P.z > 1, P.z < 24, nearW, nearE].join();   // wider margins: nothing pops in half-built while you walk
   if (key === zoneKey) return; zoneKey = key;
   for (const o of scene.children) { const z = o.userData.zone; if (!z || z.all) continue;
-    if (z.ext) o.visible = out || (P.L === 0 && P.z > 6 && wing === "H");
+    if (z.ext) o.visible = out || (P.L === 0 && P.z > 1 && wing === "H");
     else if (out) o.visible = P.z < 24 && z.L === 0 && z.wing === "H";
     else if (z.L !== P.L) o.visible = z.wing === "H" && wing === "H";
     else o.visible = z.wing === "H" || z.wing === wing || (wing === "H" && (z.wing === "W" ? nearW : nearE)); } }
@@ -1574,7 +1608,7 @@ function update(dt, t) {
     const h = GH.head.rotation, k = Math.min(1, dt * 28); h.x += (GH.hx - h.x) * k; h.y += (GH.hy - h.y) * k; h.z += (GH.hz - h.z) * k; ghost.children[0].position.y = Math.sin(t * 1.3) * .012; }
   { let hk = 0; if (GH.scare > 0) hk = .5; else if (GH.on && ghost.visible) { const dd = ghost.position.distanceTo(camera.position); camera.getWorldDirection(T3); T2.copy(ghost.position).sub(camera.position).normalize(); hk = .15 + .55 * Math.max(0, 1 - dd / 9) * Math.max(0, T3.dot(T2)); }
     GH.glitch = Math.max(0, (GH.glitch || 0) - dt); hk = Math.min(1, hk + GH.glitch * 3); grade.uniforms.haunt.value += (hk - grade.uniforms.haunt.value) * Math.min(1, dt * 10); grade.uniforms.gaze.value = Math.min(1, GH.gaze); audio.setPresence(GH.on ? .5 + GH.gaze : GH.scare > 0 ? 1 : 0); }
-  $("gm").style.width = (Math.min(1, GH.gaze) * 100) + "%"; audio.heart(dt, GH.on ? Math.max(.4, GH.gaze) : 0);
+  mapDraw(t); $("gm").style.width = (Math.min(1, GH.gaze) * 100) + "%"; audio.heart(dt, GH.on ? Math.max(.4, GH.gaze) : 0);
   if (S.mode === "play" || S.mode === "inspect") { audio.musicBox(dt, P.L === 1 ? Math.max(0, 1 - Math.hypot(P.x + 19.5, P.z + 13.4) / 12) : 0);
     if ((S.haunt -= dt) <= 0) { S.haunt = 12 + Math.random() * 16; [audio.whisper, audio.knock, audio.creak, audio.piano][(Math.random() * 4) | 0](); } }
   DIM -= dt;

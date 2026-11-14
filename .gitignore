@@ -12,3 +12,5 @@ db/cards-data.js
 # internal documents (proposal for the head)
 docs/proposal/
 db/cards-more.js
+db/cards-v2.js
+TODO-changes.md
