@@ -115,6 +115,7 @@ Round 2 shows as **sealed** in the lobby for now.
 | <kbd>C</kbd> | Grab the card inside |
 | <kbd>E</kbd> / <kbd>Q</kbd> | **Take** / **drop** the card (2 / 3 / 5 minutes) |
 | <kbd>F</kbd> | Flashlight on / off |
+| <kbd>M</kbd> | Sound on / off |
 | <kbd>Esc</kbd> | Pause |
 
 ---
@@ -159,7 +160,7 @@ Every team gets **the same 107 cards**, but each team's deal is **random**: the 
 ### The ghost
 
 - She appears suddenly: right in front of you, far away down a corridor, or upside down on the ceiling.
-- **Look into her eyes for a full second** and you are **busted: `x − 3`**.
+- **Look into her eyes for 1.5 seconds** and you are **busted: `x − 3`**.
 - If a card's time runs out, it counts as a **drop**: no penalty, x stays the same, and the card burns.
 
 ### Ties

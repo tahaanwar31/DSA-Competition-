@@ -209,7 +209,7 @@
   <div class="tl">TEAM<b id="x">x = 0</b><small id="busts">BUSTS: 0</small></div>
   <div class="tr">TIME<span id="clock">60:00</span>EYE CONTACT<div class="meter"><i id="gm"></i></div>CARDS LEFT: <span id="left">10</span></div>
   <div class="cross"></div><div id="prompt"></div><div id="toast"></div><div id="room"></div><div id="paused">CLICK TO RESUME</div><button id="rulesBtn">RULES &amp; CONTROLS</button>
-  <div class="helpkey"><kbd>H</kbd>RULES</div>
+  <div class="helpkey"><kbd>H</kbd>RULES<kbd style="margin-left:18px">M</kbd><span id="muteT">SOUND ON</span></div>
 </div>
 <div id="help" aria-hidden="true"><div class="box">
   <div class="top"><h2><small>ROUND 01 · THE MANSION</small>HOW TO PLAY</h2><span class="close">PRESS <kbd>H</kbd> TO CLOSE</span></div>
@@ -235,6 +235,7 @@
       <div class="keyrow"><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span><span>Card in C++ / Java / Python</span></div>
       <div class="keyrow"><span><kbd>↑</kbd><kbd>↓</kbd></span><span>Scroll a long card</span></div>
       <div class="keyrow"><span><kbd>F</kbd></span><span>Flashlight on / off</span></div>
+      <div class="keyrow"><span><kbd>M</kbd></span><span>Sound on / off</span></div>
       <div class="keyrow"><span><kbd>H</kbd></span><span>These rules</span></div>
       <div class="keyrow"><span><kbd>ESC</kbd></span><span>Pause</span></div>
     </div>
@@ -1067,6 +1068,7 @@ const rayG = new THREE.Raycaster();
 const dimK = t => DIM > 0 ? (hash(Math.floor(t * 30)) < .5 ? .05 : .5) : 1;
 /* ================= the ghost: she appears without warning. Don't look into her eyes. ================= */
 const ghost = new THREE.Group(); ghost.visible = false; scene.add(ghost);
+const GAZE_SECS = 1.5; let RDT = 0;   // eye contact time (real seconds); RDT = real seconds of the last frame
 const GH = { on: false, t: 0, next: 14, gaze: 0, scare: 0, fade: 0, vanish: 0, twitch: 0, head: null, eyes: null, hx: 0, hy: 0, hz: 0, warned: false };
 {
   const body = new THREE.Group(); ghost.add(body);
@@ -1291,8 +1293,8 @@ function hl(code, lang = "cpp") { const L = HL[lang] || HL.cpp, sp = (c, t) => `
   return o + esc(code.slice(l)); }
 function openCard(o) { const c = { id: o.card.card.id, lvl: o.card.card.lvl, cat: "", t: "Opening…", code: "", loading: true };
   if (GH.on) hideGhost(false, 6 + Math.random() * 8); o.card.mesh.parent.remove(o.card.mesh); o.card = null;
-  S.mode = "inspect"; S.card = c; S.t = S.tmax = CARD_TIME[c.lvl] || 10; S.ans = false; S.buf = ""; showCard(c);
-  call("/api/r1/open", { card: c.id }).then(d => { if (S.card !== c) return; Object.assign(c, d, { loading: false }); S.t = Math.min(S.tmax, d.secs); showCard(c); })
+  S.mode = "inspect"; S.card = c; S.t = S.tmax = CARD_TIME[c.lvl] || 10; S.deadline = Date.now() + S.t * 1000; S.ans = false; S.buf = ""; showCard(c);
+  call("/api/r1/open", { card: c.id }).then(d => { if (S.card !== c) return; Object.assign(c, d, { loading: false }); S.t = Math.min(S.tmax, d.secs); S.deadline = Date.now() + S.t * 1000; showCard(c); })
     .catch(e => { if (S.card !== c) return; if (e.message === "card_used") { c.done = true; toast("THAT CARD IS ALREADY GONE", "#c9bfae"); closeCard(); hud(); checkOut(); } else netErr(e); }); }
 function showCard(c) {
   $("keys").innerHTML = `<span>E · ${c.gold ? "PLAY" : "TAKE"}</span><span>Q · DROP</span>`;
@@ -1372,6 +1374,7 @@ $("rulesBtn").addEventListener("click", e => { e.stopPropagation(); setHelp(true
 function onKey(code) {
   if (code === "KeyH" && (S.mode === "play" || S.mode === "inspect")) { setHelp(!S.help); return; }
   if (S.help) return;
+  if (code === "KeyM") { const m = !audio.isMuted(); audio.mute(m); $("muteT").textContent = m ? "SOUND OFF" : "SOUND ON"; toast(m ? "SOUND OFF" : "SOUND ON", "#c9bfae"); }
   if (code === "KeyF" && S.mode !== "start") { torchOn = !torchOn; torch.visible = torchOn; audio.click(); }
   if (S.mode === "play" && code === "KeyE" && aim) {
     if (!aim.open) { aim.open = true; aim.metal ? audio.gateOpen() : aim.kind === "drawer" ? audio.drawer() : aim.kind === "lid" ? audio.lid() : audio.creak(); }
@@ -1387,8 +1390,9 @@ function onKey(code) {
 }
 
 /* ================= sound (synthesised, no files) ================= */
-const audio = (() => { let ac, master, nbuf, beatT = 0, boxT = 0, boxI = 0, rainG, rainLP, presG;
-  const init = () => { if (ac) return; ac = new AudioContext(); master = ac.createGain(); master.gain.value = .7; master.connect(ac.destination);
+const audio = (() => { let muted = false; try { muted = localStorage.getItem("dff-muted") === "1"; } catch (e) {}
+  let ac, master, nbuf, beatT = 0, boxT = 0, boxI = 0, rainG, rainLP, presG;
+  const init = () => { if (ac) return; ac = new AudioContext(); master = ac.createGain(); master.gain.value = muted ? 0 : .7; master.connect(ac.destination);
     nbuf = ac.createBuffer(1, ac.sampleRate * 4, ac.sampleRate); const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     const n = ac.createBufferSource(); n.buffer = nbuf; n.loop = true; const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 180; const g = ac.createGain(); g.gain.value = .09; n.connect(lp).connect(g).connect(master); n.start();
     const o = ac.createOscillator(); o.frequency.value = 43; const og = ac.createGain(); og.gain.value = .05; o.connect(og).connect(master); o.start();
@@ -1450,6 +1454,7 @@ const audio = (() => { let ac, master, nbuf, beatT = 0, boxT = 0, boxI = 0, rain
     g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.05, dur * .2)); g.gain.exponentialRampToValueAtTime(.0001, t + dur); p.pan.value = pan;
     s.connect(f).connect(g).connect(p).connect(master); s.start(t, Math.random() * 3); s.stop(t + dur + .05); };
   return { init,
+    isMuted: () => muted, mute(m) { muted = m; if (master) master.gain.setTargetAtTime(m ? 0 : .7, ac.currentTime, .03); try { localStorage.setItem("dff-muted", m ? "1" : "0"); } catch (e) {} },
     sleep() { if (ac && ac.state === "running") ac.suspend(); }, wake() { if (ac && ac.state === "suspended") ac.resume(); },
     heart(dt, k) { if (!ac || k < .05) return; beatT -= dt; if (beatT <= 0) { tone(70, 40, .18, .5 * k); setTimeout(() => tone(60, 35, .2, .35 * k), 170); beatT = 1.1 - k * .65; } },
     sting() { tone(900, 60, 1.2, .5, "sawtooth"); tone(55, 30, 1.4, .8); }, take() { tone(520, 780, .25, .2, "triangle"); }, flip() { tone(300, 200, .12, .2, "triangle"); }, click() { tone(800, 600, .05, .1, "square"); },
@@ -1529,7 +1534,7 @@ function update(dt, t) {
     const rm = roomAt(P.x, P.z, P.L); if (rm && rm[0] !== S.room) { S.room = rm[0]; roomName(rm[0]); }
   }
   if (S.mode === "play" || S.mode === "inspect") { const before = Math.ceil(S.clock); S.clock -= dt; if (Math.ceil(S.clock) !== before) clockText(); if (S.clock <= 0) { if (S.mode === "inspect") closeCard(); end(false); return; } }
-  if (S.mode === "inspect" && !S.ans && S.card && !S.card.loading) { S.t -= dt; const s = Math.max(0, Math.ceil(S.t)); timerDraw();
+  if (S.mode === "inspect" && !S.ans && S.card && !S.card.loading) { S.t = (S.deadline - Date.now()) / 1000; const s = Math.max(0, Math.ceil(S.t)); timerDraw();
     if (s !== lastTick) { lastTick = s; if (s <= 10) audio.tick(1 - S.t / 10); /* tick only in the last 10 s */ } if (S.t <= 0) decide("timeout"); /* timeout = drop, no penalty */ }
   jumpStep(dt); camera.position.set(P.x, P.y + P.jy + 1.65 + Math.sin(P.bob) * .035, P.z);
   camera.getWorldDirection(V); torch.position.copy(camera.position).addScaledVector(V2.set(-V.z, 0, V.x), .25).y -= .2; torch.target.position.copy(camera.position).addScaledVector(V, 6);
@@ -1543,7 +1548,7 @@ function update(dt, t) {
   if (grab && grab !== aim) $("prompt").textContent = "C · GRAB THE CARD" + (aim ? "   ·   " + (aim.open ? "E · CLOSE" : "E · OPEN") : "");
   else if (aim) $("prompt").textContent = aim.noCard ? (aim.open ? "E · CLOSE" : aim.label) : !aim.open ? (aim.kind === "drawer" ? "E · OPEN DRAWER" : aim.kind === "lid" ? "E · OPEN CHEST" : "E · OPEN DOOR") : aim.card ? "C · GRAB THE CARD   ·   E · CLOSE" : "EMPTY  ·  E · CLOSE";
   CARD_MAT.emissiveIntensity = .1 + .06 * Math.sin(t * 4);
-  // ===== the ghost: appears, waits, vanishes. Looking into her eyes for 1 second = busted =====
+  // ===== the ghost: appears, waits, vanishes. Looking into her eyes for 1.5 seconds = busted =====
   if (S.mode === "play" && !GH.on && GH.scare <= 0 && GH.vanish <= 0 && (GH.next -= dt) <= 0 && !spawnGhost()) GH.next = .8;
   if (S.mode === "inspect" && GH.on) hideGhost(false, 6 + Math.random() * 8);
   if (GH.vanish > 0) { GH.vanish -= dt; ghost.visible = GH.vanish > 0 && Math.random() < .5; }
@@ -1555,7 +1560,7 @@ function update(dt, t) {
     const eye = GH.eyes.getWorldPosition(T1), to = T2.copy(eye).sub(camera.position), dist = to.length(); to.divideScalar(dist); camera.getWorldDirection(T3);
     let look = T3.dot(to) > Math.cos(.21) && dist < 18;
     if (look) { rayG.set(camera.position, to); rayG.far = dist - .3; look = rayG.intersectObjects(OCCL, false).length === 0; }
-    GH.gaze = look ? GH.gaze + dt : Math.max(0, GH.gaze - dt * 1.5);
+    GH.gaze = look ? GH.gaze + RDT / GAZE_SECS : Math.max(0, GH.gaze - RDT * 1.5);   // gaze is 0..1; it fills in GAZE_SECS real seconds
     if (look && !GH.warned) { GH.warned = true; toast("DON'T LOOK INTO HER EYES", "#ff6a5a"); }
     ghostLight.intensity = 2.5;
     if (GH.gaze >= 1) scare();
@@ -1605,7 +1610,7 @@ function frame(now) { requestAnimationFrame(frame);
   if (active === asleep) { asleep = !active; asleep ? audio.sleep() : audio.wake(); }
   if (!active) { if (now - lastDraw > 1000 && !document.hidden && !otherTab) { lastDraw = now; composer.render(); } last = now; return; }
   if (now - lastDraw < 15.5) return; lastDraw = now;
-  const raw = Math.min(now - last, 100), dt = Math.min(.05, raw / 1000); last = now; update(dt, now / 1000); composer.render();
+  const raw = Math.min(now - last, 100), dt = Math.min(.05, raw / 1000); RDT = raw / 1000; last = now; update(dt, now / 1000); composer.render();
   if (S.mode === "play" || S.mode === "inspect") { ema += (raw - ema) * .05; if ((prT += raw) > 1500) { prT = 0;
       const want = ema > 20 ? Math.max(.55, PR - .1) : ema < 14 ? Math.min(MAXPR, PR + .05) : PR;
       if (want !== PR) { PR = want; renderer.setPixelRatio(PR); composer.setPixelRatio(PR); composer.setSize(innerWidth, innerHeight); } } } }
