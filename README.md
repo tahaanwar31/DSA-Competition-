@@ -115,6 +115,7 @@ Round 2 shows as **sealed** in the lobby for now.
 | <kbd>C</kbd> | Grab the card inside |
 | <kbd>E</kbd> / <kbd>Q</kbd> | **Take** / **drop** the card (2 / 3 / 5 minutes) |
 | <kbd>F</kbd> | Flashlight on / off |
+| <kbd>N</kbd> | Map on / off |
 | <kbd>M</kbd> | Sound on / off |
 | <kbd>Esc</kbd> | Pause |
 
@@ -133,29 +134,29 @@ Round 2 shows as **sealed** in the lobby for now.
 
 | Level | What it does to `x` | Time to decide | Where it hides |
 | --- | --- | :---: | --- |
-| **Easy** (54) | small, ±1 to ±14 | **2 min** | the ground floor |
-| **Medium** (42) | ±2 to ±20 | **3 min** | the first floor |
-| **Hard** (11) | big or tricky: up to +70, ×2, ×0 | **5 min** | outside (garden, cemetery, crypt) |
+| **Easy** (46) | +1 to +3 or -1 to -3 | **2 min** | the ground floor |
+| **Medium** (35) | +4 to +7 or -4 to -7 | **3 min** | the first floor |
+| **Hard** (10) | +8 to +12 or -8 to -12 | **5 min** | outside (garden, cemetery, crypt) |
 
 Every card is sized so a team that knows the topic can finish it with **at least 5% of its time left** (estimated as 10 s to start, 3 s per line read and 1 s per step traced).
 
 #### Topics at each level
 
-Easy cards are a few plain steps read top to bottom (no loops to count). Medium and hard get harder:
+Every card changes x **3 to 4 times inside its code**, using numbers that come from a data structure (some of them negative), so the last line never gives the answer away. x is only ever added to or subtracted from, never multiplied or divided; the numbers inside the structure may be divided (exactly, never by zero). Because the change a card makes does not depend on x, it does not matter when a team finds it or in which order it takes the cards. Easy cards are a few plain steps; medium and hard cards use more steps and some division.
 
-| Topic |  Easy |  Medium |  Hard |
-| --- | --- | --- | --- |
-| **Stack** | push / pop, read the top or the size | reverse a word, postfix, min stack, two stacks | postfix with all four operators, queue from 2 stacks |
-| **Queue** | push / pop, read the front or the size | rotate, interleave, ring buffer, hot potato | sliding window maximum, round robin |
-| **Singly linked list** | follow `next` from nodes linked by hand | reverse, delete, middle node, insert | reverse then read, where the loop starts |
-| **Doubly linked list** | follow `next` / `prev` | walk back from the tail, unlink a node | delete every even / odd node |
-| **Circular linked list** | hops round a 2 or 3 node ring | laps, add at the tail | Josephus, split the ring |
-| **BST** | read a key from a small tree built by hand | in / pre / post-order and height on 5 keys | common ancestor, range sum |
-| **Recursion** | sum, factorial, digits (3 or 4 calls) | fast power, count the calls | two recursive calls |
-| **BFS** | – | visit order, distance, level on 4 rooms | shortest path in a 3 × 3 maze |
-| **DFS** | – | visit order, how many you can reach on 4 rooms | cycle detection |
+| Topic | What the code traces |
+| --- | --- |
+| **Stack** | push, pop, read the top; the top divided by the item below it |
+| **Queue** | push, pop, read the front; the first divided by the second |
+| **Singly linked list** | follow `next` from node to node, with negative values on the way |
+| **Doubly linked list** | follow `next` and `prev` |
+| **Circular linked list** | go round a small ring, more hops than nodes |
+| **BST** | read keys along paths in a tree built by hand |
+| **Recursion** | small recursive functions (sums, digits, Fibonacci, powers of two) |
+| **BFS** | visit order on a few rooms, adding and subtracting by visit number |
+| **DFS** | visit order with a stack of rooms |
 
-Every team gets **the same 107 cards**, but each team's deal is **random**: the cards sit in different drawers and cupboards on every load (always on their own floor), so teams can't tell each other where a card is.
+Every team gets **the same 91 cards**, but each team's deal is **random**: the cards sit in different drawers and cupboards on every load (always on their own floor), so teams can't tell each other where a card is.
 
 ### The ghost
 
@@ -171,7 +172,7 @@ In Round 1, if two teams have the same `x`, the team that **reached that `x` fir
 
 ## The cards
 
-The deck is **107 cards: 54 easy, 42 medium, 11 hard**, across every topic. Cards live in the **Supabase database**, not in the game files, so teams can't read them in the browser. The server only sends a card's code when a team opens it, and the **server** works out the new `x`.
+The deck is **91 cards: 46 easy, 35 medium, 10 hard**, across every topic. Cards live in the **Supabase database**, not in the game files, so teams can't read them in the browser. The server only sends a card's code when a team opens it, and the **server** works out the new `x`.
 
 Manage them in **/admin → Cards** (add, edit, remove, test an effect).
 
@@ -183,12 +184,12 @@ Manage them in **/admin → Cards** (add, edit, remove, test an effect).
 | Code | the snippet players read, in **C++, Java and Python** (same logic; players switch with keys 1 · 2 · 3). Stored as one JSON text `{"cpp", "java", "py"}` |
 | Effect | what **taking** the card does to `x`, e.g. `x + 7`, `x * 2`, `0`. Only `x`, numbers and `+ - * / % ( )`. Integer maths like C++ (7 / 2 = 3) |
 
-The organisers keep the full deck in `db/cards-data.js` and `db/cards-more.js`, which are **not** on GitHub (they hold the answers). `db/cards-more.js` makes its cards from small patterns and works out each answer itself. `db/card-names.js` then gives every card clear variable names (`pile`, `line`, `cur`, `room`, `visited` …), the same in all three languages, and uses only basic syntax (Python uses a plain list as the queue).
+The organisers keep the full deck in `db/cards-v2.js` (loaded through `db/cards-data.js`), which is **not** on GitHub (it holds the answers). It makes every card from a small pattern: the pattern writes the C++, Java and Python versions with the same logic, works out the answer itself, and uses clear variable names (`pile`, `line`, `cur`, `room`, `seen` …) and only basic syntax.
 
 - `node scripts/check-cards.js` runs every card in all three languages (g++, javac/java, python) for many values of `x` and checks that each one matches its effect. It also checks the style: one statement per line, 4-space indents, no `vector`, no lambdas or `?:`, short lines. Java can come from `JAVA_HOME` or the runtime inside a JetBrains IDE.
 - `node scripts/seed-cards.js` loads the deck into an empty database. `--update` rewrites the existing cards in place (same ids) and refuses once teams have opened cards.
 
-Cards are dealt again on every load: easy cards on the ground floor (54 cards in 57 spots), medium cards on the first floor (42 in 44), hard cards outside (11 in 12), so about 95% of the hiding spots on each floor hold a card. The card is black with old blood on it, the code uses the VS Code "Dark+" colours and is always **one column** that grows or shrinks to fit the screen. The timer is the card's border: a line of blood that drains away round the edge, with big red seconds in the corner.
+Cards are dealt again on every load: easy cards on the ground floor (46 cards in 57 spots), medium cards on the first floor (35 in 44), hard cards outside (10 in 12), so about 80% of the hiding spots on each floor hold a card. Half of the cards raise x and half lower it, and the server hands the deck to the game in pairs (one raise, one lower), so neighbouring hiding places always get a mix. The card is black with old blood on it, the code uses the VS Code "Dark+" colours and is always **one column** that grows or shrinks to fit the screen. The timer is the card's border: a line of blood that drains away round the edge, with big red seconds in the corner.
 
 ---
 

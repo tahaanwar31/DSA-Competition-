@@ -223,7 +223,7 @@
       <li>Press <kbd>E</kbd> to <b>accept</b>: the code runs on <b>x</b> and <b>x</b> is updated. Press <kbd>Q</kbd> to <b>reject</b>: <b>x</b> stays the same. Either way the card burns and is gone.</li>
       <li>Time to decide: <span class="g">easy 2 min</span>, <span class="y">medium 3 min</span>, <span class="r">hard 5 min</span>. If time runs out, the card is rejected.</li>
       <li><span class="g">Easy</span> cards hide on the <b>ground floor</b> of the mansion, <span class="y">medium</span> cards on the <b>first floor</b> of the mansion, <span class="r">hard</span> cards <b>outside</b> the mansion.</li>
-      <li>Don't look into <span class="r">her eyes</span>. If she catches you, <span class="r">x − 3</span>.</li>
+      <li>Don't look into <span class="r">her eyes</span> for 1.5 seconds. If she catches you, <span class="r">x − 3</span>.</li>
       <li>When the <b>60 minutes</b> end, the team with the <b>highest x</b> wins. Same x: the team that <b>reached it first</b> ranks higher.</li>
     </ol></div>
     <div class="panel"><h3>CONTROLS</h3>
@@ -1035,8 +1035,8 @@ let duck = null; loadModel("rubber_duck_toy").then(src => { duck = src.clone(tru
 
 /* ================= the cards: hidden in random drawers =================
    Every load deals the deck again at random: easy cards go on the ground floor, medium cards
-   on the first floor, hard cards outside. 107 cards in 113 spots (54 in 57 · 42 in 44 · 11 in 12):
-   about 95% of the drawers, cupboards, chests and coffins on each floor hold one.
+   on the first floor, hard cards outside. 91 cards in 113 spots (46 in 57 · 35 in 44 · 10 in 12):
+   about 80% of the drawers, cupboards, chests and coffins on each floor hold one.
    Each team gets its own layout. */
 const cardBack = canvasTex(256, 360, g => {
   g.fillStyle = "#fbf8f1"; g.beginPath(); g.roundRect(0, 0, 256, 360, 22); g.fill(); g.fillStyle = "#8f1a20"; g.beginPath(); g.roundRect(14, 14, 228, 332, 14); g.fill();
