@@ -102,6 +102,7 @@ setTimeout(() => $("name").focus(), 3000);   // after "Come in. Everyone else di
 $("peek").onclick = () => { const p = $("pw"); p.type = p.type === "password" ? "text" : "password"; p.focus(); };
 addEventListener("keyup", e => { if (e.getModifierState) $("caps").hidden = !e.getModifierState("CapsLock"); });
 const showErr = msg => { $("errT").textContent = msg[0].toUpperCase() + msg.slice(1) + "."; $("err").classList.add("on"); const f = $("f"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); };
+if (new URLSearchParams(location.search).get("why") === "locked") showErr("your team left the game window and is locked. ask the organisers to let you back in");
 if (new URLSearchParams(location.search).get("why") === "other") showErr("your team logged in on another PC, so this one was logged out");
 
 $("f").addEventListener("submit", async e => { e.preventDefault(); const go = $("go"); go.disabled = true; $("goT").textContent = "OPENING…"; $("err").classList.remove("on");

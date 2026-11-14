@@ -223,6 +223,7 @@
       <li>Press <kbd>E</kbd> to <b>accept</b>: the code runs on <b>x</b> and <b>x</b> is updated. Press <kbd>Q</kbd> to <b>reject</b>: <b>x</b> stays the same. Either way the card burns and is gone.</li>
       <li>Time to decide: <span class="g">easy 2 min</span>, <span class="y">medium 3 min</span>, <span class="r">hard 5 min</span>. If time runs out, the card is rejected.</li>
       <li><span class="g">Easy</span> cards hide on the <b>ground floor</b> of the mansion, <span class="y">medium</span> cards on the <b>first floor</b> of the mansion, <span class="r">hard</span> cards <b>outside</b> the mansion.</li>
+      <li>Stay in the game window. Switching tab or minimising <span class="r">locks your team</span> until an organiser lets you back in.</li>
       <li>Don't look into <span class="r">her eyes</span> for 1.5 seconds. If she catches you, <span class="r">x − 3</span>.</li>
       <li>When the <b>60 minutes</b> end, the team with the <b>highest x</b> wins. Same x: the team that <b>reached it first</b> ranks higher.</li>
     </ol></div>
@@ -1271,10 +1272,15 @@ async function call(url, body) {
   const d = await r.json().catch(() => ({})); if (!r.ok) throw Object.assign(new Error(d.error || "network"), { status: r.status }); return d; }
 const clockLeft = () => Math.max(0, (NET.endsAt - (Date.now() + NET.skew)) / 1000);
 // the round was paused by the organisers, its time is over, or the team logged in somewhere else: back to the lobby
+// leaving the game (another tab, or the window minimised) locks the team until an organiser lets it back in
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden || NET.gone || Q.get("cap") || (S.mode !== "play" && S.mode !== "inspect")) return;
+  try { navigator.sendBeacon("/api/r1/leave", new Blob(["{}"], { type: "application/json" })); } catch (e) {}
+  leave("locked"); });
 function leave(why) { if (NET.gone) return; NET.gone = true; S.mode = "over"; try { controls.unlock(); } catch (e) {} $("inspect").classList.remove("on"); $("start").hidden = true;
-  $("endT").innerHTML = why === "logged_out" ? "LOGGED <span style='color:var(--red)'>OUT</span>" : why === "ended" ? "TIME'S <span style='color:var(--red)'>UP</span>" : "ROUND <span style='color:var(--gold)'>PAUSED</span>";
-  $("endP").innerHTML = why === "logged_out" ? "Your team logged in on another device." : why === "ended" ? `Final x = <b>${S.x}</b>` : "The organisers paused the round. Your progress is saved.<br>Going back to the lobby…";
-  $("end").hidden = false; setTimeout(() => location.href = why === "logged_out" ? "/?why=other" : "/lobby", 2600); }
+  $("endT").innerHTML = why === "locked" ? "TEAM <span style='color:var(--red)'>LOCKED</span>" : why === "logged_out" ? "LOGGED <span style='color:var(--red)'>OUT</span>" : why === "ended" ? "TIME'S <span style='color:var(--red)'>UP</span>" : "ROUND <span style='color:var(--gold)'>PAUSED</span>";
+  $("endP").innerHTML = why === "locked" ? "You left the game window (another tab or a minimised window).<br>Ask the organisers to let your team back in." : why === "logged_out" ? "Your team logged in on another device." : why === "ended" ? `Final x = <b>${S.x}</b>` : "The organisers paused the round. Your progress is saved.<br>Going back to the lobby…";
+  $("end").hidden = false; setTimeout(() => location.href = why === "locked" ? "/?why=locked" : why === "logged_out" ? "/?why=other" : "/lobby", 2600); }
 function netErr(e) { if (e.status === 401) leave("logged_out"); else if (e.message === "round_closed") leave("closed"); else toast("CONNECTION PROBLEM · TRY AGAIN", "#ff6a5a"); }
 const runReady = (async () => { const t0 = Date.now(), d = await call("/api/r1/start"); NET.skew = Date.parse(d.now) - (t0 + Date.now()) / 2;
   Object.assign(NET, { endsAt: Date.parse(d.ends_at), deck: d.deck, x: d.x, busts: d.busts, taken: d.taken, dropped: d.dropped, loaded: true });

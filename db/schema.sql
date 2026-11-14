@@ -123,3 +123,6 @@ from teams t
 left join runs r1 on r1.team_id = t.id and r1.round_id = 1 and not r1.voided
 left join runs r2 on r2.team_id = t.id and r2.round_id = 2 and not r2.voided
 where t.active;
+
+-- a team that leaves the game window (other tab / minimised) is locked until an organiser lets it back in
+alter table teams add column if not exists locked_reason text;

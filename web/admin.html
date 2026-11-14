@@ -350,7 +350,7 @@ function drawTeams() {
   const r1 = Object.fromEntries(D.runs.filter(r => r.round_id === 1).map(r => [r.team_id, r]));
   $("teamsTitle").innerHTML = `Teams <span class="muted" style="font-weight:400">· ${D.teams.length} · ${D.teams.filter(t => t.online).length} logged in now</span>`;
   put($("teams"), `<tr><th>Team</th><th>Members</th><th>Logged in</th><th>Round 1 x</th><th></th></tr>` + (D.teams.length ? D.teams.map(t => `
-    <tr class="${t.active ? "" : "off"}" data-id="${t.id}"><td><b>${esc(t.name)}</b>${t.active ? "" : '<span class="tag">SWITCHED OFF</span>'}</td><td class="muted">${esc(t.members || "")}</td>
+    <tr class="${t.active ? "" : "off"}" data-id="${t.id}"><td><b>${esc(t.name)}</b>${t.active ? "" : '<span class="tag">SWITCHED OFF</span>'}${t.locked_reason ? '<span class="tag" style="background:#d21a24;color:#fff">LOCKED: LEFT THE GAME</span> <button class="sbtn" data-a="unlock">Let them back in</button>' : ""}</td><td class="muted">${esc(t.members || "")}</td>
     <td><span class="dot ${t.online ? "on" : ""}"></span>${t.online ? "Yes" : "No"}</td><td class="bigx">${r1[t.id] ? r1[t.id].x : "—"}</td>
     <td style="text-align:right;white-space:nowrap"><button class="sbtn" data-a="edit">Edit name / members</button> ${more([["pw", "New password", "They are logged out and use the new one"],
       ...(t.online ? [["kick", "Log them out", "They have to log in again"]] : []),
@@ -361,6 +361,7 @@ $("teams").onclick = e => { const b = e.target.closest("button[data-a]"); if (!b
   if (a === "edit") { const name = prompt("Team name", t.name); if (name === null) return; const members = prompt("Members", t.members || ""); if (members === null) return; act(() => api(`/api/admin/teams/${id}`, { name, members }, "PATCH"), "Saved"); }
   if (a === "pw") { const pw = prompt(`New password for ${t.name} (at least 4 characters). They will be logged out.`); if (pw) act(() => api(`/api/admin/teams/${id}`, { password: pw }, "PATCH"), "Password changed"); }
   if (a === "kick") act(() => api(`/api/admin/teams/${id}/kick`, {}), t.name + " logged out");
+  if (a === "unlock") act(() => api(`/api/admin/teams/${id}`, { unlock: true }, "PATCH"), t.name + " can log in again");
   if (a === "toggle") act(() => api(`/api/admin/teams/${id}`, { active: !t.active }, "PATCH"), t.active ? "Switched off" : "Switched on");
   if (a === "del" && confirm(`Delete ${t.name} and all of their scores?\n\nThis cannot be undone.`)) act(() => api(`/api/admin/teams/${id}`, undefined, "DELETE"), "Deleted"); };
 $("addTeam").onsubmit = async e => { e.preventDefault(); const f = e.target, body = Object.fromEntries(new FormData(f));

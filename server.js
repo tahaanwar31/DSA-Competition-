@@ -156,10 +156,11 @@ async function handle(req, res) {
   // ----- team api -----
   if (M === "POST" && p === "/api/login") {
     const { name = "", password = "" } = await readBody(req); slowDown("t:" + req.socket.remoteAddress);
-    const want = String(name).trim().toLowerCase(), rows = await sb(`teams?select=id,name,active,password_hash`);
+    const want = String(name).trim().toLowerCase(), rows = await sb(`teams?select=id,name,active,locked_reason,password_hash`);
     const t = rows.find(r => r.name.toLowerCase() === want);
     if (!t || !checkPw(String(password), t.password_hash)) throw fail(401, "Wrong team name or password.");
     if (!t.active) throw fail(403, "Your team is switched off. Please ask the organisers.");
+    if (t.locked_reason) throw fail(403, "Your team was locked because it left the game window. Please ask the organisers to let you back in.");
     const token = crypto.randomUUID();
     await sb(`teams?id=eq.${t.id}`, { method: "PATCH", body: { session_token: token } });
     teamCache.clear();
@@ -182,6 +183,7 @@ async function handle(req, res) {
       if (p === "/api/r1/start") { const d = await rpc("r1_start", { p_team: team.id }); d.deck = spreadDeck(d.deck, await cardSigns()); return send(res, 200, d); }
       if (p === "/api/r1/open") return send(res, 200, await rpc("r1_open", { p_team: team.id, p_card: id(body.card) }));
       if (p === "/api/r1/decide") return send(res, 200, await rpc("r1_decide", { p_team: team.id, p_card: id(body.card), p_action: ["take", "drop"].includes(body.action) ? body.action : "timeout" }));
+      if (p === "/api/r1/leave") { await sb(`teams?id=eq.${team.id}`, { method: "PATCH", body: { locked_reason: "Left the game window", session_token: null } }); teamCache.clear(); return send(res, 200, { ok: true }); }
       if (p === "/api/r1/bust") return send(res, 200, await rpc("r1_bust", { p_team: team.id }));
       if (p === "/api/r1/finish") { await rpc("r1_finish", { p_team: team.id }); return send(res, 200, { ok: true }); }
     } catch (e) { throw dbErr(e); }
@@ -207,7 +209,7 @@ async function handle(req, res) {
     }
     if (M === "GET" && seg[0] === "overview") {
       const [st, teams, cards, runs, boards] = await Promise.all([roundsNow(),
-        sb("teams?select=id,name,members,active,session_token,created_at&order=name"), sb("cards?select=*&order=id"),
+        sb("teams?select=id,name,members,active,locked_reason,session_token,created_at&order=name"), sb("cards?select=*&order=id"),
         sb("runs?voided=is.false&select=id,team_id,round_id,x,points,busts,started_at,finished_at"),
         boardsNow()]);
       const plays = runs.length ? await sbAll(`plays?run_id=in.(${runs.map(r => r.id).join(",")})&select=run_id,action`) : [];
@@ -227,6 +229,7 @@ async function handle(req, res) {
       if (M === "PATCH" && seg.length === 2) {
         const patch = {}; if (body.name !== undefined) { patch.name = String(body.name).trim(); if (!patch.name) throw fail(400, "Name is empty."); }
         if (body.members !== undefined) patch.members = body.members || null;
+        if (body.unlock) patch.locked_reason = null;
         if (body.active !== undefined) { patch.active = !!body.active; if (!body.active) patch.session_token = null; }
         if (body.password) { if (String(body.password).length < 4) throw fail(400, "Password needs 4+ characters."); patch.password_hash = hashPw(String(body.password)); patch.session_token = null; }
         try { await sb(`teams?id=eq.${tid}`, { method: "PATCH", body: patch }); } catch (e) { throw e.status === 409 ? fail(409, "That team name is taken.") : e; }
