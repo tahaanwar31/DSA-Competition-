@@ -14,3 +14,6 @@ docs/proposal/
 db/cards-more.js
 db/cards-v2.js
 TODO-changes.md
+db/cards-v3.js
+db/deck-v3.json
+db/card-harness.py

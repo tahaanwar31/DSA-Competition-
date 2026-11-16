@@ -142,7 +142,7 @@ Every card is sized so a team that knows the topic can finish it with **at least
 
 #### Topics at each level
 
-Every card changes x **3 to 4 times inside its code**, using numbers that come from a data structure (some of them negative), so the last line never gives the answer away. x is only ever added to or subtracted from, never multiplied or divided; the numbers inside the structure may be divided (exactly, never by zero). Because the change a card makes does not depend on x, it does not matter when a team finds it or in which order it takes the cards. Easy cards are a few plain steps; medium and hard cards use more steps and some division.
+Every card changes x in **3 to 5 places** of its code, **each in a different way** (a plain read, a read plus a number, a stored variable, a division or product of data, the size of the structure, an if / else if / else), and the places are spread out: there is always another line between them, and every one of those lines matters (the builder deletes each line in turn and the answer must change). Loops over the data (`while (top < 0) pop`, walk a pointer three times) and if / else blocks are used; hard cards always have one of each. The conditions look at data, never at x. x is only ever added to or subtracted from, never multiplied or divided; the numbers inside the structure may be divided (exactly, never by zero). Because the change a card makes does not depend on x, it does not matter when a team finds it or in which order it takes the cards.
 
 | Topic | What the code traces |
 | --- | --- |
@@ -184,9 +184,10 @@ Manage them in **/admin → Cards** (add, edit, remove, test an effect).
 | Code | the snippet players read, in **C++, Java and Python** (same logic; players switch with keys 1 · 2 · 3). Stored as one JSON text `{"cpp", "java", "py"}` |
 | Effect | what **taking** the card does to `x`, e.g. `x + 7`, `x * 2`, `0`. Only `x`, numbers and `+ - * / % ( )`. Integer maths like C++ (7 / 2 = 3) |
 
-The organisers keep the full deck in `db/cards-v2.js` (loaded through `db/cards-data.js`), which is **not** on GitHub (it holds the answers). It makes every card from a small pattern: the pattern writes the C++, Java and Python versions with the same logic, works out the answer itself, and uses clear variable names (`pile`, `line`, `cur`, `room`, `seen` …) and only basic syntax.
+The organisers keep the full deck in `db/cards-v3.js` (the builder) and `db/deck-v3.json` (the built deck, loaded through `db/cards-data.js`), which are **not** on GitHub (they hold the answers). The builder describes each card once, writes it in C++, Java and Python from that one description (so the three cannot drift apart), and runs the Python version (`db/card-harness.py`) to get the answer. `node db/cards-v3.js` rebuilds the deck (the same every time).
 
 - `node scripts/check-cards.js` runs every card in all three languages (g++, javac/java, python) for many values of `x` and checks that each one matches its effect. It also checks the style: one statement per line, 4-space indents, no `vector`, no lambdas or `?:`, short lines. Java can come from `JAVA_HOME` or the runtime inside a JetBrains IDE.
+- `node scripts/check-traces.js` is stricter: the value of `x` right after **every** change of x must be identical in C++, Java and Python (for three starting values), the three versions must have the same number of lines and of x changes, and Python-only tricks (negative indexes) are refused.
 - `node scripts/seed-cards.js` loads the deck into an empty database. `--update` rewrites the existing cards in place (same ids) and refuses once teams have opened cards.
 
 Cards are dealt again on every load: easy cards on the ground floor (46 cards in 57 spots), medium cards on the first floor (35 in 44), hard cards outside (10 in 12), so about 80% of the hiding spots on each floor hold a card. Half of the cards raise x and half lower it, and the server hands the deck to the game in pairs (one raise, one lower), so neighbouring hiding places always get a mix. The card is black with old blood on it, the code uses the VS Code "Dark+" colours and is always **one column** that grows or shrinks to fit the screen. The timer is the card's border: a line of blood that drains away round the edge, with big red seconds in the corner.
@@ -209,7 +210,7 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 ├── db/
 │   ├── schema.sql      tables and the 3 leaderboards (run in Supabase SQL Editor)
 │   └── functions.sql   take / drop / bust / timers, all checked on the server
-├── scripts/            add-admin, seed-cards, check-cards
+├── scripts/            add-admin, seed-cards, check-cards, check-traces
 ├── .env                secret settings (you make it; never on GitHub)
 ├── assets/
 │   ├── models/         3D furniture, statues, trees, gates (glTF)

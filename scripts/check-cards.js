@@ -69,6 +69,7 @@ function lint(lang, code) {
       if (/\{\s*\S.*;/.test(bare.replace(/new \w+\{[^}]*\}/g, "N")) &&!/=\s*\{/.test(bare) && !/^\s*(struct|class)\b/.test(bare)) bad.push(`${at}: statement after {`);
     } else {
       if (/;/.test(bare)) bad.push(`${at}: ; in Python`);
+      if (/[\w\]]\[-\d/.test(bare)) bad.push(`${at}: negative index in Python (not the same as C++ / Java)`);
       if (/^\s*(if|for|while|elif|else|def)\b.*:\s*\S/.test(bare)) bad.push(`${at}: statement on the same line as the colon`);
     }
   });
