@@ -245,6 +245,6 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 <div align="center">
 
 **PROCOM · Software Engineering Competitions**
-ACM Student Chapter, FAST NUCES Karachi
+DSA Module · Depth First Fear
 
 </div>
