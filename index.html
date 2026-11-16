@@ -1656,7 +1656,11 @@ function frame(now) { requestAnimationFrame(frame);
       if (want !== PR) { PR = want; renderer.setPixelRatio(PR); composer.setPixelRatio(PR); composer.setSize(innerWidth, innerHeight); } } } }
 function matte() { scene.traverse(o => { if (!o.material || o === ghost) return; for (const m of [].concat(o.material)) { if (!m.isMeshStandardMaterial || m.userData.matte) continue; m.userData.matte = 1;
       const metal = m.metalness > .5; if (m.roughnessMap && !metal) m.roughnessMap = null; m.roughness = Math.max(m.roughness, metal ? .55 : .85); m.envMapIntensity = .4; m.needsUpdate = true; } }); }
-Promise.all([...placed, runReady]).then(() => { matte(); setTimeout(matte, 1500); dealCards(); computeZones(); window.__game = { audio, computeZones, applyZones, S, P, GH, NET, openCard, showCard, onKey, camera, ghost, OPEN, controls, torch, composer, renderer, update, hud, reset, aimAt: () => aim, COLL, roomAt, ROOMS, movePlayer, spawnGhost, hideGhost, inWorld }; });
+Promise.all([...placed, runReady]).then(() => { matte(); setTimeout(matte, 1500); dealCards(); computeZones();
+  // warm up the ghost now, behind the start screen: compile her shaders, upload her two faces and her geometry.
+  // Without this the very first time she appears the game freezes for about 2 seconds.
+  try { const gl = ghost.children.find(c => c.isPointLight); ghost.visible = true; if (gl) gl.intensity = 1; [GH.faceN, GH.faceS].forEach(t => t && renderer.initTexture(t)); renderer.compile(scene, camera); composer.render(); if (gl) gl.intensity = 0; } catch (e) {}
+  ghost.visible = false; window.__game = { audio, computeZones, applyZones, S, P, GH, NET, openCard, showCard, onKey, camera, ghost, OPEN, controls, torch, composer, renderer, update, hud, reset, aimAt: () => aim, COLL, roomAt, ROOMS, movePlayer, spawnGhost, hideGhost, inWorld }; });
 requestAnimationFrame(frame);
 </script>
 </body></html>
