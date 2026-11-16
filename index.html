@@ -1650,7 +1650,7 @@ function frame(now) { requestAnimationFrame(frame);
   if (active === asleep) { asleep = !active; asleep ? audio.sleep() : audio.wake(); }
   if (!active) { if (now - lastDraw > 1000 && !document.hidden && !otherTab) { lastDraw = now; composer.render(); } last = now; return; }
   if (now - lastDraw < 15.5) return; lastDraw = now;
-  const gap = now - last, raw = Math.min(gap, 100), dt = Math.min(.05, raw / 1000); RDT = Math.min(gap, 400) / 1000; last = now;   // RDT: real seconds, so eye contact is 1.5 s even on a slow PC update(dt, now / 1000); composer.render();
+  const gap = now - last, raw = Math.min(gap, 100), dt = Math.min(.05, raw / 1000); RDT = Math.min(gap, 400) / 1000; last = now; update(dt, now / 1000); composer.render();   // RDT: real seconds, so eye contact is 1.5 s even on a slow PC
   if (S.mode === "play" || S.mode === "inspect") { ema += (raw - ema) * .05; if ((prT += raw) > 1500) { prT = 0;
       const want = ema > 20 ? Math.max(.55, PR - .1) : ema < 14 ? Math.min(MAXPR, PR + .05) : PR;
       if (want !== PR) { PR = want; renderer.setPixelRatio(PR); composer.setPixelRatio(PR); composer.setSize(innerWidth, innerHeight); } } } }
