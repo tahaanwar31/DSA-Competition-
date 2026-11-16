@@ -244,7 +244,7 @@ The step-by-step guide is in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 <div align="center">
 
-**PROCOM · Software Engineering Competitions**
+**PROCOM 27 · Software Engineering Competitions category**
 DSA Module · Depth First Fear
 
 </div>
