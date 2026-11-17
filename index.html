@@ -224,7 +224,7 @@
       <li>Time to decide: <span class="g">easy 1 min</span>, <span class="y">medium 2 min</span>, <span class="r">hard 3 min</span>. If time runs out, the card is rejected.</li>
       <li><span class="g">Easy</span> cards hide on the <b>ground floor</b> of the mansion, <span class="y">medium</span> cards on the <b>first floor</b> of the mansion, <span class="r">hard</span> cards <b>outside</b> the mansion.</li>
       <li>Stay in the game window. Switching tab or minimising <span class="r">locks your team</span> until an organiser lets you back in.</li>
-      <li>Don't look into <span class="r">her eyes</span> for 1.5 seconds. If she catches you, <span class="r">x − 3</span>.</li>
+      <li>Don't look into <span class="r">her eyes</span> for 1 second. If she catches you, <span class="r">x − 3</span>.</li>
       <li>When the <b>60 minutes</b> end, the team with the <b>highest x</b> wins. Same x: the team that <b>reached it first</b> ranks higher.</li>
     </ol></div>
     <div class="panel"><h3>CONTROLS</h3>
@@ -1102,7 +1102,7 @@ const rayG = new THREE.Raycaster();
 const dimK = t => DIM > 0 ? (hash(Math.floor(t * 30)) < .5 ? .05 : .5) : 1;
 /* ================= the ghost: she appears without warning. Don't look into her eyes. ================= */
 const ghost = new THREE.Group(); ghost.visible = false; scene.add(ghost);
-const GAZE_SECS = 1.5; let RDT = 0;   // eye contact time (real seconds); RDT = real seconds of the last frame
+const GAZE_SECS = 1; let RDT = 0;   // eye contact time (real seconds); RDT = real seconds of the last frame
 const GH = { on: false, t: 0, next: 14, gaze: 0, scare: 0, fade: 0, vanish: 0, twitch: 0, head: null, eyes: null, hx: 0, hy: 0, hz: 0, warned: false };
 {
   const body = new THREE.Group(); ghost.add(body);
@@ -1588,7 +1588,7 @@ function update(dt, t) {
   if (grab && grab !== aim) $("prompt").textContent = "C · GRAB THE CARD" + (aim ? "   ·   " + (aim.open ? "E · CLOSE" : "E · OPEN") : "");
   else if (aim) $("prompt").textContent = aim.noCard ? (aim.open ? "E · CLOSE" : aim.label) : !aim.open ? (aim.kind === "drawer" ? "E · OPEN DRAWER" : aim.kind === "lid" ? "E · OPEN CHEST" : "E · OPEN DOOR") : aim.card ? "C · GRAB THE CARD   ·   E · CLOSE" : "EMPTY  ·  E · CLOSE";
   CARD_MAT.emissiveIntensity = .1 + .06 * Math.sin(t * 4);
-  // ===== the ghost: appears, waits, vanishes. Looking into her eyes for 1.5 seconds = busted =====
+  // ===== the ghost: appears, waits, vanishes. Looking into her eyes for 1 second = busted =====
   if (S.mode === "play" && !GH.on && GH.scare <= 0 && GH.vanish <= 0 && (GH.next -= dt) <= 0 && !spawnGhost()) GH.next = .8;
   if (S.mode === "inspect" && GH.on) hideGhost(false, 6 + Math.random() * 8);
   if (GH.vanish > 0) { GH.vanish -= dt; ghost.visible = GH.vanish > 0 && Math.random() < .5; }
