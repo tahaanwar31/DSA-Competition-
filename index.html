@@ -1164,39 +1164,61 @@ const GH = { on: false, t: 0, next: 7, gaze: 0, scare: 0, fade: 0, vanish: 0, tw
     const lo = mk(head, new THREE.PlaneGeometry(.09, .75), HAIR, s * .04, -.5, .1, false); lo.rotation.set(-.15, s * .2, 0); }
   ghost.traverse(o => { if (o.isMesh) o.frustumCulled = false; });
 }
-// the other face of the ghost: a tall black shadow with huge glowing eyes. It uses the same rules as the woman
-// (eye contact, vanishing, the scare), only the look is different.
+// the other face of the ghost: a jinn. A tall, hunched shape of living black smoke that never stops moving, it dissolves into smoke
+// at the bottom, small burning eyes, embers rising off it. It uses the same rules as the woman (eye contact, vanishing, the scare).
 GH.eyes0 = GH.eyes;
 {
   const shade = new THREE.Group(); ghost.add(shade); shade.visible = false; GH.shade = shade;
-  const BLACK = new THREE.MeshBasicMaterial({ color: 0x000000 });
-  const RIM = new THREE.MeshBasicMaterial({ color: 0x2a3441, transparent: true, opacity: .45, side: THREE.BackSide, depthWrite: false });   // a faint edge, so the black shape shows against the dark
-  const part = (geo, x, y, z, sx, sy, sz, rx, rz) => { for (const [m, k] of [[BLACK, 1], [RIM, 1.09]]) { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.scale.set((sx || 1) * k, (sy || 1) * k, (sz || 1) * k); o.rotation.set(rx || 0, 0, rz || 0); o.frustumCulled = false; shade.add(o); } };
-  part(new THREE.CylinderGeometry(.2, .4, 1.0, 18), 0, .5, 0, 1, 1, .8);                 // long robe
-  part(new THREE.CapsuleGeometry(.17, .72, 6, 14), 0, 1.35, 0, 1, 1, .72);                // torso
-  part(new THREE.SphereGeometry(.13, 22, 16), 0, 1.92, .01, .9, 1.3, 1);                  // head
-  for (const sd of [-1, 1]) {
-    part(new THREE.CylinderGeometry(.045, .03, 1.25, 8), sd * .3, 1.15, .03, 1, 1, 1, -.12, sd * .1);   // long arm
-    for (let f = 0; f < 4; f++) part(new THREE.ConeGeometry(.012, .26, 5), sd * (.34 + f * .012), .43, .06 + f * .012, 1, 1, 1, PI - .15, sd * .06);   // claws
-  }
-  const eyeTex = canvasTex(128, 64, (c, w, h) => {
-    const g = c.createRadialGradient(64, 32, 2, 64, 32, 62); g.addColorStop(0, "#fff"); g.addColorStop(.3, "#ffe0e0"); g.addColorStop(.62, "#ff2020"); g.addColorStop(1, "rgba(255,0,0,0)");
-    c.fillStyle = g; c.beginPath(); c.moveTo(2, 32); c.quadraticCurveTo(64, -10, 126, 32); c.quadraticCurveTo(64, 74, 2, 32); c.fill();
-    c.fillStyle = "#200"; c.fillRect(61, 8, 6, 48); });
-  const glowTex = canvasTex(64, 64, (c, w, h) => { const g = c.createRadialGradient(32, 32, 1, 32, 32, 32); g.addColorStop(0, "rgba(255,40,30,.8)"); g.addColorStop(1, "rgba(255,0,0,0)"); c.fillStyle = g; c.fillRect(0, 0, w, h); });
-  const eyeMat = new THREE.MeshBasicMaterial({ map: eyeTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: new THREE.Color(1.8, 1.4, 1.4) });
-  const glowMat = new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: new THREE.Color(.55, .55, .55) });
-  const eyeG = new THREE.Group(); eyeG.position.set(0, 1.93, .125); shade.add(eyeG); GH.shadeEyeG = eyeG;
-  for (const sd of [-1, 1]) { const e = new THREE.Mesh(new THREE.PlaneGeometry(.075, .04), eyeMat); e.position.set(sd * .043, 0, 0); e.rotation.z = -sd * .5; e.frustumCulled = false; eyeG.add(e);
-    const gl = new THREE.Mesh(new THREE.PlaneGeometry(.16, .11), glowMat); gl.position.set(sd * .043, 0, -.005); gl.frustumCulled = false; eyeG.add(gl); }
-  GH.shadeEyes = new THREE.Object3D(); GH.shadeEyes.position.set(0, 1.93, .125); shade.add(GH.shadeEyes);
-  // the grin that only shows when she gets you
-  const mouthTex = canvasTex(256, 96, (c, w, h) => { c.fillStyle = "#000"; c.fillRect(0, 0, w, h); c.fillStyle = "#f2efe6"; c.beginPath(); c.moveTo(10, 30); c.quadraticCurveTo(128, 130, 246, 30); c.quadraticCurveTo(128, 80, 10, 30); c.fill();
-    c.fillStyle = "#000"; for (let k = 1; k < 14; k++) { const x = 10 + k * 17; c.beginPath(); c.moveTo(x, 20); c.lineTo(x + 8, 70); c.lineTo(x + 15, 20); c.fill(); } });
-  const mouth = new THREE.Mesh(new THREE.PlaneGeometry(.2, .075), new THREE.MeshBasicMaterial({ map: mouthTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })); mouth.position.set(0, 1.83, .128); mouth.visible = false; mouth.frustumCulled = false; shade.add(mouth); GH.shadeMouth = mouth;
+  let seed = 20260101; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const P = [];   // x, y, z, size, alpha, seed, heat
+  const blob = (cx, cy, cz, rx, ry, rz, n, size, alpha, heat) => { for (let i = 0; i < n; i++) { let x, y, z; do { x = rnd() * 2 - 1; y = rnd() * 2 - 1; z = rnd() * 2 - 1; } while (x * x + y * y + z * z > 1);
+    P.push(cx + x * rx, cy + y * ry, cz + z * rz, size * (.7 + rnd() * .6), alpha * (.6 + rnd() * .4), rnd(), heat); } };
+  const limb = (x0, y0, z0, x1, y1, z1, r, n, size, alpha) => { for (let i = 0; i < n; i++) { const t = rnd(); blob(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, z0 + (z1 - z0) * t, r, r, r, 1, size, alpha, 0); } };
+  blob(0, 1.5, 0, .21, .62, .16, 330, .27, .95, 0);          // chest and belly
+  blob(0, 1.95, .03, .38, .14, .18, 170, .24, .95, 0);     // broad, hunched shoulders
+  blob(0, 2.17, .1, .15, .22, .15, 170, .2, 1, 0);         // the head, pushed forward
+  limb(-.4, 1.92, .02, -.52, .45, .2, .06, 150, .14, 1); limb(.4, 1.92, .02, .52, .45, .2, .06, 150, .14, 1);   // arms that hang far too long
+  for (const sd of [-1, 1]) for (let f = 0; f < 4; f++) limb(sd * .52, .45, .2, sd * (.55 + f * .015), .08, .3, .012, 14, .06, 1);   // long fingers
+  blob(0, .62, 0, .25, .62, .18, 200, .32, .6, 0);         // the body thins out into smoke
+  blob(0, .15, 0, .4, .2, .3, 90, .38, .38, 0);         // smoke on the floor
+  const n = P.length / 7, pos = new Float32Array(n * 3), size = new Float32Array(n), alpha = new Float32Array(n), sd = new Float32Array(n), heat = new Float32Array(n);
+  for (let i = 0; i < n; i++) { pos.set([P[i * 7], P[i * 7 + 1], P[i * 7 + 2]], i * 3); size[i] = P[i * 7 + 3]; alpha[i] = P[i * 7 + 4]; sd[i] = P[i * 7 + 5]; heat[i] = P[i * 7 + 6]; }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("aSize", new THREE.BufferAttribute(size, 1)); geo.setAttribute("aAlpha", new THREE.BufferAttribute(alpha, 1)); geo.setAttribute("aSeed", new THREE.BufferAttribute(sd, 1)); geo.setAttribute("aHeat", new THREE.BufferAttribute(heat, 1));
+  const U = { uT: { value: 0 }, uScale: { value: 800 }, uTurb: { value: 0 } };
+  const smoke = new THREE.ShaderMaterial({ uniforms: U, transparent: true, depthWrite: false, vertexShader: `
+    uniform float uT, uScale, uTurb; attribute float aSize, aAlpha, aSeed, aHeat; varying float vA;
+    void main() {
+      vec3 p = position; float low = clamp((1.3 - p.y) / 1.3, 0., 1.); float amp = (.02 + .1 * low) * (1. + uTurb * 3.);
+      p.x += sin(uT * (.6 + aSeed) + aSeed * 40. + p.y * 2.) * amp * 1.6; p.y += sin(uT * (.8 + aSeed * .7) + aSeed * 20.) * amp; p.z += cos(uT * (.7 + aSeed) + aSeed * 30. + p.x * 2.) * amp * 1.6;
+      vec4 mv = modelViewMatrix * vec4(p, 1.); gl_PointSize = aSize * 1.3 * uScale / max(.3, -mv.z) * (1. + .15 * sin(uT * 1.3 + aSeed * 50.)); gl_Position = projectionMatrix * mv; vA = aAlpha; }`,
+    fragmentShader: `varying float vA; void main() { float d = length(gl_PointCoord - .5) * 2.; float a = smoothstep(1., .1, d) * vA * .95; gl_FragColor = vec4(vec3(.006, .004, .005) + vec3(.05, .012, .006) * d, a); }` });
+  const body = new THREE.Points(geo, smoke); body.frustumCulled = false; body.renderOrder = 10; shade.add(body);
+  // embers that rise off it
+  const m = 70, ep = new Float32Array(m * 3), es = new Float32Array(m);
+  for (let i = 0; i < m; i++) { ep.set([(rnd() - .5) * .8, rnd() * 2.6, (rnd() - .5) * .5], i * 3); es[i] = rnd(); }
+  const eg = new THREE.BufferGeometry(); eg.setAttribute("position", new THREE.BufferAttribute(ep, 3)); eg.setAttribute("aSeed", new THREE.BufferAttribute(es, 1));
+  const emberMat = new THREE.ShaderMaterial({ uniforms: U, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexShader: `
+    uniform float uT, uScale; attribute float aSeed; varying float vA;
+    void main() { vec3 p = position; p.y = mod(p.y + uT * (.12 + aSeed * .25), 2.8); p.x += sin(uT * (.8 + aSeed) + aSeed * 30.) * .12; p.z += cos(uT * (.7 + aSeed) + aSeed * 20.) * .1;
+      vec4 mv = modelViewMatrix * vec4(p, 1.); gl_PointSize = (.03 + aSeed * .02) * uScale / max(.3, -mv.z); gl_Position = projectionMatrix * mv; vA = (.5 + .5 * sin(uT * 12. + aSeed * 90.)) * (1. - p.y / 2.8); }`,
+    fragmentShader: `varying float vA; void main() { float d = length(gl_PointCoord - .5) * 2.; float a = smoothstep(1., 0., d) * vA; gl_FragColor = vec4(vec3(1., .42, .08) * a, a); }` });
+  const embers = new THREE.Points(eg, emberMat); embers.frustumCulled = false; embers.renderOrder = 15; shade.add(embers);
+  GH.shadeU = U;
+  // the eyes: small, narrow, burning
+  const eyeTex = canvasTex(128, 32, (c, w, h) => { const g = c.createLinearGradient(0, 0, w, 0); g.addColorStop(0, "rgba(255,80,10,0)"); g.addColorStop(.28, "#ff6a12"); g.addColorStop(.5, "#fff0a8"); g.addColorStop(.72, "#ff6a12"); g.addColorStop(1, "rgba(255,80,10,0)");
+    c.fillStyle = g; c.beginPath(); c.moveTo(0, 17); c.quadraticCurveTo(64, -4, 128, 17); c.quadraticCurveTo(64, 36, 0, 17); c.fill(); });
+  const glowTex = canvasTex(64, 64, (c, w, h) => { const g = c.createRadialGradient(32, 32, 1, 32, 32, 32); g.addColorStop(0, "rgba(255,110,20,.75)"); g.addColorStop(1, "rgba(255,60,0,0)"); c.fillStyle = g; c.fillRect(0, 0, w, h); });
+  GH.shadeEyeMat = new THREE.MeshBasicMaterial({ map: eyeTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: new THREE.Color(2, 1.6, 1.2) });
+  const glowMat = new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: new THREE.Color(.5, .5, .5) });
+  const eyeG = new THREE.Group(); eyeG.position.set(0, 2.2, .27); shade.add(eyeG); GH.shadeEyeG = eyeG;
+  for (const e of [-1, 1]) { const eye = new THREE.Mesh(new THREE.PlaneGeometry(.1, .03), GH.shadeEyeMat); eye.position.set(e * .047, 0, 0); eye.rotation.z = -e * .42; eye.renderOrder = 20; eye.frustumCulled = false; eyeG.add(eye);
+    const gl = new THREE.Mesh(new THREE.PlaneGeometry(.15, .09), glowMat); gl.position.set(e * .047, 0, -.004); gl.renderOrder = 19; gl.frustumCulled = false; eyeG.add(gl); }
+  GH.shadeEyes = new THREE.Object3D(); GH.shadeEyes.position.set(0, 2.2, .27); shade.add(GH.shadeEyes);
 }
-function setSkin(shadow) { GH.shadowOn = shadow; GH.body.visible = !shadow; GH.shade.visible = shadow; GH.eyes = shadow ? GH.shadeEyes : GH.eyes0; if (typeof ghostLight !== "undefined") ghostLight.color.setHex(shadow ? 0xff3a30 : 0x9fb8d0); }
-function shadeScare(on) { if (!GH.shade) return; GH.shadeEyeG.scale.setScalar(on ? 2.4 : 1); GH.shadeMouth.visible = on; GH.shade.scale.setScalar(on ? 1.12 : 1); }
+function setSkin(shadow) { GH.shadowOn = shadow; GH.body.visible = !shadow; GH.shade.visible = shadow; GH.eyes = shadow ? GH.shadeEyes : GH.eyes0; if (typeof ghostLight !== "undefined") ghostLight.color.setHex(shadow ? 0xff4a1a : 0x9fb8d0); }
+function shadeScare(on) { if (!GH.shade) return; GH.shadeBase = on ? 2.3 : 1; GH.shadeEyeG.scale.setScalar(GH.shadeBase); GH.shade.scale.setScalar(on ? 1.18 : 1); GH.shadeU.uTurb.value = on ? 1 : 0; }
+// every frame while the jinn is there: move the smoke, flicker the eyes
+function shadeTick(t) { const U = GH.shadeU; U.uT.value = t; U.uScale.value = renderer.domElement.height / (2 * Math.tan(camera.fov * Math.PI / 360)); GH.shadeEyeMat.color.setRGB(1.6 + .5 * Math.sin(t * 31), 1.3 + .4 * Math.sin(t * 23), 1); const b = GH.shadeBase || 1; GH.shadeEyeG.scale.set(b, b * (((t * .37) % 1) > .96 ? .15 : 1), b); }
 const ghostLight = new THREE.PointLight(0x9fb8d0, 0, 5, 1.8); ghostLight.position.set(0, 1.7, .7); ghost.add(ghostLight);
 let DIM = 0;   // > 0 while the lights stutter
 const inWorld = (x, z, L) => L === 1 ? (x > -25.8 && x < 25.8 && z > -13.8 && z < 13.8 && (isStair(x, z) || !inVoid(x, z)))
@@ -1643,6 +1665,7 @@ function update(dt, t) {
     camera.getWorldDirection(T2); ghost.position.copy(camera.position).addScaledVector(T2, .5 + Math.max(0, GH.scare - .85) * 6); ghost.position.y -= 1.93; GH.hx = .25; GH.hy = 0; GH.hz = .3 * Math.sin(t * 40); GH.twitch = 1; ghost.rotation.y = Math.atan2(-T3.x, -T3.z); ghostLight.intensity = 4;
     camera.position.x += (Math.random() - .5) * .07 * GH.scare; camera.position.y += (Math.random() - .5) * .07 * GH.scare;
     if (GH.scare <= 0) ghost.visible = false; }
+  if (ghost.visible && GH.shadowOn) shadeTick(t);
   if (ghost.visible) { if ((GH.twitch -= dt) <= 0) { GH.twitch = .12 + Math.random() * 1.3; GH.hx = (Math.random() - .5) * .45; GH.hy = (Math.random() - .5) * .5; GH.hz = (Math.random() - .5) * .9; }
     const h = GH.head.rotation, k = Math.min(1, dt * 28); h.x += (GH.hx - h.x) * k; h.y += (GH.hy - h.y) * k; h.z += (GH.hz - h.z) * k; ghost.children[0].position.y = Math.sin(t * 1.3) * .012; }
   { let hk = 0; if (GH.scare > 0) hk = .5; else if (GH.on && ghost.visible) { const dd = ghost.position.distanceTo(camera.position); camera.getWorldDirection(T3); T2.copy(ghost.position).sub(camera.position).normalize(); hk = .15 + .55 * Math.max(0, 1 - dd / 9) * Math.max(0, T3.dot(T2)); }
