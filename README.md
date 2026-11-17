@@ -16,7 +16,7 @@
 
 **Depth First Fear** turns a Data Structures quiz into a horror game set in a haunted mansion.
 
-Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Drawers, cupboards, chests and coffins hide cards with a short piece of code on them. Read the code, work out what it does to your team's value `x`, and decide in time (2, 3 or 5 minutes, depending on the card): take it or drop it. Some cards raise `x`, some lower it.
+Teams walk through a dark, abandoned two-floor mansion and its haunted grounds, a forest, a cemetery and a crypt, with only a flashlight. Drawers, cupboards, chests and coffins hide cards with a short piece of code on them. Read the code, work out what it does to your team's value `x`, and decide in time (1, 2 or 3 minutes, depending on the card): take it or drop it. Some cards raise `x`, some lower it.
 
 The goal: have the **highest `x`** when the **60-minute** timer runs out.
 
@@ -113,7 +113,7 @@ Round 2 shows as **sealed** in the lobby for now.
 | <kbd>Space</kbd> | Jump (over fences, graves and low furniture) |
 | <kbd>E</kbd> | Open / close a drawer, cupboard, chest or coffin |
 | <kbd>C</kbd> | Grab the card inside |
-| <kbd>E</kbd> / <kbd>Q</kbd> | **Take** / **drop** the card (2 / 3 / 5 minutes) |
+| <kbd>E</kbd> / <kbd>Q</kbd> | **Take** / **drop** the card (1 / 2 / 3 minutes) |
 | <kbd>F</kbd> | Flashlight on / off |
 | <kbd>N</kbd> | Map on / off |
 | <kbd>M</kbd> | Sound on / off |
@@ -125,7 +125,7 @@ Round 2 shows as **sealed** in the lobby for now.
 
 1. Every team starts at **`x = 0`** and has **60 minutes**.
 2. Open drawers, cupboards, chests and coffins to find cards. Each card shows code that changes `x`.
-3. **Take** the card and `x` changes by its code. **Drop** it and `x` stays the same. Time to decide: **2 min** (easy), **3 min** (medium), **5 min** (hard).
+3. **Take** the card and `x` changes by its code. **Drop** it and `x` stays the same. Time to decide: **1 min** (easy), **2 min** (medium), **3 min** (hard).
 4. Either way, the card **burns** and is gone. **Each card is in the mansion only once.**
 5. Cards can **raise or lower** `x` (+, −, ×2, ×0 …), so read the code before you take it.
 6. **Highest `x` when time runs out wins.** There is no upper limit.
@@ -134,9 +134,9 @@ Round 2 shows as **sealed** in the lobby for now.
 
 | Level | What it does to `x` | Time to decide | Where it hides |
 | --- | --- | :---: | --- |
-| **Easy** (46) | +1 to +3 or -1 to -3 | **2 min** | the ground floor |
-| **Medium** (35) | +4 to +7 or -4 to -7 | **3 min** | the first floor |
-| **Hard** (10) | +8 to +12 or -8 to -12 | **5 min** | outside (garden, cemetery, crypt) |
+| **Easy** (46) | +1 to +3 or -1 to -3 | **1 min** | the ground floor |
+| **Medium** (35) | +4 to +7 or -4 to -7 | **2 min** | the first floor |
+| **Hard** (10) | +8 to +12 or -8 to -12 | **3 min** | outside (garden, cemetery, crypt) |
 
 Every card is sized so a team that knows the topic can finish it with **at least 5% of its time left** (estimated as 10 s to start, 3 s per line read and 1 s per step traced).
 
