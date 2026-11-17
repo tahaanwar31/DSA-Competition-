@@ -160,7 +160,8 @@ Every team gets **the same 91 cards**, but each team's deal is **random**: the c
 
 ### The ghost
 
-- She appears suddenly: right in front of you, far away down a corridor, or upside down on the ceiling.
+- She appears suddenly (about every 6 to 15 seconds): right in front of you, far away down a corridor, or upside down on the ceiling.
+- She has two faces, picked at random: the pale woman in the torn gown, and a tall **black shadow with glowing red eyes**. The rules are the same for both.
 - **Look into her eyes for 1 second** and you are **busted: `x − 3`**.
 - If a card's time runs out, it counts as a **drop**: no penalty, x stays the same, and the card burns.
 

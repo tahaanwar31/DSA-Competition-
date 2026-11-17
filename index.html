@@ -1103,9 +1103,9 @@ const dimK = t => DIM > 0 ? (hash(Math.floor(t * 30)) < .5 ? .05 : .5) : 1;
 /* ================= the ghost: she appears without warning. Don't look into her eyes. ================= */
 const ghost = new THREE.Group(); ghost.visible = false; scene.add(ghost);
 const GAZE_SECS = 1; let RDT = 0;   // eye contact time (real seconds); RDT = real seconds of the last frame
-const GH = { on: false, t: 0, next: 14, gaze: 0, scare: 0, fade: 0, vanish: 0, twitch: 0, head: null, eyes: null, hx: 0, hy: 0, hz: 0, warned: false };
+const GH = { on: false, t: 0, next: 7, gaze: 0, scare: 0, fade: 0, vanish: 0, twitch: 0, head: null, eyes: null, hx: 0, hy: 0, hz: 0, warned: false };
 {
-  const body = new THREE.Group(); ghost.add(body);
+  const body = new THREE.Group(); ghost.add(body); GH.body = body;
   const SKIN = new THREE.MeshStandardMaterial({ color: 0x6a6e6a, roughness: .85, emissive: 0x080a0a });
   const gownTex = canvasTex(256, 512, (c, w, h) => { c.fillStyle = "#6e695f"; c.fillRect(0, 0, w, h);
     for (let i = 0; i < 500; i++) { c.fillStyle = `rgba(${20 + Math.random() * 30},${18 + Math.random() * 20},14,${Math.random() * .18})`; c.fillRect(Math.random() * w, Math.random() * h, 2 + Math.random() * 26, 6 + Math.random() * 70); }
@@ -1164,6 +1164,39 @@ const GH = { on: false, t: 0, next: 14, gaze: 0, scare: 0, fade: 0, vanish: 0, t
     const lo = mk(head, new THREE.PlaneGeometry(.09, .75), HAIR, s * .04, -.5, .1, false); lo.rotation.set(-.15, s * .2, 0); }
   ghost.traverse(o => { if (o.isMesh) o.frustumCulled = false; });
 }
+// the other face of the ghost: a tall black shadow with huge glowing eyes. It uses the same rules as the woman
+// (eye contact, vanishing, the scare), only the look is different.
+GH.eyes0 = GH.eyes;
+{
+  const shade = new THREE.Group(); ghost.add(shade); shade.visible = false; GH.shade = shade;
+  const BLACK = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const RIM = new THREE.MeshBasicMaterial({ color: 0x2a3441, transparent: true, opacity: .45, side: THREE.BackSide, depthWrite: false });   // a faint edge, so the black shape shows against the dark
+  const part = (geo, x, y, z, sx, sy, sz, rx, rz) => { for (const [m, k] of [[BLACK, 1], [RIM, 1.09]]) { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.scale.set((sx || 1) * k, (sy || 1) * k, (sz || 1) * k); o.rotation.set(rx || 0, 0, rz || 0); o.frustumCulled = false; shade.add(o); } };
+  part(new THREE.CylinderGeometry(.2, .4, 1.0, 18), 0, .5, 0, 1, 1, .8);                 // long robe
+  part(new THREE.CapsuleGeometry(.17, .72, 6, 14), 0, 1.35, 0, 1, 1, .72);                // torso
+  part(new THREE.SphereGeometry(.13, 22, 16), 0, 1.92, .01, .9, 1.3, 1);                  // head
+  for (const sd of [-1, 1]) {
+    part(new THREE.CylinderGeometry(.045, .03, 1.25, 8), sd * .3, 1.15, .03, 1, 1, 1, -.12, sd * .1);   // long arm
+    for (let f = 0; f < 4; f++) part(new THREE.ConeGeometry(.012, .26, 5), sd * (.34 + f * .012), .43, .06 + f * .012, 1, 1, 1, PI - .15, sd * .06);   // claws
+  }
+  const eyeTex = canvasTex(128, 64, (c, w, h) => {
+    const g = c.createRadialGradient(64, 32, 2, 64, 32, 62); g.addColorStop(0, "#fff"); g.addColorStop(.3, "#ffe0e0"); g.addColorStop(.62, "#ff2020"); g.addColorStop(1, "rgba(255,0,0,0)");
+    c.fillStyle = g; c.beginPath(); c.moveTo(2, 32); c.quadraticCurveTo(64, -10, 126, 32); c.quadraticCurveTo(64, 74, 2, 32); c.fill();
+    c.fillStyle = "#200"; c.fillRect(61, 8, 6, 48); });
+  const glowTex = canvasTex(64, 64, (c, w, h) => { const g = c.createRadialGradient(32, 32, 1, 32, 32, 32); g.addColorStop(0, "rgba(255,40,30,.8)"); g.addColorStop(1, "rgba(255,0,0,0)"); c.fillStyle = g; c.fillRect(0, 0, w, h); });
+  const eyeMat = new THREE.MeshBasicMaterial({ map: eyeTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: new THREE.Color(1.8, 1.4, 1.4) });
+  const glowMat = new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: new THREE.Color(.55, .55, .55) });
+  const eyeG = new THREE.Group(); eyeG.position.set(0, 1.93, .125); shade.add(eyeG); GH.shadeEyeG = eyeG;
+  for (const sd of [-1, 1]) { const e = new THREE.Mesh(new THREE.PlaneGeometry(.075, .04), eyeMat); e.position.set(sd * .043, 0, 0); e.rotation.z = -sd * .5; e.frustumCulled = false; eyeG.add(e);
+    const gl = new THREE.Mesh(new THREE.PlaneGeometry(.16, .11), glowMat); gl.position.set(sd * .043, 0, -.005); gl.frustumCulled = false; eyeG.add(gl); }
+  GH.shadeEyes = new THREE.Object3D(); GH.shadeEyes.position.set(0, 1.93, .125); shade.add(GH.shadeEyes);
+  // the grin that only shows when she gets you
+  const mouthTex = canvasTex(256, 96, (c, w, h) => { c.fillStyle = "#000"; c.fillRect(0, 0, w, h); c.fillStyle = "#f2efe6"; c.beginPath(); c.moveTo(10, 30); c.quadraticCurveTo(128, 130, 246, 30); c.quadraticCurveTo(128, 80, 10, 30); c.fill();
+    c.fillStyle = "#000"; for (let k = 1; k < 14; k++) { const x = 10 + k * 17; c.beginPath(); c.moveTo(x, 20); c.lineTo(x + 8, 70); c.lineTo(x + 15, 20); c.fill(); } });
+  const mouth = new THREE.Mesh(new THREE.PlaneGeometry(.2, .075), new THREE.MeshBasicMaterial({ map: mouthTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })); mouth.position.set(0, 1.83, .128); mouth.visible = false; mouth.frustumCulled = false; shade.add(mouth); GH.shadeMouth = mouth;
+}
+function setSkin(shadow) { GH.shadowOn = shadow; GH.body.visible = !shadow; GH.shade.visible = shadow; GH.eyes = shadow ? GH.shadeEyes : GH.eyes0; if (typeof ghostLight !== "undefined") ghostLight.color.setHex(shadow ? 0xff3a30 : 0x9fb8d0); }
+function shadeScare(on) { if (!GH.shade) return; GH.shadeEyeG.scale.setScalar(on ? 2.4 : 1); GH.shadeMouth.visible = on; GH.shade.scale.setScalar(on ? 1.12 : 1); }
 const ghostLight = new THREE.PointLight(0x9fb8d0, 0, 5, 1.8); ghostLight.position.set(0, 1.7, .7); ghost.add(ghostLight);
 let DIM = 0;   // > 0 while the lights stutter
 const inWorld = (x, z, L) => L === 1 ? (x > -25.8 && x < 25.8 && z > -13.8 && z < 13.8 && (isStair(x, z) || !inVoid(x, z)))
@@ -1183,14 +1216,14 @@ function spawnGhost() {
     T1.set(x, ceil != null ? ceil - 1.9 : y + 1.9, z).sub(camera.position); const dist = T1.length(); rayG.set(camera.position, T1.normalize()); rayG.far = dist;
     if (rayG.intersectObjects(OCCL, false).length) continue;
     ghost.position.set(x, ceil != null ? ceil : y, z); ghost.rotation.set(0, Math.atan2(P.x - x, P.z - z), ceil != null ? PI : 0); GH.kind = kind; GH.L = P.L;
-    GH.on = true; GH.t = kind === "far" ? 7 + Math.random() * 3 : 4.5 + Math.random() * 3; GH.fade = .35; GH.gaze = 0; GH.step = 1.2; GH.snap = 0; ghost.visible = true;
+    GH.on = true; GH.t = kind === "far" ? 7 + Math.random() * 3 : 4.5 + Math.random() * 3; GH.fade = .35; GH.gaze = 0; GH.step = 1.2; GH.snap = 0; setSkin(Math.random() < .5); ghost.visible = true;
     if (front) { audio.screech(); DIM = .6; } else audio.breath();
     return true;
   }
   return false;
 }
-function hideGhost(flicker, next) { if (GH.skull) { GH.skull.material.map = GH.skull.material.emissiveMap = GH.faceN; GH.skull.material.emissive.setHex(0x2a2c2c); GH.head.scale.setScalar(1); } GH.on = false; GH.gaze = 0; GH.vanish = flicker ? .4 : 0; if (!flicker) ghost.visible = false; GH.next = next ?? 12 + Math.random() * 16; }
-function scare() { GH.on = false; GH.gaze = 0; GH.scare = 1; ghost.visible = true; ghost.rotation.z = 0; GH.skull.material.map = GH.skull.material.emissiveMap = GH.faceS; GH.skull.material.emissive.setHex(0x8a8c8c); GH.head.scale.setScalar(1.2); audio.scream(); DIM = .9; GH.next = 16 + Math.random() * 14; busted("YOU LOOKED INTO HER EYES"); }
+function hideGhost(flicker, next) { shadeScare(false); if (GH.skull) { GH.skull.material.map = GH.skull.material.emissiveMap = GH.faceN; GH.skull.material.emissive.setHex(0x2a2c2c); GH.head.scale.setScalar(1); } GH.on = false; GH.gaze = 0; GH.vanish = flicker ? .4 : 0; if (!flicker) ghost.visible = false; GH.next = next ?? 6 + Math.random() * 9; }
+function scare() { if (GH.shadowOn) shadeScare(true); GH.on = false; GH.gaze = 0; GH.scare = 1; ghost.visible = true; ghost.rotation.z = 0; GH.skull.material.map = GH.skull.material.emissiveMap = GH.faceS; GH.skull.material.emissive.setHex(0x8a8c8c); GH.head.scale.setScalar(1.2); audio.scream(); DIM = .9; GH.next = 10 + Math.random() * 8; busted("YOU LOOKED INTO HER EYES"); }
 
 /* ================= decay: damp stains, mold, bloody handprints, footprints, debris ================= */
 const stainTex = canvasTex(256, 512, (g, w, h) => {
@@ -1331,7 +1364,7 @@ function hl(code, lang = "cpp") { const L = HL[lang] || HL.cpp, sp = (c, t) => `
     o += m[1] ? sp("co", esc(m[1])) : m[2] ? sp("st", esc(m[2])) : m[3] ? sp("nu", m[3]) : L.ct.has(w) ? sp("ct", w) : L.kw.has(w) ? sp("kw", w) : L.ty.has(w) ? sp("ty", w) : m[5] ? sp("fn", w) : sp("va", w); l = re.lastIndex; }
   return o + esc(code.slice(l)); }
 function openCard(o) { const c = { id: o.card.card.id, lvl: o.card.card.lvl, cat: "", t: "Opening…", code: "", loading: true };
-  if (GH.on) hideGhost(false, 6 + Math.random() * 8); o.card.mesh.parent.remove(o.card.mesh); o.card = null;
+  if (GH.on) hideGhost(false, 3 + Math.random() * 5); o.card.mesh.parent.remove(o.card.mesh); o.card = null;
   S.mode = "inspect"; S.card = c; S.t = S.tmax = CARD_TIME[c.lvl] || 10; S.deadline = Date.now() + S.t * 1000; S.ans = false; S.buf = ""; showCard(c);
   call("/api/r1/open", { card: c.id }).then(d => { if (S.card !== c) return; Object.assign(c, d, { loading: false }); S.t = Math.min(S.tmax, d.secs); S.deadline = Date.now() + S.t * 1000; showCard(c); })
     .catch(e => { if (S.card !== c) return; if (e.message === "card_used") { c.done = true; toast("THAT CARD IS ALREADY GONE", "#c9bfae"); closeCard(); hud(); checkOut(); } else netErr(e); }); }
@@ -1590,7 +1623,7 @@ function update(dt, t) {
   CARD_MAT.emissiveIntensity = .1 + .06 * Math.sin(t * 4);
   // ===== the ghost: appears, waits, vanishes. Looking into her eyes for 1 second = busted =====
   if (S.mode === "play" && !GH.on && GH.scare <= 0 && GH.vanish <= 0 && (GH.next -= dt) <= 0 && !spawnGhost()) GH.next = .8;
-  if (S.mode === "inspect" && GH.on) hideGhost(false, 6 + Math.random() * 8);
+  if (S.mode === "inspect" && GH.on) hideGhost(false, 3 + Math.random() * 5);
   if (GH.vanish > 0) { GH.vanish -= dt; ghost.visible = GH.vanish > 0 && Math.random() < .5; }
   if (GH.on) {
     GH.t -= dt; GH.fade -= dt; ghost.visible = GH.fade > 0 ? Math.random() < .6 : true;
@@ -1659,8 +1692,8 @@ function matte() { scene.traverse(o => { if (!o.material || o === ghost) return;
 Promise.all([...placed, runReady]).then(() => { matte(); setTimeout(matte, 1500); dealCards(); computeZones();
   // warm up the ghost now, behind the start screen: compile her shaders, upload her two faces and her geometry.
   // Without this the very first time she appears the game freezes for about 2 seconds.
-  try { const gl = ghost.children.find(c => c.isPointLight); ghost.visible = true; if (gl) gl.intensity = 1; [GH.faceN, GH.faceS].forEach(t => t && renderer.initTexture(t)); renderer.compile(scene, camera); composer.render(); if (gl) gl.intensity = 0; } catch (e) {}
-  ghost.visible = false; window.__game = { audio, computeZones, applyZones, S, P, GH, NET, openCard, showCard, onKey, camera, ghost, OPEN, controls, torch, composer, renderer, update, hud, reset, aimAt: () => aim, COLL, roomAt, ROOMS, movePlayer, spawnGhost, hideGhost, inWorld }; });
+  try { const gl = ghost.children.find(c => c.isPointLight); ghost.visible = true; GH.shade.visible = true; if (gl) gl.intensity = 1; [GH.faceN, GH.faceS].forEach(t => t && renderer.initTexture(t)); renderer.compile(scene, camera); composer.render(); if (gl) gl.intensity = 0; } catch (e) {}
+  setSkin(false); ghost.visible = false; window.__game = { audio, computeZones, applyZones, S, P, GH, NET, openCard, showCard, onKey, camera, ghost, OPEN, controls, torch, composer, renderer, update, hud, reset, aimAt: () => aim, COLL, roomAt, ROOMS, movePlayer, spawnGhost, hideGhost, inWorld }; });
 requestAnimationFrame(frame);
 </script>
 </body></html>
