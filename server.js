@@ -19,12 +19,20 @@ const port = +process.argv[2] || +process.env.PORT || 8780;
 // ---------- Supabase (REST, with the secret key) ----------
 // every row of a GET, page by page (Supabase returns at most 1000 rows per request)
 async function sbAll(p) { const out = []; for (let off = 0; ; off += 1000) { const page = await sb(`${p}${p.includes("?") ? "&" : "?"}limit=1000&offset=${off}`); out.push(...page); if (page.length < 1000) return out; } }
+const SAFE_RPC = new Set(["rpc/server_now", "rpc/round_open", "rpc/card_seconds", "rpc/eval_effect"]);
 async function sb(p, { method = "GET", body, prefer } = {}) {
   const headers = { apikey: SB_KEY, "Content-Type": "application/json" };
   if (!SB_KEY.startsWith("sb_")) headers.Authorization = "Bearer " + SB_KEY;   // old-style service_role JWT
   if (prefer) headers.Prefer = prefer;
-  const r = await fetch(`${SB_URL}/rest/v1/${p}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
-  const text = await r.text(); let data = null; try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+  // A bad moment on the internet connection ("fetch failed", or no answer for 15 s) should not break a page.
+  // Reads (and a few harmless calls) are tried again up to 3 more times; a write is only ever sent once.
+  const canRetry = method === "GET" || SAFE_RPC.has(p.split("?")[0]);
+  let r, text;
+  for (let attempt = 0; ; attempt++) {
+    try { r = await fetch(`${SB_URL}/rest/v1/${p}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(15000) }); text = await r.text(); break; }
+    catch (err) { if (canRetry && attempt < 3) { await new Promise(ok => setTimeout(ok, 400 * (attempt + 1))); continue; }
+      const e = new Error("The database is slow or not answering"); e.status = 503; e.net = true; throw e; }
+  } let data = null; try { data = text ? JSON.parse(text) : null; } catch { data = text; }
   if (!r.ok) { const e = new Error((data && (data.message || data.error)) || r.statusText); e.status = r.status === 409 ? 409 : 500; e.db = true; throw e; }
   return data;
 }
@@ -281,6 +289,6 @@ if (require.main === module) {
   if (!SB_URL || !SB_KEY || SB_KEY.startsWith("PASTE")) { console.error("\n  The Supabase secret key is missing. Put it in the .env file (see README).\n"); process.exit(1); }
   http.createServer((req, res) => handle(req, res).catch(e => {
     if (!e.status || e.status >= 500) console.error(new Date().toISOString(), req.method, req.url, e.message);
-    send(res, e.status && e.status < 500 ? e.status : 500, { error: e.status && e.status < 500 ? e.message : "Server problem. Try again." });
+    send(res, e.status && e.status < 500 ? e.status : 500, { error: e.net ? "The database is slow or not answering (check the internet). Try again in a moment." : e.status && e.status < 500 ? e.message : "Server problem. Try again." });
   })).listen(port, () => console.log(`Depth First Fear is running.\n  Teams:  http://localhost:${port}\n  Admin:  http://localhost:${port}/admin\n(Ctrl + C to stop)`));
 }
