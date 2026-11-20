@@ -36,6 +36,11 @@ function split(code) {
 const tap = (code, lang) => code.split("\n").flatMap(l => /^\s*x = x\b/.test(l)
   ? [l, l.match(/^\s*/)[0] + (lang === "cpp" ? 'cout << x << " ";' : lang === "java" ? 'System.out.print(x + " ");' : 'print(x, end=" ")')] : [l]).join("\n");
 
+// every card starts with x = 0. The checkers take that line off before they run the card with many starting values of x.
+const INIT_LINE = { cpp: /^\s*int x = 0;\n/, java: /^\s*int x = 0;\n/, py: /^x = 0$/m };
+const hasInit = (lang, code) => INIT_LINE[lang].test(lang === "py" ? code : code);
+const noInit = (lang, code) => code.replace(INIT_LINE[lang], lang === "py" ? "" : "");
+
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dff-trace-"));
 const run = (cmd, args) => execFileSync(cmd, args, { stdio: "pipe", timeout: 60000 }).toString();
 const parse = out => out.trim().split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [t, f] = l.split("|"); return { trace: t.trim() ? t.trim().split(/\s+/).map(Number) : [], final: Number(f) }; });
@@ -43,19 +48,19 @@ const parse = out => out.trim().split("\n").map(l => l.trim()).filter(Boolean).m
 function traces(lang, c, n) {
   const base = path.join(dir, `${lang}${n}`); fs.mkdirSync(base);
   if (lang === "cpp") {
-    const [glob, body] = split(c.cpp), src = path.join(base, "c.cpp"), exe = path.join(base, "c.exe");
+    const [glob, body0] = split(c.cpp), body = noInit("cpp", body0), src = path.join(base, "c.cpp"), exe = path.join(base, "c.exe");
     fs.writeFileSync(src, `#include <bits/stdc++.h>\nusing namespace std;\n${glob}\nint main(int argc, char** argv) {\nint x = atoi(argv[1]);\n${tap(body, "cpp")}\ncout << "|" << x << endl;\n}\n`);
     run(GPP, ["-std=gnu++17", "-O0", "-Wall", "-Werror=uninitialized", "-Wno-unused-variable", "-Wno-unused-but-set-variable", "-Wno-sign-compare", "-o", exe, src]);
     return XS.flatMap(x => parse(run(exe, [String(x)])));
   }
   if (lang === "java") {
-    const [glob, body] = split(c.java);
+    const [glob, body0] = split(c.java), body = noInit("java", body0);
     fs.writeFileSync(path.join(base, "Main.java"), `import java.util.*;\npublic class Main {\n${glob}\nvoid run(int x0) {\nint x = x0;\n${tap(body, "java")}\nSystem.out.println("|" + x);\n}\npublic static void main(String[] a) { for (String s : a) new Main().run(Integer.parseInt(s)); }\n}\n`);
     run(JAVAC, ["-encoding", "UTF-8", "-d", base, path.join(base, "Main.java")]);
     return parse(run(JAVA, ["-cp", base, "Main", ...XS.map(String)]));
   }
   const src = path.join(base, "card.py"), driver = path.join(base, "run.py");
-  fs.writeFileSync(src, tap(c.py, "py"));
+  fs.writeFileSync(src, tap(noInit("py", c.py), "py"));
   fs.writeFileSync(driver, `import sys\nsrc = open(sys.argv[1], encoding="utf-8").read()\nfor a in sys.argv[2:]:\n    g = {"x": int(a), "__name__": "card"}\n    exec(compile(src, "card", "exec"), g)\n    print("|" + str(g["x"]))\n`);
   return parse(run(PY, ["-I", driver, src, ...XS.map(String)]));
 }
@@ -63,6 +68,7 @@ function traces(lang, c, n) {
 let bad = 0;
 cards.forEach((c, n) => {
   const problems = [];
+  for (const l of ["cpp", "java", "py"]) { const part = l === "cpp" ? split(c.cpp)[1] : l === "java" ? split(c.java)[1] : c.py; if (!hasInit(l, part)) problems.push(`the ${l === "cpp" ? "C++" : l === "java" ? "Java" : "Python"} snippet does not start with x = 0`); }
   // same shape in the three languages
   const body = { cpp: split(c.cpp)[1], java: split(c.java)[1], py: c.py.includes("def ") || c.py.includes("class ") ? null : c.py };
   const lines = t => t.split("\n").filter(l => l.trim() !== "}" && l.trim() !== "").length;

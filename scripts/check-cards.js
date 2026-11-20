@@ -76,6 +76,11 @@ function lint(lang, code) {
   return bad;
 }
 
+// every card starts with x = 0. The checkers take that line off before they run the card with many starting values of x.
+const INIT_LINE = { cpp: /^\s*int x = 0;\n/, java: /^\s*int x = 0;\n/, py: /^x = 0$/m };
+const hasInit = (lang, code) => INIT_LINE[lang].test(lang === "py" ? code : code);
+const noInit = (lang, code) => code.replace(INIT_LINE[lang], lang === "py" ? "" : "");
+
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dff-cards-"));
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: "pipe", timeout: 30000, ...opts }).toString();
 let bad = 0; const count = { easy: 0, medium: 0, hard: 0 }, sizes = { easy: [], medium: [], hard: [] };
@@ -83,19 +88,19 @@ let bad = 0; const count = { easy: 0, medium: 0, hard: 0 }, sizes = { easy: [], 
 function tryRun(lang, c, n) {
   const base = path.join(dir, `${lang}${n}`); fs.mkdirSync(base);
   if (lang === "cpp") {
-    const [glob, body] = split(c.cpp), src = path.join(base, "c.cpp"), exe = path.join(base, "c.exe");
+    const [glob, body0] = split(c.cpp), body = noInit("cpp", body0), src = path.join(base, "c.cpp"), exe = path.join(base, "c.exe");
     fs.writeFileSync(src, `#include <bits/stdc++.h>\nusing namespace std;\n${glob}\nint main(int argc, char** argv) {\nint x = atoi(argv[1]);\n${body}\ncout << x;\n}\n`);
     run(GPP, ["-std=gnu++17", "-O0", "-Wall", "-Wno-unused-variable", "-Wno-unused-but-set-variable", "-Wno-sign-compare", "-o", exe, src]);
     return XS.map(x => Number(run(exe, [String(x)])));
   }
   if (lang === "java") {
-    const [glob, body] = split(c.java);
+    const [glob, body0] = split(c.java), body = noInit("java", body0);
     fs.writeFileSync(path.join(base, "Main.java"), `import java.util.*;\npublic class Main {\n${glob}\nvoid run(int x0) {\nint x = x0;\n${body}\nSystem.out.println(x);\n}\npublic static void main(String[] a) { for (String s : a) new Main().run(Integer.parseInt(s)); }\n}\n`);
     run(JAVAC, ["-encoding", "UTF-8", "-d", base, path.join(base, "Main.java")]);
     return run(JAVA, ["-cp", base, "Main", ...XS.map(String)]).trim().split(/\s+/).map(Number);
   }
   const src = path.join(base, "card.py");
-  fs.writeFileSync(src, c.py);
+  fs.writeFileSync(src, noInit("py", c.py));
   const driver = path.join(base, "run.py");
   fs.writeFileSync(driver, `import sys\nfrom collections import deque\nsrc = open(sys.argv[1], encoding="utf-8").read()\nfor a in sys.argv[2:]:\n    g = {"x": int(a), "deque": deque, "__name__": "card"}\n    exec(compile(src, "card", "exec"), g)\n    print(g["x"])\n`);
   return run(PY, ["-I", driver, src, ...XS.map(String)]).trim().split(/\s+/).map(Number);
@@ -107,6 +112,7 @@ cards.forEach((c, n) => {
   count[c.level]++;
   if (n + 1 < FROM) return;
   const problems = [];
+  for (const l of ["cpp", "java", "py"]) { const part = l === "cpp" ? split(c.cpp)[1] : l === "java" ? split(c.java)[1] : c.py; if (!hasInit(l, part)) problems.push(`the ${l === "cpp" ? "C++" : l === "java" ? "Java" : "Python"} snippet does not start with x = 0`); }
   for (const lang of ["cpp", "java", "py"]) {
     if (!c[lang]) { problems.push(`${lang}: missing`); continue; }
     for (const p of lint(lang, c[lang])) problems.push(`${lang} ${p}`);

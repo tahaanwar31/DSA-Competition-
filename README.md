@@ -125,7 +125,7 @@ Round 2 shows as **sealed** in the lobby for now.
 
 1. Every team starts at **`x = 0`** and has **60 minutes**.
 2. Open drawers, cupboards, chests and coffins to find cards. Each card shows code that changes `x`.
-3. **Take** the card and `x` changes by its code. **Drop** it and `x` stays the same. Time to decide: **3 min** (easy), **4 min** (medium), **5 min** (hard).
+3. Every card's code starts with `x = 0`. **Take** the card and your `x` changes by the value `x` ends with. **Drop** it and `x` stays the same. Time to decide: **3 min** (easy), **4 min** (medium), **5 min** (hard).
 4. Either way, the card **burns** and is gone. **Each card is in the mansion only once.**
 5. Cards can **raise or lower** `x` (+, −, ×2, ×0 …), so read the code before you take it.
 6. **Highest `x` when time runs out wins.** There is no upper limit.
